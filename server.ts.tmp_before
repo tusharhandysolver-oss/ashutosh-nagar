@@ -1,0 +1,767 @@
+/**
+ * @license
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+import express from "express";
+import path from "path";
+import fs from "fs";
+import { createServer as createViteServer } from "vite";
+import { GoogleGenAI } from "@google/genai";
+import dotenv from "dotenv";
+import { createClient, SupabaseClient } from "@supabase/supabase-js";
+
+// Load environment variables
+dotenv.config();
+
+// Initialize Express
+const app = express();
+const PORT = 3000;
+
+// Initialize Supabase data access via its REST API (service_role key bypasses RLS).
+// This avoids needing a direct Postgres connection string/password.
+const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
+let supabaseAdmin: SupabaseClient | null = null;
+
+if (process.env.SUPABASE_URL && supabaseServiceRoleKey) {
+  supabaseAdmin = createClient(process.env.SUPABASE_URL, supabaseServiceRoleKey, {
+    auth: { autoRefreshToken: false, persistSession: false }
+  });
+  console.log("Supabase data client (service_role) initialized.");
+} else {
+  console.log("No SUPABASE_URL/SUPABASE_SERVICE_ROLE_KEY found. Running in local JSON storage mode.");
+}
+
+// Initialize Supabase Auth client (email + password authentication)
+const supabaseUrl = process.env.SUPABASE_URL || "";
+const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || "";
+let supabaseAuth: SupabaseClient | null = null;
+
+if (supabaseUrl && supabaseAnonKey) {
+  supabaseAuth = createClient(supabaseUrl, supabaseAnonKey, {
+    auth: { autoRefreshToken: false, persistSession: false }
+  });
+  console.log("Supabase Auth client initialized.");
+} else {
+  console.log("No SUPABASE_URL/SUPABASE_ANON_KEY found. Auth will fall back to local mock login.");
+}
+
+app.use(express.json({ limit: "5mb" }));
+
+// Body-parser errors (e.g. payload too large, malformed JSON) must be caught here,
+// right after express.json(), otherwise Express falls back to its default HTML
+// error page - which breaks every frontend `res.json()` call expecting JSON back.
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  if (err && err.type === "entity.too.large") {
+    return res.status(413).json({ error: "That file is too large. Please choose a smaller image." });
+  }
+  if (err) {
+    return res.status(400).json({ error: "Invalid request body." });
+  }
+  next();
+});
+
+// Initialize Gemini SDK with telemetry compliance User-Agent
+const geminiApiKey = process.env.GEMINI_API_KEY || "";
+let ai: GoogleGenAI | null = null;
+if (geminiApiKey && geminiApiKey !== "MY_GEMINI_API_KEY") {
+  try {
+    ai = new GoogleGenAI({
+      apiKey: geminiApiKey,
+      httpOptions: {
+        headers: {
+          "User-Agent": "aistudio-build",
+        },
+      },
+    });
+  } catch (error) {
+    console.error("Failed to initialize Gemini AI SDK:", error);
+  }
+} else {
+  console.warn("GEMINI_API_KEY is not set or placeholder. AI features will fallback gracefully.");
+}
+
+// Data persistence path
+const DATA_FILE = path.join(process.cwd(), "data.json");
+
+// Define basic database structures
+interface AppData {
+  users: Array<{
+    id: string;
+    name: string;
+    email: string;
+    role: "Admin" | "Manager" | "Team Member";
+    department: string;
+    avatar?: string;
+    phone?: string;
+    createdAt: string;
+  }>;
+  projects: Array<{
+    id: string;
+    name: string;
+    description: string;
+    createdAt: string;
+    clientName?: string;
+    matterCode?: string;
+    practiceArea?: string;
+    status?: "Active" | "On Hold" | "Closed";
+    budget?: number;
+    clientEmail?: string;
+    clientPhone?: string;
+  }>;
+  tasks: Array<{
+    id: string;
+    title: string;
+    description: string;
+    priority: "Critical" | "High" | "Medium" | "Low";
+    status: "Not Started" | "In Progress" | "Under Review" | "Blocked" | "Completed";
+    stage: "Case Intake" | "In Progress" | "Completed";
+    dueDate: string;
+    createdAt: string;
+    lastUpdatedDate: string;
+    assignedBy: string;
+    assignedTo: string;
+    projectId: string;
+    projectName: string;
+    tags: string[];
+    estimatedHours: number;
+    actualHours: number;
+    attachments: string[];
+    isBillable?: boolean;
+    hourlyRate?: number;
+    clientApprovalStatus?: "Approved" | "Pending Review" | "Not Required";
+    matterCode?: string;
+    startedAt?: string | null;
+    completedAt?: string | null;
+    actualDaysElapsed?: number | null;
+    actualHoursElapsed?: number | null;
+    timerState?: "idle" | "running" | "paused";
+    lastStartedAt?: string | null;
+    totalActiveMs?: number;
+  }>;
+  comments: Array<{
+    id: string;
+    taskId: string;
+    userId: string;
+    userName: string;
+    userAvatar?: string;
+    comment: string;
+    createdAt: string;
+  }>;
+  notifications: Array<{
+    id: string;
+    userId: string;
+    message: string;
+    type: "info" | "success" | "warning" | "error";
+    readStatus: boolean;
+    createdAt: string;
+  }>;
+  activityLogs: Array<{
+    id: string;
+    taskId: string;
+    userId: string;
+    userName: string;
+    action: string;
+    timestamp: string;
+  }>;
+  settings: {
+    reminderInDays: number;
+    enableEmailNotifications: boolean;
+    enableUrgentAlerts: boolean;
+    autoRiskAnalysis: boolean;
+  };
+  goals: Array<{
+    id: string;
+    title: string;
+    description: string;
+    assignedTo: string; // Person working on the goal
+    accountable: string; // Accountable person
+    assignedBy: string; // Goal creator / assigner
+    targetDate: string;
+    progress: number; // 0 to 100
+    status: "Not Started" | "In Progress" | "Completed" | "At Risk";
+    accountableNotes?: string | null;
+    createdAt: string;
+    updatedAt: string;
+  }>;
+  attendances?: Array<{
+    id: string;
+    userId: string;
+    userName: string;
+    date: string; // YYYY-MM-DD
+    type: "WFH";
+    status: "Open" | "Closed";
+    clockInTime: string;
+    clockOutTime?: string;
+  }>;
+  leaveRequests?: Array<{
+    id: string;
+    userId: string;
+    userName: string;
+    startDate: string;
+    endDate: string;
+    reason: string;
+    status: "Pending" | "Approved" | "Rejected";
+    createdAt: string;
+  }>;
+}
+
+// Preseeded Initial Data
+const initialData: AppData = {
+  users: [
+    {
+      id: "usr-3",
+      name: "Tushar bali",
+      email: "tushar.handysolver@gmail.com",
+      role: "Team Member",
+      department: "Associate Attorney",
+      avatar: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=150",
+      createdAt: "2026-02-01T10:00:00Z"
+    },
+    {
+      id: "usr-101",
+      name: "Priya Desai, Esq.",
+      email: "priya.desai@company.com",
+      role: "Admin",
+      department: "Senior Litigation Partner",
+      avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150",
+      createdAt: "2026-01-08T08:00:00Z"
+    },
+    {
+      id: "usr-102",
+      name: "Arjun Mehta, Esq.",
+      email: "arjun.mehta@company.com",
+      role: "Manager",
+      department: "Managing Partner",
+      avatar: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=150",
+      createdAt: "2026-01-10T09:30:00Z"
+    },
+    {
+      id: "usr-103",
+      name: "Ritika Sharma",
+      email: "ritika.sharma@company.com",
+      role: "Team Member",
+      department: "Senior Litigation Paralegal",
+      avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150",
+      createdAt: "2026-01-14T11:00:00Z"
+    },
+    {
+      id: "usr-104",
+      name: "Karan Malhotra",
+      email: "karan.malhotra@company.com",
+      role: "Team Member",
+      department: "Legal Assistant",
+      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150",
+      createdAt: "2026-01-18T14:15:00Z"
+    }
+  ],
+  projects: [
+    {
+      id: "prj-101",
+      name: "Matter #26-210: Horizon Textiles Trademark Dispute",
+      description: "Trademark infringement suit against a competing apparel brand; drafting cease-and-desist responses, evidentiary exhibits, and licensing settlement terms.",
+      createdAt: "2026-05-02T08:00:00Z"
+    },
+    {
+      id: "prj-102",
+      name: "Matter #26-330: Meridian Bank Data Breach Litigation",
+      description: "Multi-plaintiff data breach defense; coordinating discovery on incident response logs, drafting motions to consolidate, and negotiating regulator disclosures.",
+      createdAt: "2026-05-18T09:00:00Z"
+    },
+    {
+      id: "prj-103",
+      name: "Matter #26-455: Coastal Realty Zoning Appeal",
+      description: "Municipal zoning board appeal for a mixed-use development permit; preparing site impact reports and administrative hearing briefs.",
+      createdAt: "2026-06-02T10:00:00Z"
+    },
+    {
+      id: "prj-104",
+      name: "Matter #26-560: Orion Logistics Labor Arbitration",
+      description: "Wage-and-hour arbitration for a regional freight carrier; compiling payroll records, drafting arbitration statements, and scheduling witness prep.",
+      createdAt: "2026-06-14T09:00:00Z"
+    },
+    {
+      id: "prj-105",
+      name: "Matter #26-670: Zenith Pharma Product Liability Defense",
+      description: "Product liability defense for a generic drug manufacturer; managing expert witness reports and coordinating multi-jurisdiction case strategy.",
+      createdAt: "2026-06-20T14:00:00Z"
+    }
+  ],
+  tasks: [
+    {
+      id: "TSK-2001",
+      title: "Draft Trademark Settlement & Licensing Term Sheet",
+      description: "Prepare mutual settlement terms and forward licensing arrangement to resolve the Horizon Textiles mark dispute ahead of the scheduled hearing.",
+      priority: "High",
+      status: "In Progress",
+      stage: "In Progress",
+      dueDate: "2026-07-25T18:00:00Z",
+      createdAt: "2026-07-10T09:00:00Z",
+      lastUpdatedDate: "2026-07-14T11:00:00Z",
+      assignedBy: "usr-102",
+      assignedTo: "usr-3",
+      projectId: "prj-101",
+      projectName: "Matter #26-210: Horizon Textiles Trademark Dispute",
+      tags: ["Trademark", "Settlement", "Licensing"],
+      estimatedHours: 14,
+      actualHours: 6,
+      attachments: ["settlement_draft_v1.docx"]
+    },
+    {
+      id: "TSK-2002",
+      title: "Coordinate Data Breach Discovery Production",
+      description: "Compile and index incident-response logs and customer notification records for the consolidated data breach discovery request.",
+      priority: "Critical",
+      status: "In Progress",
+      stage: "In Progress",
+      dueDate: "2026-07-24T17:00:00Z",
+      createdAt: "2026-07-08T09:30:00Z",
+      lastUpdatedDate: "2026-07-13T15:00:00Z",
+      assignedBy: "usr-101",
+      assignedTo: "usr-103",
+      projectId: "prj-102",
+      projectName: "Matter #26-330: Meridian Bank Data Breach Litigation",
+      tags: ["Discovery", "Data-Breach", "Consolidation"],
+      estimatedHours: 20,
+      actualHours: 9,
+      attachments: ["incident_log_index.xlsx"]
+    },
+    {
+      id: "TSK-2003",
+      title: "Prepare Zoning Board Hearing Brief",
+      description: "Draft administrative hearing brief and site impact summary for the mixed-use development permit appeal.",
+      priority: "Medium",
+      status: "Not Started",
+      stage: "Case Intake",
+      dueDate: "2026-07-30T17:00:00Z",
+      createdAt: "2026-07-11T10:00:00Z",
+      lastUpdatedDate: "2026-07-11T10:00:00Z",
+      assignedBy: "usr-102",
+      assignedTo: "usr-104",
+      projectId: "prj-103",
+      projectName: "Matter #26-455: Coastal Realty Zoning Appeal",
+      tags: ["Zoning", "Hearing-Brief", "Permits"],
+      estimatedHours: 10,
+      actualHours: 0,
+      attachments: []
+    },
+    {
+      id: "TSK-2004",
+      title: "Compile Payroll Records for Wage Arbitration",
+      description: "Gather and reconcile driver payroll and overtime records for the Orion Logistics wage-and-hour arbitration statement.",
+      priority: "High",
+      status: "Blocked",
+      stage: "In Progress",
+      dueDate: "2026-07-21T12:00:00Z",
+      createdAt: "2026-07-05T11:00:00Z",
+      lastUpdatedDate: "2026-07-12T11:00:00Z",
+      assignedBy: "usr-101",
+      assignedTo: "usr-3",
+      projectId: "prj-104",
+      projectName: "Matter #26-560: Orion Logistics Labor Arbitration",
+      tags: ["Arbitration", "Payroll", "Wage-Hour"],
+      estimatedHours: 16,
+      actualHours: 4,
+      attachments: ["payroll_reconciliation.xlsx"]
+    },
+    {
+      id: "TSK-2005",
+      title: "Review Expert Witness Report on Drug Formulation",
+      description: "Review the toxicology expert's report on the generic formulation and flag inconsistencies for cross-examination prep.",
+      priority: "Critical",
+      status: "Completed",
+      stage: "Completed",
+      dueDate: "2026-07-14T18:00:00Z",
+      createdAt: "2026-06-28T09:00:00Z",
+      lastUpdatedDate: "2026-07-14T16:30:00Z",
+      assignedBy: "usr-102",
+      assignedTo: "usr-103",
+      projectId: "prj-105",
+      projectName: "Matter #26-670: Zenith Pharma Product Liability Defense",
+      tags: ["Expert-Witness", "Product-Liability", "Review"],
+      estimatedHours: 12,
+      actualHours: 11,
+      attachments: ["expert_report_annotated.pdf"]
+    },
+    {
+      id: "TSK-2009",
+      title: "Prepare Deposition Outline for Zenith Pharma Case Manager",
+      description: "Draft the deposition question outline and exhibit list for the Zenith Pharma product liability case manager interview.",
+      priority: "High",
+      status: "In Progress",
+      stage: "In Progress",
+      dueDate: "2026-07-23T17:00:00Z",
+      createdAt: "2026-07-13T09:00:00Z",
+      lastUpdatedDate: "2026-07-15T10:00:00Z",
+      assignedBy: "usr-102",
+      assignedTo: "usr-3",
+      projectId: "prj-105",
+      projectName: "Matter #26-670: Zenith Pharma Product Liability Defense",
+      tags: ["Deposition", "Product-Liability", "Outline"],
+      estimatedHours: 9,
+      actualHours: 3,
+      attachments: []
+    },
+    {
+      id: "TSK-2010",
+      title: "File Motion for Extension in Coastal Realty Appeal",
+      description: "Prepare and file a motion requesting a 14-day extension on the zoning board hearing brief deadline.",
+      priority: "Medium",
+      status: "Not Started",
+      stage: "Case Intake",
+      dueDate: "2026-07-27T17:00:00Z",
+      createdAt: "2026-07-15T09:00:00Z",
+      lastUpdatedDate: "2026-07-15T09:00:00Z",
+      assignedBy: "usr-102",
+      assignedTo: "usr-3",
+      projectId: "prj-103",
+      projectName: "Matter #26-455: Coastal Realty Zoning Appeal",
+      tags: ["Motion", "Zoning", "Filing"],
+      estimatedHours: 3,
+      actualHours: 0,
+      attachments: []
+    }
+  ],
+  comments: [
+    {
+      id: "com-101",
+      taskId: "TSK-2001",
+      userId: "usr-102",
+      userName: "Arjun Mehta, Esq.",
+      userAvatar: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=150",
+      comment: "Make sure the licensing terms cap royalty rates in line with the client's ceiling from last week's call.",
+      createdAt: "2026-07-12T10:15:00Z"
+    },
+    {
+      id: "com-102",
+      taskId: "TSK-2001",
+      userId: "usr-3",
+      userName: "Tushar bali",
+      comment: "Understood — draft now reflects the 4% cap and a 3-year renewal window.",
+      createdAt: "2026-07-13T14:20:00Z"
+    },
+    {
+      id: "com-103",
+      taskId: "TSK-2004",
+      userId: "usr-3",
+      userName: "Tushar bali",
+      comment: "Blocked on this — waiting for the client's HR system export before I can reconcile the overtime figures.",
+      createdAt: "2026-07-12T15:28:00Z"
+    },
+    {
+      id: "com-104",
+      taskId: "TSK-2009",
+      userId: "usr-3",
+      userName: "Tushar bali",
+      comment: "First pass at the deposition outline is done — sharing with Arjun for review before finalizing exhibit numbering.",
+      createdAt: "2026-07-15T10:00:00Z"
+    }
+  ],
+  notifications: [
+    {
+      id: "not-seed-1",
+      userId: "usr-3",
+      message: "🔔 TASK ASSIGNED: You were assigned \"Draft Trademark Settlement & Licensing Term Sheet\" (TSK-2001) by Arjun Mehta, Esq.",
+      type: "info",
+      readStatus: false,
+      createdAt: "2026-07-10T09:05:00.000Z"
+    },
+    {
+      id: "not-seed-2",
+      userId: "usr-3",
+      message: "📅 Reminder: Task \"Compile Payroll Records for Wage Arbitration\" (TSK-2004) is due in 4 days.",
+      type: "warning",
+      readStatus: false,
+      createdAt: "2026-07-17T08:00:00.000Z"
+    },
+    {
+      id: "not-seed-3",
+      userId: "usr-101",
+      message: "✅ TASK COMPLETED: Ritika Sharma completed \"Review Expert Witness Report on Drug Formulation\" (TSK-2005).",
+      type: "success",
+      readStatus: true,
+      createdAt: "2026-07-14T16:30:00.000Z"
+    },
+    {
+      id: "not-seed-4",
+      userId: "usr-3",
+      message: "🔔 TASK ASSIGNED: You were assigned \"Prepare Deposition Outline for Zenith Pharma Case Manager\" (TSK-2009) by Arjun Mehta, Esq.",
+      type: "info",
+      readStatus: false,
+      createdAt: "2026-07-13T09:05:00.000Z"
+    },
+    {
+      id: "not-seed-5",
+      userId: "usr-3",
+      message: "🔔 TASK ASSIGNED: You were assigned \"File Motion for Extension in Coastal Realty Appeal\" (TSK-2010) by Arjun Mehta, Esq.",
+      type: "info",
+      readStatus: false,
+      createdAt: "2026-07-15T09:05:00.000Z"
+    }
+  ],
+  activityLogs: [
+    {
+      id: "log-seed-1",
+      taskId: "TSK-2001",
+      userId: "usr-102",
+      userName: "Arjun Mehta, Esq.",
+      action: "Assigned TSK-2001: Draft Trademark Settlement & Licensing Term Sheet to Tushar bali",
+      timestamp: "2026-07-10T09:00:00Z"
+    },
+    {
+      id: "log-seed-2",
+      taskId: "TSK-2001",
+      userId: "usr-3",
+      userName: "Tushar bali",
+      action: "Started drafting the licensing term sheet",
+      timestamp: "2026-07-12T10:00:00Z"
+    },
+    {
+      id: "log-seed-3",
+      taskId: "TSK-2005",
+      userId: "usr-103",
+      userName: "Ritika Sharma",
+      action: "Completed task. Working-time: 11 hours, 1.32 days.",
+      timestamp: "2026-07-14T16:30:00Z"
+    },
+    {
+      id: "log-seed-4",
+      taskId: "TSK-2009",
+      userId: "usr-3",
+      userName: "Tushar bali",
+      action: "Started drafting the deposition outline",
+      timestamp: "2026-07-14T09:00:00Z"
+    }
+  ],
+  settings: {
+    reminderInDays: 3,
+    enableEmailNotifications: true,
+    enableUrgentAlerts: true,
+    autoRiskAnalysis: true
+  },
+  goals: [
+    {
+      id: "G-2001",
+      title: "Data Breach Regulatory Response Readiness",
+      description: "Ensure all state disclosure notices and compliance documentation are filed ahead of statutory deadlines for the Meridian Bank matter.",
+      assignedTo: "usr-101",
+      accountable: "usr-102",
+      assignedBy: "usr-102",
+      targetDate: "2026-08-05T00:00:00.000Z",
+      progress: 40,
+      status: "In Progress",
+      accountableNotes: "Regulator notice draft is in review; on track for the state filing window.",
+      createdAt: "2026-07-06T10:00:00.000Z",
+      updatedAt: "2026-07-13T16:00:00.000Z"
+    },
+    {
+      id: "G-2002",
+      title: "Trademark Matter Early Resolution",
+      description: "Reach a signed licensing settlement with Horizon Textiles' counterpart before the scheduled hearing date.",
+      assignedTo: "usr-3",
+      accountable: "usr-102",
+      assignedBy: "usr-102",
+      targetDate: "2026-07-28T00:00:00.000Z",
+      progress: 55,
+      status: "In Progress",
+      accountableNotes: "Settlement term sheet drafted; awaiting counterpart's counter-offer on royalty rate.",
+      createdAt: "2026-07-10T09:00:00.000Z",
+      updatedAt: "2026-07-13T14:20:00.000Z"
+    }
+  ],
+  attendances: [
+    {
+      id: "att-seed-1",
+      userId: "usr-3",
+      userName: "Tushar bali",
+      date: "2026-07-17",
+      type: "WFH",
+      status: "Open",
+      clockInTime: "2026-07-17T04:00:00.000Z"
+    },
+    {
+      id: "att-seed-2",
+      userId: "usr-101",
+      userName: "Priya Desai, Esq.",
+      date: "2026-07-17",
+      type: "WFH",
+      status: "Closed",
+      clockInTime: "2026-07-17T03:30:00.000Z",
+      clockOutTime: "2026-07-17T11:30:00.000Z"
+    }
+  ],
+  leaveRequests: [
+    {
+      id: "lv-seed-1",
+      userId: "usr-104",
+      userName: "Karan Malhotra",
+      startDate: "2026-07-21",
+      endDate: "2026-07-22",
+      reason: "Personal work",
+      status: "Pending",
+      createdAt: "2026-07-16T09:00:00.000Z"
+    }
+  ]
+};
+
+// Helper function to map old stages to new stages
+function mapStage(stage: any): "Case Intake" | "In Progress" | "Completed" {
+  if (stage === "Case Intake" || stage === "In Progress" || stage === "Completed") {
+    return stage;
+  }
+  if (stage === "Backlog" || stage === "Planning") {
+    return "Case Intake";
+  }
+  if (stage === "Done" || stage === "Completed" || stage === "Deployment" || stage === "Review") {
+    return "Completed";
+  }
+  return "In Progress"; // default for Development, Testing, etc.
+}
+
+// Cache memory database representing current live application state
+let memoryDb: AppData | null = null;
+let isSyncing = false;
+let pendingSync = false;
+
+// Supabase's live tables use snake_case (created independently of this app);
+// the app's in-memory AppData shape uses camelCase. These mappers translate both ways.
+const rowMappers = {
+  users: {
+    toRow: (u: any) => ({ id: u.id, name: u.name, email: u.email, role: u.role, department: u.department, avatar: u.avatar || null, created_at: u.createdAt }),
+    fromRow: (r: any) => ({ id: r.id, name: r.name, email: r.email, role: r.role, department: r.department, avatar: r.avatar, createdAt: r.created_at })
+  },
+  projects: {
+    toRow: (p: any) => ({
+      id: p.id, name: p.name, description: p.description, created_at: p.createdAt,
+      client_name: p.clientName || null, matter_code: p.matterCode || null, practice_area: p.practiceArea || null,
+      status: p.status || "Active", budget: p.budget || null, client_email: p.clientEmail || null, client_phone: p.clientPhone || null
+    }),
+    fromRow: (r: any) => ({
+      id: r.id, name: r.name, description: r.description, createdAt: r.created_at,
+      clientName: r.client_name, matterCode: r.matter_code, practiceArea: r.practice_area,
+      status: r.status, budget: r.budget, clientEmail: r.client_email, clientPhone: r.client_phone
+    })
+  },
+  tasks: {
+    toRow: (t: any) => ({
+      id: t.id, title: t.title, description: t.description, priority: t.priority, status: t.status, stage: t.stage,
+      due_date: t.dueDate, created_at: t.createdAt, last_updated_date: t.lastUpdatedDate,
+      assigned_by: t.assignedBy, assigned_to: t.assignedTo, project_id: t.projectId, project_name: t.projectName,
+      tags: t.tags || [], estimated_hours: t.estimatedHours || 0, actual_hours: t.actualHours || 0, attachments: t.attachments || [],
+      is_billable: t.isBillable !== undefined ? t.isBillable : true, hourly_rate: t.hourlyRate || 0,
+      client_approval_status: t.clientApprovalStatus || "Not Required", matter_code: t.matterCode || null,
+      started_at: t.startedAt || null, completed_at: t.completedAt || null, actual_days_elapsed: t.actualDaysElapsed ?? null,
+      actual_hours_elapsed: t.actualHoursElapsed ?? null, timer_state: t.timerState || "idle",
+      last_started_at: t.lastStartedAt || null, total_active_ms: t.totalActiveMs || 0
+    }),
+    fromRow: (r: any) => ({
+      id: r.id, title: r.title, description: r.description, priority: r.priority, status: r.status, stage: r.stage,
+      dueDate: r.due_date, createdAt: r.created_at, lastUpdatedDate: r.last_updated_date,
+      assignedBy: r.assigned_by, assignedTo: r.assigned_to, projectId: r.project_id, projectName: r.project_name,
+      tags: Array.isArray(r.tags) ? r.tags : [], estimatedHours: r.estimated_hours, actualHours: r.actual_hours,
+      attachments: Array.isArray(r.attachments) ? r.attachments : [], isBillable: r.is_billable !== null ? r.is_billable : true,
+      hourlyRate: r.hourly_rate, clientApprovalStatus: r.client_approval_status, matterCode: r.matter_code,
+      startedAt: r.started_at, completedAt: r.completed_at, actualDaysElapsed: r.actual_days_elapsed,
+      actualHoursElapsed: r.actual_hours_elapsed, timerState: r.timer_state, lastStartedAt: r.last_started_at,
+      totalActiveMs: r.total_active_ms !== null ? parseInt(r.total_active_ms, 10) : 0
+    })
+  },
+  comments: {
+    toRow: (c: any) => ({ id: c.id, task_id: c.taskId, user_id: c.userId, user_name: c.userName, user_avatar: c.userAvatar || null, comment: c.comment, created_at: c.createdAt }),
+    fromRow: (r: any) => ({ id: r.id, taskId: r.task_id, userId: r.user_id, userName: r.user_name, userAvatar: r.user_avatar, comment: r.comment, createdAt: r.created_at })
+  },
+  notifications: {
+    toRow: (n: any) => ({ id: n.id, user_id: n.userId, message: n.message, type: n.type, read_status: n.readStatus, created_at: n.createdAt }),
+    fromRow: (r: any) => ({ id: r.id, userId: r.user_id, message: r.message, type: r.type, readStatus: r.read_status, createdAt: r.created_at })
+  },
+  activity_logs: {
+    toRow: (l: any) => ({ id: l.id, task_id: l.taskId, user_id: l.userId, user_name: l.userName, action: l.action, timestamp: l.timestamp }),
+    fromRow: (r: any) => ({ id: r.id, taskId: r.task_id, userId: r.user_id, userName: r.user_name, action: r.action, timestamp: r.timestamp })
+  },
+  goals: {
+    toRow: (g: any) => ({
+      id: g.id, title: g.title, description: g.description, assigned_to: g.assignedTo, accountable: g.accountable,
+      assigned_by: g.assignedBy, target_date: g.targetDate, progress: g.progress, status: g.status,
+      accountable_notes: g.accountableNotes || null, created_at: g.createdAt, updated_at: g.updatedAt
+    }),
+    fromRow: (r: any) => ({
+      id: r.id, title: r.title, description: r.description, assignedTo: r.assigned_to, accountable: r.accountable,
+      assignedBy: r.assigned_by, targetDate: r.target_date, progress: r.progress, status: r.status,
+      accountableNotes: r.accountable_notes, createdAt: r.created_at, updatedAt: r.updated_at
+    })
+  },
+  attendances: {
+    toRow: (a: any) => ({ id: a.id, user_id: a.userId, user_name: a.userName, date: a.date, type: a.type, status: a.status, clock_in_time: a.clockInTime, clock_out_time: a.clockOutTime || null }),
+    fromRow: (r: any) => ({ id: r.id, userId: r.user_id, userName: r.user_name, date: r.date, type: r.type, status: r.status, clockInTime: r.clock_in_time, clockOutTime: r.clock_out_time })
+  },
+  leave_requests: {
+    toRow: (lv: any) => ({ id: lv.id, user_id: lv.userId, user_name: lv.userName, start_date: lv.startDate, end_date: lv.endDate, reason: lv.reason, status: lv.status, created_at: lv.createdAt }),
+    fromRow: (r: any) => ({ id: r.id, userId: r.user_id, userName: r.user_name, startDate: r.start_date, endDate: r.end_date, reason: r.reason, status: r.status, createdAt: r.created_at })
+  }
+};
+
+// Sync one collection: delete rows no longer present locally, then upsert the current rows.
+async function syncTable(table: keyof typeof rowMappers, localRows: any[]) {
+  if (!supabaseAdmin) return;
+  const mapper = rowMappers[table];
+  const { data: existing, error: fetchError } = await supabaseAdmin.from(table).select("id");
+  if (fetchError) {
+    console.error(`Error reading "${table}" from Supabase before sync:`, fetchError.message);
+    return;
+  }
+  const localIds = new Set(localRows.map((r) => r.id));
+  const toDelete = (existing || []).map((r: any) => r.id).filter((id: string) => !localIds.has(id));
+  if (toDelete.length > 0) {
+    const { error: deleteError } = await supabaseAdmin.from(table).delete().in("id", toDelete);
+    if (deleteError) console.error(`Error deleting stale rows from "${table}":`, deleteError.message);
+  }
+  if (localRows.length > 0) {
+    const { error: upsertError } = await supabaseAdmin.from(table).upsert(localRows.map(mapper.toRow), { onConflict: "id" });
+    if (upsertError) console.error(`Error upserting rows into "${table}":`, upsertError.message);
+  }
+}
+
+// 1. Seed Supabase tables from local data.json if they are currently empty (tables/schema are pre-provisioned)
+async function initializeSupabaseDatabase() {
+  if (!supabaseAdmin) return;
+  try {
+    console.log("Verifying Supabase tables...");
+    const { count, error } = await supabaseAdmin.from("users").select("id", { count: "exact", head: true });
+    if (error) {
+      console.error("Error verifying Supabase tables:", error.message);
+      return;
+    }
+    if ((count || 0) > 0) {
+      console.log("Supabase tables already contain data; skipping seed.");
+      return;
+    }
+
+    console.log("Supabase tables are empty. Pre-populating Supabase with local data...");
+    let localData: AppData;
+    if (fs.existsSync(DATA_FILE)) {
+      localData = JSON.parse(fs.readFileSync(DATA_FILE, "utf-8"));
+    } else {
+      localData = initialData;
+    }
+
+    await syncTable("users", localData.users || []);
+    await syncTable("projects", localData.projects || []);
+    await syncTable("tasks", localData.tasks || []);
+    await syncTable("comments", localData.comments || []);
+    await syncTable("notifications", localData.notifications || []);
+    await syncTable("activity_logs", localData.activityLogs || []);
+    await syncTable("goals", localData.goals || []);
+    await syncTable("attendances", localData.attendances || []);
+    await syncTable("leave_requests", localData.leaveRequests || []);
+
+    const s = localData.settings || { reminderInDays: 3, enableEmailNotifications: true, enableUrgentAlerts: true, autoRiskAnalysis: true };
+    await supabaseAdmin.from("settings").upsert({
+      id: 1, reminder_in_days: s.reminderInDays, enable_email_notifications: s.enableEmailNotifications,
+      enable_urgent_alerts: s.enableUrgentAlerts, auto_risk_analysis: s.autoRiskAnalysis
+    }, { onConflict: "id" });
+
+    console.log("Supabase initial data pre-seeded successfully.");
+  } catch (err) {
+    console.error("Error verifying or seeding Supabase:", err);
+  }
+}

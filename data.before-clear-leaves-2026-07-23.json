@@ -1,0 +1,569 @@
+{
+  "users": [
+    {
+      "id": "usr-3",
+      "name": "Tushar",
+      "email": "tushar.handysolver@gmail.com",
+      "role": "Admin",
+      "department": "Associate Attorney",
+      "avatar": "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=150",
+      "createdAt": "2026-02-01T10:00:00+00:00"
+    },
+    {
+      "id": "d71b7ed9-aede-4c80-a57a-2c9221ca5018",
+      "name": "Tushar Bali",
+      "email": "tusharbali855@gmail.com",
+      "role": "Team Member",
+      "department": "General",
+      "avatar": "https://lh3.googleusercontent.com/a/ACg8ocJHuWhKusNeZjMsXd6ioRUovLBah7yHRBNhwJUE_XEII2yS1Nfm=s96-c",
+      "createdAt": "2026-07-22T04:12:29.783+00:00"
+    }
+  ],
+  "projects": [
+    {
+      "id": "prj-101",
+      "name": "test 2",
+      "description": "Trademark infringement suit against a competing apparel brand; drafting cease-and-desist responses, evidentiary exhibits, and licensing settlement terms.",
+      "createdAt": "2026-05-02T08:00:00+00:00",
+      "clientName": "Tushar Bali",
+      "matterCode": "MC-8208",
+      "practiceArea": "Litigation",
+      "status": "Active",
+      "budget": null,
+      "clientEmail": null,
+      "clientPhone": null
+    },
+    {
+      "id": "prj-102",
+      "name": "Matter #26-330: Meridian Bank Data Breach Litigation",
+      "description": "Multi-plaintiff data breach defense; coordinating discovery on incident response logs, drafting motions to consolidate, and negotiating regulator disclosures.",
+      "createdAt": "2026-05-18T09:00:00+00:00",
+      "clientName": null,
+      "matterCode": null,
+      "practiceArea": null,
+      "status": "Active",
+      "budget": null,
+      "clientEmail": null,
+      "clientPhone": null
+    },
+    {
+      "id": "prj-103",
+      "name": "Matter #26-455: Coastal Realty Zoning Appeal",
+      "description": "Municipal zoning board appeal for a mixed-use development permit; preparing site impact reports and administrative hearing briefs.",
+      "createdAt": "2026-06-02T10:00:00+00:00",
+      "clientName": null,
+      "matterCode": null,
+      "practiceArea": null,
+      "status": "Active",
+      "budget": null,
+      "clientEmail": null,
+      "clientPhone": null
+    },
+    {
+      "id": "prj-104",
+      "name": "Matter #26-560: Orion Logistics Labor Arbitration",
+      "description": "Wage-and-hour arbitration for a regional freight carrier; compiling payroll records, drafting arbitration statements, and scheduling witness prep.",
+      "createdAt": "2026-06-14T09:00:00+00:00",
+      "clientName": null,
+      "matterCode": null,
+      "practiceArea": null,
+      "status": "Active",
+      "budget": null,
+      "clientEmail": null,
+      "clientPhone": null
+    },
+    {
+      "id": "prj-105",
+      "name": "Matter #26-670: Zenith Pharma Product Liability Defense",
+      "description": "Product liability defense for a generic drug manufacturer; managing expert witness reports and coordinating multi-jurisdiction case strategy.",
+      "createdAt": "2026-06-20T14:00:00+00:00",
+      "clientName": null,
+      "matterCode": null,
+      "practiceArea": null,
+      "status": "Active",
+      "budget": null,
+      "clientEmail": null,
+      "clientPhone": null
+    },
+    {
+      "id": "prj-1784635563625",
+      "name": "test matter",
+      "description": "",
+      "createdAt": "2026-07-21T12:06:03.625+00:00",
+      "clientName": "Tushar Bali",
+      "matterCode": "MC-4474",
+      "practiceArea": "Litigation",
+      "status": "Active",
+      "budget": null,
+      "clientEmail": null,
+      "clientPhone": null
+    },
+    {
+      "id": "prj-1784636088471",
+      "name": "test matter fqejhrfkqehvf",
+      "description": "",
+      "createdAt": "2026-07-21T12:14:48.471+00:00",
+      "clientName": "Tushar Bali",
+      "matterCode": "MC-7277",
+      "practiceArea": "Litigation",
+      "status": "Active",
+      "budget": null,
+      "clientEmail": null,
+      "clientPhone": null
+    }
+  ],
+  "tasks": [
+    {
+      "id": "TSK-1006",
+      "title": "testing task",
+      "description": "DJ",
+      "priority": "Medium",
+      "status": "In Progress",
+      "stage": "In Progress",
+      "dueDate": "2026-07-23T18:00:00Z",
+      "createdAt": "2026-07-23T11:45:49.841Z",
+      "lastUpdatedDate": "2026-07-23T11:45:49.841Z",
+      "assignedBy": "usr-2",
+      "assignedTo": "usr-3",
+      "projectId": "prj-101",
+      "projectName": "test 2",
+      "tags": [],
+      "estimatedHours": 8,
+      "actualHours": 0,
+      "attachments": [],
+      "isBillable": true,
+      "hourlyRate": 250,
+      "clientApprovalStatus": "Not Required",
+      "matterCode": "",
+      "timerState": "running",
+      "lastStartedAt": "2026-07-23T11:45:52.728Z",
+      "startedAt": "2026-07-23T11:45:52.728Z"
+    }
+  ],
+  "comments": [],
+  "notifications": [
+    {
+      "id": "not-1784807152728-timer-play",
+      "userId": "usr-2",
+      "message": "⏱️ TIMER STARTED: Tushar started the timer on \"testing task\" (TSK-1006).",
+      "type": "info",
+      "readStatus": false,
+      "createdAt": "2026-07-23T11:45:52.728Z"
+    },
+    {
+      "id": "not-1784807149841",
+      "userId": "usr-3",
+      "message": "📋 NEW TASK ASSIGNED: \"testing task\" (TSK-1006) assigned to you. Due on 23/7/2026",
+      "type": "info",
+      "readStatus": false,
+      "createdAt": "2026-07-23T11:45:49.841Z"
+    },
+    {
+      "id": "not-1784804885133",
+      "userId": "usr-3",
+      "message": "📋 NEW TASK ASSIGNED: \"test task\" (TSK-1006) assigned to you. Due on 20/7/2026",
+      "type": "info",
+      "readStatus": false,
+      "createdAt": "2026-07-23T11:08:05.3+00:00"
+    },
+    {
+      "id": "not-1784789330144-clockout-usr-3",
+      "userId": "usr-3",
+      "message": "📢 ATTENDANCE: Tushar bali closed session (clocked out at 06:48 UTC).",
+      "type": "info",
+      "readStatus": false,
+      "createdAt": "2026-07-23T06:48:50.144+00:00"
+    },
+    {
+      "id": "not-1784789034798-clockin-usr-3",
+      "userId": "usr-3",
+      "message": "📢 ATTENDANCE: Tushar bali clocked in from WFH (06:43 UTC).",
+      "type": "info",
+      "readStatus": true,
+      "createdAt": "2026-07-23T06:43:54.798+00:00"
+    },
+    {
+      "id": "not-1784779094433",
+      "userId": "usr-3",
+      "message": "🔔 TASK UPDATED: \"Prepare Deposition Outline for Zenith Pharma Case Manager\" (TSK-2009). Change: Updated task details",
+      "type": "success",
+      "readStatus": true,
+      "createdAt": "2026-07-23T03:58:14.433+00:00"
+    },
+    {
+      "id": "not-1784700434378",
+      "userId": "usr-3",
+      "message": "🔔 TASK UPDATED: \"Compile Payroll Records for Wage Arbitration\" (TSK-2004). Change: Updated task details",
+      "type": "success",
+      "readStatus": true,
+      "createdAt": "2026-07-22T06:07:14.378+00:00"
+    },
+    {
+      "id": "not-1784698331547-clockout-usr-3",
+      "userId": "usr-3",
+      "message": "📢 ATTENDANCE: Tushar bali closed session (clocked out at 05:32 UTC).",
+      "type": "info",
+      "readStatus": true,
+      "createdAt": "2026-07-22T05:32:11.547+00:00"
+    },
+    {
+      "id": "not-1784698189355-clockin-usr-3",
+      "userId": "usr-3",
+      "message": "📢 ATTENDANCE: Tushar bali clocked in from WFH (05:29 UTC).",
+      "type": "info",
+      "readStatus": true,
+      "createdAt": "2026-07-22T05:29:49.355+00:00"
+    },
+    {
+      "id": "not-1784695574295-leave-decision",
+      "userId": "usr-3",
+      "message": "✈️ LEAVE DECISION: Your leave request from 2026-07-22 to 2026-07-22 has been APPROVED by Admin (Tushar bali).",
+      "type": "success",
+      "readStatus": true,
+      "createdAt": "2026-07-22T04:46:14.295+00:00"
+    },
+    {
+      "id": "not-1784695562250-leave-req-usr-3",
+      "userId": "usr-3",
+      "message": "✈️ LEAVE REQUEST: Tushar bali requested leave from 2026-07-22 to 2026-07-22. Reason: \"Not feeling well\"",
+      "type": "warning",
+      "readStatus": true,
+      "createdAt": "2026-07-22T04:46:02.25+00:00"
+    },
+    {
+      "id": "not-1784636036677-clockout-usr-3",
+      "userId": "usr-3",
+      "message": "📢 ATTENDANCE: Tushar Bali closed session (clocked out at 12:13 UTC).",
+      "type": "info",
+      "readStatus": true,
+      "createdAt": "2026-07-21T12:13:56.677+00:00"
+    },
+    {
+      "id": "not-1784636034014-clockin-usr-3",
+      "userId": "usr-3",
+      "message": "📢 ATTENDANCE: Tushar Bali clocked in from WFH (12:13 UTC).",
+      "type": "info",
+      "readStatus": true,
+      "createdAt": "2026-07-21T12:13:54.014+00:00"
+    },
+    {
+      "id": "not-1784635995215-clockout-usr-3",
+      "userId": "usr-3",
+      "message": "📢 ATTENDANCE: Tushar Bali closed session (clocked out at 12:13 UTC).",
+      "type": "info",
+      "readStatus": true,
+      "createdAt": "2026-07-21T12:13:15.215+00:00"
+    },
+    {
+      "id": "not-1784635992366-clockin-usr-3",
+      "userId": "usr-3",
+      "message": "📢 ATTENDANCE: Tushar Bali clocked in from WFH (12:13 UTC).",
+      "type": "info",
+      "readStatus": true,
+      "createdAt": "2026-07-21T12:13:12.366+00:00"
+    },
+    {
+      "id": "not-1784635984283-clockout-usr-3",
+      "userId": "usr-3",
+      "message": "📢 ATTENDANCE: Tushar Bali closed session (clocked out at 12:13 UTC).",
+      "type": "info",
+      "readStatus": true,
+      "createdAt": "2026-07-21T12:13:04.283+00:00"
+    },
+    {
+      "id": "not-1784635936145-clockin-usr-3",
+      "userId": "usr-3",
+      "message": "📢 ATTENDANCE: Tushar Bali clocked in from WFH (12:12 UTC).",
+      "type": "info",
+      "readStatus": true,
+      "createdAt": "2026-07-21T12:12:16.145+00:00"
+    },
+    {
+      "id": "not-1784635204743",
+      "userId": "usr-3",
+      "message": "💬 COMMENT ADDED: Tushar Bali commented on \"File Motion for Extension in Coastal Realty Appeal\": \"hi tushar\"",
+      "type": "info",
+      "readStatus": true,
+      "createdAt": "2026-07-21T12:00:04.743+00:00"
+    },
+    {
+      "id": "not-1784627066263",
+      "userId": "usr-3",
+      "message": "🔔 TASK UPDATED: \"Compile Payroll Records for Wage Arbitration\" (TSK-2004). Change: Updated task details",
+      "type": "info",
+      "readStatus": true,
+      "createdAt": "2026-07-21T09:44:26.263+00:00"
+    },
+    {
+      "id": "not-1784625788525",
+      "userId": "usr-3",
+      "message": "🔔 TASK UPDATED: \"File Motion for Extension in Coastal Realty Appeal\" (TSK-2010). Change: Updated task details",
+      "type": "info",
+      "readStatus": true,
+      "createdAt": "2026-07-21T09:23:08.525+00:00"
+    },
+    {
+      "id": "not-1784624962436",
+      "userId": "usr-3",
+      "message": "🔔 TASK UPDATED: \"File Motion for Extension in Coastal Realty Appeal\" (TSK-2010). Change: Updated Task status from \"Completed\" to \"In Progress\"",
+      "type": "info",
+      "readStatus": true,
+      "createdAt": "2026-07-21T09:09:22.436+00:00"
+    },
+    {
+      "id": "not-1784624280920-leave-decision",
+      "userId": "usr-3",
+      "message": "✈️ LEAVE DECISION: Your leave request from 2026-07-21 to 2026-07-21 has been APPROVED by Admin (Tushar bali).",
+      "type": "success",
+      "readStatus": true,
+      "createdAt": "2026-07-21T08:58:00.92+00:00"
+    },
+    {
+      "id": "not-1784624274355-leave-decision",
+      "userId": "usr-3",
+      "message": "✈️ LEAVE DECISION: Your leave request from 2026-07-21 to 2026-07-21 has been REJECTED by Admin (Tushar bali).",
+      "type": "error",
+      "readStatus": true,
+      "createdAt": "2026-07-21T08:57:54.355+00:00"
+    },
+    {
+      "id": "not-1784623654563",
+      "userId": "usr-3",
+      "message": "🔔 TASK UPDATED: \"Prepare Deposition Outline for Zenith Pharma Case Manager\" (TSK-2009). Change: Updated task details",
+      "type": "info",
+      "readStatus": true,
+      "createdAt": "2026-07-21T08:47:34.563+00:00"
+    },
+    {
+      "id": "not-1784623638984",
+      "userId": "usr-3",
+      "message": "🔔 TASK UPDATED: \"Prepare Deposition Outline for Zenith Pharma Case Manager\" (TSK-2009). Change: Updated task details",
+      "type": "info",
+      "readStatus": true,
+      "createdAt": "2026-07-21T08:47:18.984+00:00"
+    },
+    {
+      "id": "not-1784623618788",
+      "userId": "usr-3",
+      "message": "🔔 TASK UPDATED: \"Compile Payroll Records for Wage Arbitration\" (TSK-2004). Change: Updated task details",
+      "type": "info",
+      "readStatus": true,
+      "createdAt": "2026-07-21T08:46:58.788+00:00"
+    },
+    {
+      "id": "not-1784623159392",
+      "userId": "usr-3",
+      "message": "🔔 TASK UPDATED: \"File Motion for Extension in Coastal Realty Appeal\" (TSK-2010). Change: Updated task details",
+      "type": "success",
+      "readStatus": true,
+      "createdAt": "2026-07-21T08:39:19.392+00:00"
+    },
+    {
+      "id": "not-1784623137112",
+      "userId": "usr-3",
+      "message": "🔔 TASK UPDATED: \"Compile Payroll Records for Wage Arbitration\" (TSK-2004). Change: Updated task details",
+      "type": "info",
+      "readStatus": true,
+      "createdAt": "2026-07-21T08:38:57.112+00:00"
+    },
+    {
+      "id": "not-1784277067089",
+      "userId": "usr-3",
+      "message": "🔔 TASK UPDATED: \"Draft Trademark Settlement & Licensing Term Sheet\" (TSK-2001). Change: Updated task details",
+      "type": "success",
+      "readStatus": true,
+      "createdAt": "2026-07-17T08:31:07.089+00:00"
+    },
+    {
+      "id": "not-seed-1",
+      "userId": "usr-3",
+      "message": "🔔 TASK ASSIGNED: You were assigned \"Draft Trademark Settlement & Licensing Term Sheet\" (TSK-2001) by Arjun Mehta, Esq.",
+      "type": "info",
+      "readStatus": true,
+      "createdAt": "2026-07-10T09:05:00+00:00"
+    },
+    {
+      "id": "not-seed-2",
+      "userId": "usr-3",
+      "message": "📅 Reminder: Task \"Compile Payroll Records for Wage Arbitration\" (TSK-2004) is due in 4 days.",
+      "type": "warning",
+      "readStatus": true,
+      "createdAt": "2026-07-17T08:00:00+00:00"
+    },
+    {
+      "id": "not-seed-4",
+      "userId": "usr-3",
+      "message": "🔔 TASK ASSIGNED: You were assigned \"Prepare Deposition Outline for Zenith Pharma Case Manager\" (TSK-2009) by Arjun Mehta, Esq.",
+      "type": "info",
+      "readStatus": true,
+      "createdAt": "2026-07-13T09:05:00+00:00"
+    },
+    {
+      "id": "not-seed-5",
+      "userId": "usr-3",
+      "message": "🔔 TASK ASSIGNED: You were assigned \"File Motion for Extension in Coastal Realty Appeal\" (TSK-2010) by Arjun Mehta, Esq.",
+      "type": "info",
+      "readStatus": true,
+      "createdAt": "2026-07-15T09:05:00+00:00"
+    }
+  ],
+  "activityLogs": [
+    {
+      "id": "log-1784807152728-timer-play",
+      "taskId": "TSK-1006",
+      "userId": "usr-3",
+      "userName": "Tushar",
+      "action": "Started/Resumed work timer (Status: In Progress)",
+      "timestamp": "2026-07-23T11:45:52.728Z"
+    },
+    {
+      "id": "log-1784807149841",
+      "taskId": "TSK-1006",
+      "userId": "usr-2",
+      "userName": "Marcus Vance",
+      "action": "Created task TSK-1006 and assigned to Tushar",
+      "timestamp": "2026-07-23T11:45:49.841Z"
+    }
+  ],
+  "settings": {
+    "reminderInDays": 3,
+    "enableEmailNotifications": true,
+    "enableUrgentAlerts": true,
+    "autoRiskAnalysis": true
+  },
+  "goals": [],
+  "attendances": [
+    {
+      "id": "att-1784789034796",
+      "userId": "usr-3",
+      "userName": "Tushar bali",
+      "date": "2026-07-23",
+      "type": "WFH",
+      "status": "Closed",
+      "clockInTime": "2026-07-23T06:43:54.797+00:00",
+      "clockOutTime": "2026-07-23T06:48:50.144+00:00"
+    },
+    {
+      "id": "att-1784698189355",
+      "userId": "usr-3",
+      "userName": "Tushar bali",
+      "date": "2026-07-22",
+      "type": "WFH",
+      "status": "Closed",
+      "clockInTime": "2026-07-22T05:29:49.355+00:00",
+      "clockOutTime": "2026-07-22T05:32:11.547+00:00"
+    },
+    {
+      "id": "att-1784636034014",
+      "userId": "d71b7ed9-aede-4c80-a57a-2c9221ca5018",
+      "userName": "Tushar Bali",
+      "date": "2026-07-21",
+      "type": "WFH",
+      "status": "Closed",
+      "clockInTime": "2026-07-21T12:13:54.014+00:00",
+      "clockOutTime": "2026-07-21T12:13:56.677+00:00"
+    },
+    {
+      "id": "att-1784635992366",
+      "userId": "d71b7ed9-aede-4c80-a57a-2c9221ca5018",
+      "userName": "Tushar Bali",
+      "date": "2026-07-21",
+      "type": "WFH",
+      "status": "Closed",
+      "clockInTime": "2026-07-21T12:13:12.366+00:00",
+      "clockOutTime": "2026-07-21T12:13:15.215+00:00"
+    },
+    {
+      "id": "att-1784635936145",
+      "userId": "d71b7ed9-aede-4c80-a57a-2c9221ca5018",
+      "userName": "Tushar Bali",
+      "date": "2026-07-21",
+      "type": "WFH",
+      "status": "Closed",
+      "clockInTime": "2026-07-21T12:12:16.145+00:00",
+      "clockOutTime": "2026-07-21T12:13:04.283+00:00"
+    },
+    {
+      "id": "att-1784630519997",
+      "userId": "usr-3",
+      "userName": "Tushar bali",
+      "date": "2026-07-21",
+      "type": "WFH",
+      "status": "Open",
+      "clockInTime": "2026-07-21T10:41:59.997+00:00",
+      "clockOutTime": null
+    },
+    {
+      "id": "att-1784625609201",
+      "userId": "usr-3",
+      "userName": "Tushar bali",
+      "date": "2026-07-21",
+      "type": "WFO",
+      "status": "Closed",
+      "clockInTime": "2026-07-21T09:20:09.201+00:00",
+      "clockOutTime": "2026-07-21T09:20:11.299+00:00"
+    },
+    {
+      "id": "att-1784623114293",
+      "userId": "usr-3",
+      "userName": "Tushar bali",
+      "date": "2026-07-21",
+      "type": "WFO",
+      "status": "Closed",
+      "clockInTime": "2026-07-21T08:38:34.293+00:00",
+      "clockOutTime": "2026-07-21T08:43:29.239+00:00"
+    },
+    {
+      "id": "att-1784277777961",
+      "userId": "usr-3",
+      "userName": "Tushar bali",
+      "date": "2026-07-17",
+      "type": "WFO",
+      "status": "Closed",
+      "clockInTime": "2026-07-17T08:42:57.961+00:00",
+      "clockOutTime": "2026-07-21T08:38:28.473+00:00"
+    },
+    {
+      "id": "att-seed-1",
+      "userId": "usr-3",
+      "userName": "Tushar bali",
+      "date": "2026-07-17",
+      "type": "WFO",
+      "status": "Closed",
+      "clockInTime": "2026-07-17T04:00:00+00:00",
+      "clockOutTime": "2026-07-17T08:30:33.404+00:00"
+    }
+  ],
+  "leaveRequests": [
+    {
+      "id": "lv-1784695562249",
+      "userId": "usr-3",
+      "userName": "Tushar bali",
+      "startDate": "2026-07-22",
+      "endDate": "2026-07-22",
+      "reason": "Not feeling well",
+      "status": "Approved",
+      "createdAt": "2026-07-22T04:46:02.249+00:00"
+    },
+    {
+      "id": "lv-1784624221957",
+      "userId": "usr-3",
+      "userName": "Tushar bali",
+      "startDate": "2026-07-21",
+      "endDate": "2026-07-21",
+      "reason": "Not feeling well - testing note",
+      "status": "Approved",
+      "createdAt": "2026-07-21T08:57:01.957+00:00"
+    },
+    {
+      "id": "lv-1784623459008",
+      "userId": "usr-3",
+      "userName": "Tushar bali",
+      "startDate": "2026-07-21",
+      "endDate": "2026-07-21",
+      "reason": "Not feeling well",
+      "status": "Rejected",
+      "createdAt": "2026-07-21T08:44:19.008+00:00"
+    }
+  ]
+}

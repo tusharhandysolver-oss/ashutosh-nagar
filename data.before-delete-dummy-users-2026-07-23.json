@@ -1,0 +1,2002 @@
+{
+  "users": [
+    {
+      "id": "usr-3",
+      "name": "Tushar bali",
+      "email": "tushar.handysolver@gmail.com",
+      "role": "Admin",
+      "department": "Associate Attorney",
+      "avatar": "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=150",
+      "createdAt": "2026-02-01T10:00:00Z",
+      "phone": ""
+    },
+    {
+      "id": "usr-101",
+      "name": "Priya Desai, Esq.",
+      "email": "priya.desai@company.com",
+      "role": "Admin",
+      "department": "Senior Litigation Partner",
+      "avatar": "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150",
+      "createdAt": "2026-01-08T08:00:00Z"
+    },
+    {
+      "id": "usr-102",
+      "name": "Arjun Mehta, Esq.",
+      "email": "arjun.mehta@company.com",
+      "role": "Manager",
+      "department": "Managing Partner",
+      "avatar": "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=150",
+      "createdAt": "2026-01-10T09:30:00Z"
+    },
+    {
+      "id": "usr-103",
+      "name": "Ritika Sharma",
+      "email": "ritika.sharma@company.com",
+      "role": "Team Member",
+      "department": "Senior Litigation Paralegal",
+      "avatar": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150",
+      "createdAt": "2026-01-14T11:00:00Z"
+    },
+    {
+      "id": "usr-104",
+      "name": "Karan Malhotra",
+      "email": "karan.malhotra@company.com",
+      "role": "Team Member",
+      "department": "Legal Assistant",
+      "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150",
+      "createdAt": "2026-01-18T14:15:00Z"
+    },
+    {
+      "id": "d71b7ed9-aede-4c80-a57a-2c9221ca5018",
+      "name": "Tushar Bali",
+      "email": "tusharbali855@gmail.com",
+      "role": "Team Member",
+      "department": "General",
+      "avatar": "https://lh3.googleusercontent.com/a/ACg8ocJHuWhKusNeZjMsXd6ioRUovLBah7yHRBNhwJUE_XEII2yS1Nfm=s96-c",
+      "createdAt": "2026-07-22T04:12:29.783Z"
+    }
+  ],
+  "projects": [
+    {
+      "id": "prj-101",
+      "name": "test 2",
+      "description": "Trademark infringement suit against a competing apparel brand; drafting cease-and-desist responses, evidentiary exhibits, and licensing settlement terms.",
+      "createdAt": "2026-05-02T08:00:00Z",
+      "clientName": "Tushar Bali",
+      "matterCode": "MC-8208",
+      "practiceArea": "Litigation",
+      "status": "Active",
+      "budget": 0
+    },
+    {
+      "id": "prj-102",
+      "name": "Matter #26-330: Meridian Bank Data Breach Litigation",
+      "description": "Multi-plaintiff data breach defense; coordinating discovery on incident response logs, drafting motions to consolidate, and negotiating regulator disclosures.",
+      "createdAt": "2026-05-18T09:00:00Z"
+    },
+    {
+      "id": "prj-103",
+      "name": "Matter #26-455: Coastal Realty Zoning Appeal",
+      "description": "Municipal zoning board appeal for a mixed-use development permit; preparing site impact reports and administrative hearing briefs.",
+      "createdAt": "2026-06-02T10:00:00Z"
+    },
+    {
+      "id": "prj-104",
+      "name": "Matter #26-560: Orion Logistics Labor Arbitration",
+      "description": "Wage-and-hour arbitration for a regional freight carrier; compiling payroll records, drafting arbitration statements, and scheduling witness prep.",
+      "createdAt": "2026-06-14T09:00:00Z"
+    },
+    {
+      "id": "prj-105",
+      "name": "Matter #26-670: Zenith Pharma Product Liability Defense",
+      "description": "Product liability defense for a generic drug manufacturer; managing expert witness reports and coordinating multi-jurisdiction case strategy.",
+      "createdAt": "2026-06-20T14:00:00Z"
+    },
+    {
+      "id": "prj-1784635563625",
+      "name": "test matter",
+      "description": "",
+      "clientName": "Tushar Bali",
+      "matterCode": "MC-4474",
+      "practiceArea": "Litigation",
+      "status": "Active",
+      "budget": 0,
+      "createdAt": "2026-07-21T12:06:03.625Z"
+    },
+    {
+      "id": "prj-1784636088471",
+      "name": "test matter fqejhrfkqehvf",
+      "description": "",
+      "clientName": "Tushar Bali",
+      "matterCode": "MC-7277",
+      "practiceArea": "Litigation",
+      "status": "Active",
+      "budget": 0,
+      "createdAt": "2026-07-21T12:14:48.471Z"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "TSK-2001",
+      "title": "Draft Trademark Settlement & Licensing Term Sheet",
+      "description": "Prepare mutual settlement terms and forward licensing arrangement to resolve the Horizon Textiles mark dispute ahead of the scheduled hearing.",
+      "priority": "High",
+      "status": "Completed",
+      "stage": "Completed",
+      "dueDate": "2026-07-25T18:00:00Z",
+      "createdAt": "2026-07-10T09:00:00Z",
+      "lastUpdatedDate": "2026-07-17T08:31:07.089Z",
+      "assignedBy": "usr-102",
+      "assignedTo": "usr-3",
+      "projectId": "prj-101",
+      "projectName": "test 2",
+      "tags": [
+        "Trademark",
+        "Settlement",
+        "Licensing"
+      ],
+      "estimatedHours": 14,
+      "actualHours": 0,
+      "attachments": [
+        "settlement_draft_v1.docx"
+      ],
+      "isBillable": true,
+      "hourlyRate": 320,
+      "clientApprovalStatus": "Pending Review",
+      "matterCode": "MAT-26-210",
+      "startedAt": "2026-07-12T10:00:00Z",
+      "timerState": "idle",
+      "lastStartedAt": null,
+      "totalActiveMs": 2833,
+      "completedAt": "2026-07-17T08:31:07.046Z",
+      "actualHoursElapsed": 0,
+      "actualDaysElapsed": 0,
+      "editorId": "usr-3",
+      "editorName": "Tushar bali"
+    },
+    {
+      "id": "TSK-2002",
+      "title": "Coordinate Data Breach Discovery Production",
+      "description": "Compile and index incident-response logs and customer notification records for the consolidated data breach discovery request.",
+      "priority": "Critical",
+      "status": "In Progress",
+      "stage": "In Progress",
+      "dueDate": "2026-07-24T17:00:00Z",
+      "createdAt": "2026-07-08T09:30:00Z",
+      "lastUpdatedDate": "2026-07-13T15:00:00Z",
+      "assignedBy": "usr-101",
+      "assignedTo": "usr-103",
+      "projectId": "prj-102",
+      "projectName": "Matter #26-330: Meridian Bank Data Breach Litigation",
+      "tags": [
+        "Discovery",
+        "Data-Breach",
+        "Consolidation"
+      ],
+      "estimatedHours": 20,
+      "actualHours": 9,
+      "attachments": [
+        "incident_log_index.xlsx"
+      ],
+      "isBillable": true,
+      "hourlyRate": 300,
+      "clientApprovalStatus": "Not Required",
+      "matterCode": "MAT-26-330",
+      "startedAt": "2026-07-09T09:00:00Z"
+    },
+    {
+      "id": "TSK-2003",
+      "title": "Prepare Zoning Board Hearing Brief",
+      "description": "Draft administrative hearing brief and site impact summary for the mixed-use development permit appeal.",
+      "priority": "Medium",
+      "status": "Not Started",
+      "stage": "Case Intake",
+      "dueDate": "2026-07-30T17:00:00Z",
+      "createdAt": "2026-07-11T10:00:00Z",
+      "lastUpdatedDate": "2026-07-11T10:00:00Z",
+      "assignedBy": "usr-102",
+      "assignedTo": "usr-104",
+      "projectId": "prj-103",
+      "projectName": "Matter #26-455: Coastal Realty Zoning Appeal",
+      "tags": [
+        "Zoning",
+        "Hearing-Brief",
+        "Permits"
+      ],
+      "estimatedHours": 10,
+      "actualHours": 0,
+      "attachments": [],
+      "isBillable": true,
+      "hourlyRate": 220,
+      "clientApprovalStatus": "Not Required",
+      "matterCode": "MAT-26-455"
+    },
+    {
+      "id": "TSK-2004",
+      "title": "Compile Payroll Records for Wage Arbitration",
+      "description": "Gather and reconcile driver payroll and overtime records for the Orion Logistics wage-and-hour arbitration statement.",
+      "priority": "High",
+      "status": "Completed",
+      "stage": "Completed",
+      "dueDate": "2026-07-21T12:00:00Z",
+      "createdAt": "2026-07-05T11:00:00Z",
+      "lastUpdatedDate": "2026-07-22T06:07:14.378Z",
+      "assignedBy": "usr-101",
+      "assignedTo": "usr-3",
+      "projectId": "prj-104",
+      "projectName": "Matter #26-560: Orion Logistics Labor Arbitration",
+      "tags": [
+        "Arbitration",
+        "Payroll",
+        "Wage-Hour"
+      ],
+      "estimatedHours": 16,
+      "actualHours": 0.09,
+      "attachments": [
+        "payroll_reconciliation.xlsx"
+      ],
+      "isBillable": true,
+      "hourlyRate": 280,
+      "clientApprovalStatus": "Pending Review",
+      "matterCode": "MAT-26-560",
+      "timerState": "idle",
+      "lastStartedAt": null,
+      "totalActiveMs": 331459,
+      "editorId": "usr-3",
+      "editorName": "Tushar bali",
+      "completedAt": "2026-07-22T06:07:14.312Z",
+      "actualHoursElapsed": 0.09,
+      "actualDaysElapsed": 0
+    },
+    {
+      "id": "TSK-2005",
+      "title": "Review Expert Witness Report on Drug Formulation",
+      "description": "Review the toxicology expert's report on the generic formulation and flag inconsistencies for cross-examination prep.",
+      "priority": "Critical",
+      "status": "Completed",
+      "stage": "Completed",
+      "dueDate": "2026-07-14T18:00:00Z",
+      "createdAt": "2026-06-28T09:00:00Z",
+      "lastUpdatedDate": "2026-07-14T16:30:00Z",
+      "assignedBy": "usr-102",
+      "assignedTo": "usr-103",
+      "projectId": "prj-105",
+      "projectName": "Matter #26-670: Zenith Pharma Product Liability Defense",
+      "tags": [
+        "Expert-Witness",
+        "Product-Liability",
+        "Review"
+      ],
+      "estimatedHours": 12,
+      "actualHours": 11,
+      "attachments": [
+        "expert_report_annotated.pdf"
+      ],
+      "isBillable": true,
+      "hourlyRate": 350,
+      "clientApprovalStatus": "Approved",
+      "matterCode": "MAT-26-670",
+      "startedAt": "2026-07-13T09:00:00Z",
+      "completedAt": "2026-07-14T16:30:00Z",
+      "actualDaysElapsed": 1.32,
+      "actualHoursElapsed": 11
+    },
+    {
+      "id": "TSK-2006",
+      "title": "Draft Cease-and-Desist Response Letter",
+      "description": "Respond to the opposing brand's cease-and-desist letter, asserting prior use and requesting a licensing dialogue.",
+      "priority": "Medium",
+      "status": "Completed",
+      "stage": "Completed",
+      "dueDate": "2026-07-11T18:00:00Z",
+      "createdAt": "2026-07-01T09:00:00Z",
+      "lastUpdatedDate": "2026-07-10T15:00:00Z",
+      "assignedBy": "usr-102",
+      "assignedTo": "usr-3",
+      "projectId": "prj-101",
+      "projectName": "test 2",
+      "tags": [
+        "Trademark",
+        "Correspondence"
+      ],
+      "estimatedHours": 6,
+      "actualHours": 5,
+      "attachments": [],
+      "isBillable": true,
+      "hourlyRate": 320,
+      "clientApprovalStatus": "Approved",
+      "matterCode": "MAT-26-210",
+      "startedAt": "2026-07-09T09:00:00Z",
+      "completedAt": "2026-07-10T15:00:00Z",
+      "actualDaysElapsed": 1.25,
+      "actualHoursElapsed": 5
+    },
+    {
+      "id": "TSK-2007",
+      "title": "Draft Regulator Disclosure Notice",
+      "description": "Prepare the data breach regulator disclosure notice per state notification timelines, coordinating with the compliance team.",
+      "priority": "High",
+      "status": "Under Review",
+      "stage": "In Progress",
+      "dueDate": "2026-07-19T14:00:00Z",
+      "createdAt": "2026-07-06T10:00:00Z",
+      "lastUpdatedDate": "2026-07-13T16:00:00Z",
+      "assignedBy": "usr-101",
+      "assignedTo": "usr-101",
+      "projectId": "prj-102",
+      "projectName": "Matter #26-330: Meridian Bank Data Breach Litigation",
+      "tags": [
+        "Regulatory",
+        "Disclosure",
+        "Compliance"
+      ],
+      "estimatedHours": 8,
+      "actualHours": 7,
+      "attachments": [
+        "regulator_notice_draft.pdf"
+      ],
+      "isBillable": true,
+      "hourlyRate": 400,
+      "clientApprovalStatus": "Pending Review",
+      "matterCode": "MAT-26-330"
+    },
+    {
+      "id": "TSK-2008",
+      "title": "Schedule Arbitration Witness Prep Sessions",
+      "description": "Coordinate calendars and prep materials for driver witness interviews ahead of the arbitration hearing date.",
+      "priority": "Low",
+      "status": "Completed",
+      "stage": "Completed",
+      "dueDate": "2026-07-08T17:00:00Z",
+      "createdAt": "2026-06-30T09:00:00Z",
+      "lastUpdatedDate": "2026-07-08T15:00:00Z",
+      "assignedBy": "usr-101",
+      "assignedTo": "usr-104",
+      "projectId": "prj-104",
+      "projectName": "Matter #26-560: Orion Logistics Labor Arbitration",
+      "tags": [
+        "Scheduling",
+        "Witness-Prep"
+      ],
+      "estimatedHours": 4,
+      "actualHours": 4,
+      "attachments": [],
+      "isBillable": false,
+      "hourlyRate": 150,
+      "clientApprovalStatus": "Not Required",
+      "matterCode": "MAT-26-560",
+      "startedAt": "2026-07-07T09:00:00Z",
+      "completedAt": "2026-07-08T15:00:00Z",
+      "actualDaysElapsed": 1.25,
+      "actualHoursElapsed": 4
+    },
+    {
+      "id": "TSK-2009",
+      "title": "Prepare Deposition Outline for Zenith Pharma Case Manager",
+      "description": "Draft the deposition question outline and exhibit list for the Zenith Pharma product liability case manager interview.",
+      "priority": "High",
+      "status": "Completed",
+      "stage": "Completed",
+      "dueDate": "2026-07-23T17:00:00Z",
+      "createdAt": "2026-07-13T09:00:00Z",
+      "lastUpdatedDate": "2026-07-23T03:58:14.432Z",
+      "assignedBy": "usr-102",
+      "assignedTo": "usr-3",
+      "projectId": "prj-105",
+      "projectName": "Matter #26-670: Zenith Pharma Product Liability Defense",
+      "tags": [
+        "Deposition",
+        "Product-Liability",
+        "Outline"
+      ],
+      "estimatedHours": 9,
+      "actualHours": 0.86,
+      "attachments": [],
+      "isBillable": true,
+      "hourlyRate": 320,
+      "clientApprovalStatus": "Pending Review",
+      "matterCode": "MAT-26-670",
+      "startedAt": "2026-07-14T09:00:00Z",
+      "timerState": "idle",
+      "lastStartedAt": null,
+      "editorId": "usr-3",
+      "editorName": "Tushar bali",
+      "totalActiveMs": 3082562,
+      "completedAt": "2026-07-23T03:58:14.286Z",
+      "actualHoursElapsed": 0.86,
+      "actualDaysElapsed": 0.04
+    },
+    {
+      "id": "TSK-2010",
+      "title": "File Motion for Extension in Coastal Realty Appeal",
+      "description": "Prepare and file a motion requesting a 14-day extension on the zoning board hearing brief deadline.",
+      "priority": "Medium",
+      "status": "In Progress",
+      "stage": "In Progress",
+      "dueDate": "2026-07-27T18:00:00Z",
+      "createdAt": "2026-07-15T09:00:00Z",
+      "lastUpdatedDate": "2026-07-21T09:23:08.524Z",
+      "assignedBy": "usr-102",
+      "assignedTo": "usr-3",
+      "projectId": "prj-103",
+      "projectName": "Matter #26-455: Coastal Realty Zoning Appeal",
+      "tags": [
+        "Motion",
+        "Zoning",
+        "Filing"
+      ],
+      "estimatedHours": 3,
+      "actualHours": 0.01,
+      "attachments": [],
+      "isBillable": true,
+      "hourlyRate": 280,
+      "clientApprovalStatus": "Not Required",
+      "matterCode": "MAT-26-455",
+      "timerState": "paused",
+      "lastStartedAt": null,
+      "startedAt": "2026-07-21T09:09:22.436Z",
+      "totalActiveMs": 4007878,
+      "completedAt": "2026-07-21T08:39:19.359Z",
+      "actualHoursElapsed": 0.01,
+      "actualDaysElapsed": 0,
+      "editorId": "usr-3",
+      "editorName": "Tushar bali"
+    }
+  ],
+  "comments": [
+    {
+      "id": "com-101",
+      "taskId": "TSK-2001",
+      "userId": "usr-102",
+      "userName": "Arjun Mehta, Esq.",
+      "userAvatar": "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=150",
+      "comment": "Make sure the licensing terms cap royalty rates in line with the client's ceiling from last week's call.",
+      "createdAt": "2026-07-12T10:15:00Z"
+    },
+    {
+      "id": "com-102",
+      "taskId": "TSK-2001",
+      "userId": "usr-3",
+      "userName": "Tushar bali",
+      "comment": "Understood — draft now reflects the 4% cap and a 3-year renewal window.",
+      "createdAt": "2026-07-13T14:20:00Z"
+    },
+    {
+      "id": "com-103",
+      "taskId": "TSK-2004",
+      "userId": "usr-3",
+      "userName": "Tushar bali",
+      "comment": "Blocked on this — waiting for the client's HR system export before I can reconcile the overtime figures.",
+      "createdAt": "2026-07-12T15:28:00Z"
+    },
+    {
+      "id": "com-104",
+      "taskId": "TSK-2009",
+      "userId": "usr-3",
+      "userName": "Tushar bali",
+      "comment": "First pass at the deposition outline is done — sharing with Arjun for review before finalizing exhibit numbering.",
+      "createdAt": "2026-07-15T10:00:00Z"
+    },
+    {
+      "id": "com-1784635204732",
+      "taskId": "TSK-2010",
+      "userId": "d71b7ed9-aede-4c80-a57a-2c9221ca5018",
+      "userName": "Tushar Bali",
+      "comment": "hi tushar",
+      "createdAt": "2026-07-21T12:00:04.732Z"
+    },
+    {
+      "id": "com-1784705364569",
+      "taskId": "TSK-2009",
+      "userId": "usr-3",
+      "userName": "Tushar bali",
+      "comment": "hi tushar work on this on high priority",
+      "createdAt": "2026-07-22T07:29:24.569Z"
+    }
+  ],
+  "notifications": [
+    {
+      "id": "not-1784789330144-clockout-usr-102",
+      "userId": "usr-102",
+      "message": "📢 ATTENDANCE: Tushar bali closed session (clocked out at 06:48 UTC).",
+      "type": "info",
+      "readStatus": false,
+      "createdAt": "2026-07-23T06:48:50.144Z"
+    },
+    {
+      "id": "not-1784789330144-clockout-usr-101",
+      "userId": "usr-101",
+      "message": "📢 ATTENDANCE: Tushar bali closed session (clocked out at 06:48 UTC).",
+      "type": "info",
+      "readStatus": false,
+      "createdAt": "2026-07-23T06:48:50.144Z"
+    },
+    {
+      "id": "not-1784789330144-clockout-usr-3",
+      "userId": "usr-3",
+      "message": "📢 ATTENDANCE: Tushar bali closed session (clocked out at 06:48 UTC).",
+      "type": "info",
+      "readStatus": false,
+      "createdAt": "2026-07-23T06:48:50.144Z"
+    },
+    {
+      "id": "not-1784789034798-clockin-usr-102",
+      "userId": "usr-102",
+      "message": "📢 ATTENDANCE: Tushar bali clocked in from WFH (06:43 UTC).",
+      "type": "info",
+      "readStatus": false,
+      "createdAt": "2026-07-23T06:43:54.798Z"
+    },
+    {
+      "id": "not-1784789034798-clockin-usr-101",
+      "userId": "usr-101",
+      "message": "📢 ATTENDANCE: Tushar bali clocked in from WFH (06:43 UTC).",
+      "type": "info",
+      "readStatus": false,
+      "createdAt": "2026-07-23T06:43:54.798Z"
+    },
+    {
+      "id": "not-1784789034798-clockin-usr-3",
+      "userId": "usr-3",
+      "message": "📢 ATTENDANCE: Tushar bali clocked in from WFH (06:43 UTC).",
+      "type": "info",
+      "readStatus": true,
+      "createdAt": "2026-07-23T06:43:54.798Z"
+    },
+    {
+      "id": "not-1784779094433",
+      "userId": "usr-3",
+      "message": "🔔 TASK UPDATED: \"Prepare Deposition Outline for Zenith Pharma Case Manager\" (TSK-2009). Change: Updated task details",
+      "type": "success",
+      "readStatus": true,
+      "createdAt": "2026-07-23T03:58:14.433Z"
+    },
+    {
+      "id": "not-1784779094298-timer-comp",
+      "userId": "usr-102",
+      "message": "✅ TASK COMPLETED: Tushar bali completed \"Prepare Deposition Outline for Zenith Pharma Case Manager\" (TSK-2009). Tracked time: 0.86 hrs (0.04 days).",
+      "type": "success",
+      "readStatus": false,
+      "createdAt": "2026-07-23T03:58:14.298Z"
+    },
+    {
+      "id": "not-1784705364569",
+      "userId": "usr-102",
+      "message": "💬 COMMENT ADDED: Tushar bali commented on \"Prepare Deposition Outline for Zenith Pharma Case Manager\": \"hi tushar work on this on high priority\"",
+      "type": "info",
+      "readStatus": false,
+      "createdAt": "2026-07-22T07:29:24.569Z"
+    },
+    {
+      "id": "not-1784704640009-timer-pause",
+      "userId": "usr-102",
+      "message": "⏱️ TIMER PAUSED: Tushar bali paused the work timer on \"File Motion for Extension in Coastal Realty Appeal\" (TSK-2010). Total tracked: 1.11 hrs.",
+      "type": "info",
+      "readStatus": false,
+      "createdAt": "2026-07-22T07:17:20.009Z"
+    },
+    {
+      "id": "not-1784704638491-timer-play",
+      "userId": "usr-102",
+      "message": "⏱️ TIMER STARTED: Tushar bali started the timer on \"File Motion for Extension in Coastal Realty Appeal\" (TSK-2010).",
+      "type": "info",
+      "readStatus": false,
+      "createdAt": "2026-07-22T07:17:18.492Z"
+    },
+    {
+      "id": "not-1784701450525-timer-pause",
+      "userId": "usr-102",
+      "message": "⏱️ TIMER PAUSED: Tushar bali paused the work timer on \"File Motion for Extension in Coastal Realty Appeal\" (TSK-2010). Total tracked: 1.11 hrs.",
+      "type": "info",
+      "readStatus": false,
+      "createdAt": "2026-07-22T06:24:10.525Z"
+    },
+    {
+      "id": "not-1784700510225-timer-play",
+      "userId": "usr-102",
+      "message": "⏱️ TIMER STARTED: Tushar bali started the timer on \"File Motion for Extension in Coastal Realty Appeal\" (TSK-2010).",
+      "type": "info",
+      "readStatus": false,
+      "createdAt": "2026-07-22T06:08:30.225Z"
+    },
+    {
+      "id": "not-1784700434378",
+      "userId": "usr-3",
+      "message": "🔔 TASK UPDATED: \"Compile Payroll Records for Wage Arbitration\" (TSK-2004). Change: Updated task details",
+      "type": "success",
+      "readStatus": true,
+      "createdAt": "2026-07-22T06:07:14.378Z"
+    },
+    {
+      "id": "not-1784700434315-timer-comp",
+      "userId": "usr-101",
+      "message": "✅ TASK COMPLETED: Tushar bali completed \"Compile Payroll Records for Wage Arbitration\" (TSK-2004). Tracked time: 0.09 hrs (0 days).",
+      "type": "success",
+      "readStatus": false,
+      "createdAt": "2026-07-22T06:07:14.315Z"
+    },
+    {
+      "id": "not-1784698331547-clockout-usr-102",
+      "userId": "usr-102",
+      "message": "📢 ATTENDANCE: Tushar bali closed session (clocked out at 05:32 UTC).",
+      "type": "info",
+      "readStatus": false,
+      "createdAt": "2026-07-22T05:32:11.547Z"
+    },
+    {
+      "id": "not-1784698331547-clockout-usr-101",
+      "userId": "usr-101",
+      "message": "📢 ATTENDANCE: Tushar bali closed session (clocked out at 05:32 UTC).",
+      "type": "info",
+      "readStatus": false,
+      "createdAt": "2026-07-22T05:32:11.547Z"
+    },
+    {
+      "id": "not-1784698331547-clockout-usr-3",
+      "userId": "usr-3",
+      "message": "📢 ATTENDANCE: Tushar bali closed session (clocked out at 05:32 UTC).",
+      "type": "info",
+      "readStatus": true,
+      "createdAt": "2026-07-22T05:32:11.547Z"
+    },
+    {
+      "id": "not-1784698189355-clockin-usr-102",
+      "userId": "usr-102",
+      "message": "📢 ATTENDANCE: Tushar bali clocked in from WFH (05:29 UTC).",
+      "type": "info",
+      "readStatus": false,
+      "createdAt": "2026-07-22T05:29:49.355Z"
+    },
+    {
+      "id": "not-1784698189355-clockin-usr-101",
+      "userId": "usr-101",
+      "message": "📢 ATTENDANCE: Tushar bali clocked in from WFH (05:29 UTC).",
+      "type": "info",
+      "readStatus": false,
+      "createdAt": "2026-07-22T05:29:49.355Z"
+    },
+    {
+      "id": "not-1784698189355-clockin-usr-3",
+      "userId": "usr-3",
+      "message": "📢 ATTENDANCE: Tushar bali clocked in from WFH (05:29 UTC).",
+      "type": "info",
+      "readStatus": true,
+      "createdAt": "2026-07-22T05:29:49.355Z"
+    },
+    {
+      "id": "not-1784695986187-timer-pause",
+      "userId": "usr-101",
+      "message": "⏱️ TIMER PAUSED: Tushar bali paused the work timer on \"Compile Payroll Records for Wage Arbitration\" (TSK-2004). Total tracked: 0.09 hrs.",
+      "type": "info",
+      "readStatus": false,
+      "createdAt": "2026-07-22T04:53:06.187Z"
+    },
+    {
+      "id": "not-1784695732586-timer-play",
+      "userId": "usr-101",
+      "message": "⏱️ TIMER STARTED: Tushar bali started the timer on \"Compile Payroll Records for Wage Arbitration\" (TSK-2004).",
+      "type": "info",
+      "readStatus": false,
+      "createdAt": "2026-07-22T04:48:52.586Z"
+    },
+    {
+      "id": "not-1784695574295-leave-decision",
+      "userId": "usr-3",
+      "message": "✈️ LEAVE DECISION: Your leave request from 2026-07-22 to 2026-07-22 has been APPROVED by Admin (Tushar bali).",
+      "type": "success",
+      "readStatus": true,
+      "createdAt": "2026-07-22T04:46:14.295Z"
+    },
+    {
+      "id": "not-1784695562250-leave-req-usr-102",
+      "userId": "usr-102",
+      "message": "✈️ LEAVE REQUEST: Tushar bali requested leave from 2026-07-22 to 2026-07-22. Reason: \"Not feeling well\"",
+      "type": "warning",
+      "readStatus": false,
+      "createdAt": "2026-07-22T04:46:02.250Z"
+    },
+    {
+      "id": "not-1784695562250-leave-req-usr-101",
+      "userId": "usr-101",
+      "message": "✈️ LEAVE REQUEST: Tushar bali requested leave from 2026-07-22 to 2026-07-22. Reason: \"Not feeling well\"",
+      "type": "warning",
+      "readStatus": false,
+      "createdAt": "2026-07-22T04:46:02.250Z"
+    },
+    {
+      "id": "not-1784695562250-leave-req-usr-3",
+      "userId": "usr-3",
+      "message": "✈️ LEAVE REQUEST: Tushar bali requested leave from 2026-07-22 to 2026-07-22. Reason: \"Not feeling well\"",
+      "type": "warning",
+      "readStatus": true,
+      "createdAt": "2026-07-22T04:46:02.250Z"
+    },
+    {
+      "id": "not-1784636183378-timer-pause",
+      "userId": "usr-102",
+      "message": "⏱️ TIMER PAUSED: Tushar Bali paused the work timer on \"File Motion for Extension in Coastal Realty Appeal\" (TSK-2010). Total tracked: 0.85 hrs.",
+      "type": "info",
+      "readStatus": false,
+      "createdAt": "2026-07-21T12:16:23.378Z"
+    },
+    {
+      "id": "not-1784636181211-timer-play",
+      "userId": "usr-102",
+      "message": "⏱️ TIMER STARTED: Tushar Bali started the timer on \"File Motion for Extension in Coastal Realty Appeal\" (TSK-2010).",
+      "type": "info",
+      "readStatus": false,
+      "createdAt": "2026-07-21T12:16:21.211Z"
+    },
+    {
+      "id": "not-1784636036677-clockout-usr-102",
+      "userId": "usr-102",
+      "message": "📢 ATTENDANCE: Tushar Bali closed session (clocked out at 12:13 UTC).",
+      "type": "info",
+      "readStatus": false,
+      "createdAt": "2026-07-21T12:13:56.677Z"
+    },
+    {
+      "id": "not-1784636036677-clockout-usr-101",
+      "userId": "usr-101",
+      "message": "📢 ATTENDANCE: Tushar Bali closed session (clocked out at 12:13 UTC).",
+      "type": "info",
+      "readStatus": false,
+      "createdAt": "2026-07-21T12:13:56.677Z"
+    },
+    {
+      "id": "not-1784636036677-clockout-usr-3",
+      "userId": "usr-3",
+      "message": "📢 ATTENDANCE: Tushar Bali closed session (clocked out at 12:13 UTC).",
+      "type": "info",
+      "readStatus": true,
+      "createdAt": "2026-07-21T12:13:56.677Z"
+    },
+    {
+      "id": "not-1784636034014-clockin-usr-102",
+      "userId": "usr-102",
+      "message": "📢 ATTENDANCE: Tushar Bali clocked in from WFH (12:13 UTC).",
+      "type": "info",
+      "readStatus": false,
+      "createdAt": "2026-07-21T12:13:54.014Z"
+    },
+    {
+      "id": "not-1784636034014-clockin-usr-101",
+      "userId": "usr-101",
+      "message": "📢 ATTENDANCE: Tushar Bali clocked in from WFH (12:13 UTC).",
+      "type": "info",
+      "readStatus": false,
+      "createdAt": "2026-07-21T12:13:54.014Z"
+    },
+    {
+      "id": "not-1784636034014-clockin-usr-3",
+      "userId": "usr-3",
+      "message": "📢 ATTENDANCE: Tushar Bali clocked in from WFH (12:13 UTC).",
+      "type": "info",
+      "readStatus": true,
+      "createdAt": "2026-07-21T12:13:54.014Z"
+    },
+    {
+      "id": "not-1784635995215-clockout-usr-102",
+      "userId": "usr-102",
+      "message": "📢 ATTENDANCE: Tushar Bali closed session (clocked out at 12:13 UTC).",
+      "type": "info",
+      "readStatus": false,
+      "createdAt": "2026-07-21T12:13:15.215Z"
+    },
+    {
+      "id": "not-1784635995215-clockout-usr-101",
+      "userId": "usr-101",
+      "message": "📢 ATTENDANCE: Tushar Bali closed session (clocked out at 12:13 UTC).",
+      "type": "info",
+      "readStatus": false,
+      "createdAt": "2026-07-21T12:13:15.215Z"
+    },
+    {
+      "id": "not-1784635995215-clockout-usr-3",
+      "userId": "usr-3",
+      "message": "📢 ATTENDANCE: Tushar Bali closed session (clocked out at 12:13 UTC).",
+      "type": "info",
+      "readStatus": true,
+      "createdAt": "2026-07-21T12:13:15.215Z"
+    },
+    {
+      "id": "not-1784635992366-clockin-usr-102",
+      "userId": "usr-102",
+      "message": "📢 ATTENDANCE: Tushar Bali clocked in from WFH (12:13 UTC).",
+      "type": "info",
+      "readStatus": false,
+      "createdAt": "2026-07-21T12:13:12.366Z"
+    },
+    {
+      "id": "not-1784635992366-clockin-usr-101",
+      "userId": "usr-101",
+      "message": "📢 ATTENDANCE: Tushar Bali clocked in from WFH (12:13 UTC).",
+      "type": "info",
+      "readStatus": false,
+      "createdAt": "2026-07-21T12:13:12.366Z"
+    },
+    {
+      "id": "not-1784635992366-clockin-usr-3",
+      "userId": "usr-3",
+      "message": "📢 ATTENDANCE: Tushar Bali clocked in from WFH (12:13 UTC).",
+      "type": "info",
+      "readStatus": true,
+      "createdAt": "2026-07-21T12:13:12.366Z"
+    },
+    {
+      "id": "not-1784635984283-clockout-usr-102",
+      "userId": "usr-102",
+      "message": "📢 ATTENDANCE: Tushar Bali closed session (clocked out at 12:13 UTC).",
+      "type": "info",
+      "readStatus": false,
+      "createdAt": "2026-07-21T12:13:04.283Z"
+    },
+    {
+      "id": "not-1784635984283-clockout-usr-101",
+      "userId": "usr-101",
+      "message": "📢 ATTENDANCE: Tushar Bali closed session (clocked out at 12:13 UTC).",
+      "type": "info",
+      "readStatus": false,
+      "createdAt": "2026-07-21T12:13:04.283Z"
+    },
+    {
+      "id": "not-1784635984283-clockout-usr-3",
+      "userId": "usr-3",
+      "message": "📢 ATTENDANCE: Tushar Bali closed session (clocked out at 12:13 UTC).",
+      "type": "info",
+      "readStatus": true,
+      "createdAt": "2026-07-21T12:13:04.283Z"
+    },
+    {
+      "id": "not-1784635936145-clockin-usr-102",
+      "userId": "usr-102",
+      "message": "📢 ATTENDANCE: Tushar Bali clocked in from WFH (12:12 UTC).",
+      "type": "info",
+      "readStatus": false,
+      "createdAt": "2026-07-21T12:12:16.145Z"
+    },
+    {
+      "id": "not-1784635936145-clockin-usr-101",
+      "userId": "usr-101",
+      "message": "📢 ATTENDANCE: Tushar Bali clocked in from WFH (12:12 UTC).",
+      "type": "info",
+      "readStatus": false,
+      "createdAt": "2026-07-21T12:12:16.145Z"
+    },
+    {
+      "id": "not-1784635936145-clockin-usr-3",
+      "userId": "usr-3",
+      "message": "📢 ATTENDANCE: Tushar Bali clocked in from WFH (12:12 UTC).",
+      "type": "info",
+      "readStatus": true,
+      "createdAt": "2026-07-21T12:12:16.145Z"
+    },
+    {
+      "id": "not-1784635204743",
+      "userId": "usr-3",
+      "message": "💬 COMMENT ADDED: Tushar Bali commented on \"File Motion for Extension in Coastal Realty Appeal\": \"hi tushar\"",
+      "type": "info",
+      "readStatus": true,
+      "createdAt": "2026-07-21T12:00:04.743Z"
+    },
+    {
+      "id": "not-1784630519997-clockin-usr-102",
+      "userId": "usr-102",
+      "message": "📢 ATTENDANCE: Tushar bali clocked in from WFH (10:41 UTC).",
+      "type": "info",
+      "readStatus": false,
+      "createdAt": "2026-07-21T10:41:59.997Z"
+    },
+    {
+      "id": "not-1784630519997-clockin-usr-101",
+      "userId": "usr-101",
+      "message": "📢 ATTENDANCE: Tushar bali clocked in from WFH (10:41 UTC).",
+      "type": "info",
+      "readStatus": false,
+      "createdAt": "2026-07-21T10:41:59.997Z"
+    },
+    {
+      "id": "not-1784630208041-timer-pause",
+      "userId": "usr-102",
+      "message": "⏱️ TIMER PAUSED: Tushar bali paused the work timer on \"File Motion for Extension in Coastal Realty Appeal\" (TSK-2010). Total tracked: 0.85 hrs.",
+      "type": "info",
+      "readStatus": false,
+      "createdAt": "2026-07-21T10:36:48.041Z"
+    },
+    {
+      "id": "not-1784630206965-timer-pause",
+      "userId": "usr-102",
+      "message": "⏱️ TIMER PAUSED: Tushar bali paused the work timer on \"Prepare Deposition Outline for Zenith Pharma Case Manager\" (TSK-2009). Total tracked: 0.86 hrs.",
+      "type": "info",
+      "readStatus": false,
+      "createdAt": "2026-07-21T10:36:46.965Z"
+    },
+    {
+      "id": "not-1784627188793-timer-play",
+      "userId": "usr-102",
+      "message": "⏱️ TIMER STARTED: Tushar bali started the timer on \"File Motion for Extension in Coastal Realty Appeal\" (TSK-2010).",
+      "type": "info",
+      "readStatus": false,
+      "createdAt": "2026-07-21T09:46:28.793Z"
+    },
+    {
+      "id": "not-1784627185297-timer-play",
+      "userId": "usr-102",
+      "message": "⏱️ TIMER STARTED: Tushar bali started the timer on \"Prepare Deposition Outline for Zenith Pharma Case Manager\" (TSK-2009).",
+      "type": "info",
+      "readStatus": false,
+      "createdAt": "2026-07-21T09:46:25.297Z"
+    },
+    {
+      "id": "not-1784627066263",
+      "userId": "usr-3",
+      "message": "🔔 TASK UPDATED: \"Compile Payroll Records for Wage Arbitration\" (TSK-2004). Change: Updated task details",
+      "type": "info",
+      "readStatus": true,
+      "createdAt": "2026-07-21T09:44:26.263Z"
+    },
+    {
+      "id": "not-1784627066168-timer-pause",
+      "userId": "usr-101",
+      "message": "⏱️ TIMER PAUSED: Tushar bali paused the work timer on \"Compile Payroll Records for Wage Arbitration\" (TSK-2004). Total tracked: 0.02 hrs.",
+      "type": "info",
+      "readStatus": false,
+      "createdAt": "2026-07-21T09:44:26.168Z"
+    },
+    {
+      "id": "not-1784627048862-timer-play",
+      "userId": "usr-101",
+      "message": "⏱️ TIMER STARTED: Tushar bali started the timer on \"Compile Payroll Records for Wage Arbitration\" (TSK-2004).",
+      "type": "info",
+      "readStatus": false,
+      "createdAt": "2026-07-21T09:44:08.862Z"
+    },
+    {
+      "id": "not-1784625788525",
+      "userId": "usr-3",
+      "message": "🔔 TASK UPDATED: \"File Motion for Extension in Coastal Realty Appeal\" (TSK-2010). Change: Updated task details",
+      "type": "info",
+      "readStatus": true,
+      "createdAt": "2026-07-21T09:23:08.525Z"
+    },
+    {
+      "id": "not-1784625788450-timer-pause",
+      "userId": "usr-102",
+      "message": "⏱️ TIMER PAUSED: Tushar bali paused the work timer on \"File Motion for Extension in Coastal Realty Appeal\" (TSK-2010). Total tracked: 0.01 hrs.",
+      "type": "info",
+      "readStatus": false,
+      "createdAt": "2026-07-21T09:23:08.450Z"
+    },
+    {
+      "id": "not-1784625781174-timer-play",
+      "userId": "usr-102",
+      "message": "⏱️ TIMER STARTED: Tushar bali started the timer on \"File Motion for Extension in Coastal Realty Appeal\" (TSK-2010).",
+      "type": "info",
+      "readStatus": false,
+      "createdAt": "2026-07-21T09:23:01.174Z"
+    },
+    {
+      "id": "not-1784625779858-timer-pause",
+      "userId": "usr-102",
+      "message": "⏱️ TIMER PAUSED: Tushar bali paused the work timer on \"Prepare Deposition Outline for Zenith Pharma Case Manager\" (TSK-2009). Total tracked: 0.02 hrs.",
+      "type": "info",
+      "readStatus": false,
+      "createdAt": "2026-07-21T09:22:59.858Z"
+    },
+    {
+      "id": "not-1784625778607-timer-play",
+      "userId": "usr-102",
+      "message": "⏱️ TIMER STARTED: Tushar bali started the timer on \"Prepare Deposition Outline for Zenith Pharma Case Manager\" (TSK-2009).",
+      "type": "info",
+      "readStatus": false,
+      "createdAt": "2026-07-21T09:22:58.607Z"
+    },
+    {
+      "id": "not-1784625776925-timer-pause",
+      "userId": "usr-101",
+      "message": "⏱️ TIMER PAUSED: Tushar bali paused the work timer on \"Compile Payroll Records for Wage Arbitration\" (TSK-2004). Total tracked: 0.02 hrs.",
+      "type": "info",
+      "readStatus": false,
+      "createdAt": "2026-07-21T09:22:56.925Z"
+    },
+    {
+      "id": "not-1784625775074-timer-play",
+      "userId": "usr-101",
+      "message": "⏱️ TIMER STARTED: Tushar bali started the timer on \"Compile Payroll Records for Wage Arbitration\" (TSK-2004).",
+      "type": "info",
+      "readStatus": false,
+      "createdAt": "2026-07-21T09:22:55.074Z"
+    },
+    {
+      "id": "not-1784625653444-timer-pause",
+      "userId": "usr-101",
+      "message": "⏱️ TIMER PAUSED: Tushar bali paused the work timer on \"Compile Payroll Records for Wage Arbitration\" (TSK-2004). Total tracked: 0.02 hrs.",
+      "type": "info",
+      "readStatus": false,
+      "createdAt": "2026-07-21T09:20:53.445Z"
+    },
+    {
+      "id": "not-1784625651290-timer-play",
+      "userId": "usr-101",
+      "message": "⏱️ TIMER STARTED: Tushar bali started the timer on \"Compile Payroll Records for Wage Arbitration\" (TSK-2004).",
+      "type": "info",
+      "readStatus": false,
+      "createdAt": "2026-07-21T09:20:51.290Z"
+    },
+    {
+      "id": "not-1784625611299-clockout-usr-102",
+      "userId": "usr-102",
+      "message": "📢 ATTENDANCE: Tushar bali closed session (clocked out at 09:20 UTC).",
+      "type": "info",
+      "readStatus": false,
+      "createdAt": "2026-07-21T09:20:11.299Z"
+    },
+    {
+      "id": "not-1784625611299-clockout-usr-101",
+      "userId": "usr-101",
+      "message": "📢 ATTENDANCE: Tushar bali closed session (clocked out at 09:20 UTC).",
+      "type": "info",
+      "readStatus": false,
+      "createdAt": "2026-07-21T09:20:11.299Z"
+    },
+    {
+      "id": "not-1784625609201-clockin-usr-102",
+      "userId": "usr-102",
+      "message": "📢 ATTENDANCE: Tushar bali clocked in from WFO (09:20 UTC).",
+      "type": "info",
+      "readStatus": false,
+      "createdAt": "2026-07-21T09:20:09.201Z"
+    },
+    {
+      "id": "not-1784625609201-clockin-usr-101",
+      "userId": "usr-101",
+      "message": "📢 ATTENDANCE: Tushar bali clocked in from WFO (09:20 UTC).",
+      "type": "info",
+      "readStatus": false,
+      "createdAt": "2026-07-21T09:20:09.201Z"
+    },
+    {
+      "id": "not-1784624962436",
+      "userId": "usr-3",
+      "message": "🔔 TASK UPDATED: \"File Motion for Extension in Coastal Realty Appeal\" (TSK-2010). Change: Updated Task status from \"Completed\" to \"In Progress\"",
+      "type": "info",
+      "readStatus": true,
+      "createdAt": "2026-07-21T09:09:22.436Z"
+    },
+    {
+      "id": "not-1784624570286-timer-pause",
+      "userId": "usr-102",
+      "message": "⏱️ TIMER PAUSED: Tushar bali paused the work timer on \"Prepare Deposition Outline for Zenith Pharma Case Manager\" (TSK-2009). Total tracked: 0.02 hrs.",
+      "type": "info",
+      "readStatus": false,
+      "createdAt": "2026-07-21T09:02:50.286Z"
+    },
+    {
+      "id": "not-1784624526190-timer-play",
+      "userId": "usr-102",
+      "message": "⏱️ TIMER STARTED: Tushar bali started the timer on \"Prepare Deposition Outline for Zenith Pharma Case Manager\" (TSK-2009).",
+      "type": "info",
+      "readStatus": false,
+      "createdAt": "2026-07-21T09:02:06.190Z"
+    },
+    {
+      "id": "not-1784624280920-leave-decision",
+      "userId": "usr-3",
+      "message": "✈️ LEAVE DECISION: Your leave request from 2026-07-21 to 2026-07-21 has been APPROVED by Admin (Tushar bali).",
+      "type": "success",
+      "readStatus": true,
+      "createdAt": "2026-07-21T08:58:00.920Z"
+    },
+    {
+      "id": "not-1784624277120-leave-decision",
+      "userId": "usr-104",
+      "message": "✈️ LEAVE DECISION: Your leave request from 2026-07-21 to 2026-07-22 has been REJECTED by Admin (Tushar bali).",
+      "type": "error",
+      "readStatus": false,
+      "createdAt": "2026-07-21T08:57:57.120Z"
+    },
+    {
+      "id": "not-1784624274355-leave-decision",
+      "userId": "usr-3",
+      "message": "✈️ LEAVE DECISION: Your leave request from 2026-07-21 to 2026-07-21 has been REJECTED by Admin (Tushar bali).",
+      "type": "error",
+      "readStatus": true,
+      "createdAt": "2026-07-21T08:57:54.355Z"
+    },
+    {
+      "id": "not-1784624221957-leave-req-usr-102",
+      "userId": "usr-102",
+      "message": "✈️ LEAVE REQUEST: Tushar bali requested leave from 2026-07-21 to 2026-07-21. Reason: \"Not feeling well - testing note\"",
+      "type": "warning",
+      "readStatus": false,
+      "createdAt": "2026-07-21T08:57:01.957Z"
+    },
+    {
+      "id": "not-1784624221957-leave-req-usr-101",
+      "userId": "usr-101",
+      "message": "✈️ LEAVE REQUEST: Tushar bali requested leave from 2026-07-21 to 2026-07-21. Reason: \"Not feeling well - testing note\"",
+      "type": "warning",
+      "readStatus": false,
+      "createdAt": "2026-07-21T08:57:01.957Z"
+    },
+    {
+      "id": "not-1784623654563",
+      "userId": "usr-3",
+      "message": "🔔 TASK UPDATED: \"Prepare Deposition Outline for Zenith Pharma Case Manager\" (TSK-2009). Change: Updated task details",
+      "type": "info",
+      "readStatus": true,
+      "createdAt": "2026-07-21T08:47:34.563Z"
+    },
+    {
+      "id": "not-1784623654477-timer-pause",
+      "userId": "usr-102",
+      "message": "⏱️ TIMER PAUSED: Tushar bali paused the work timer on \"Prepare Deposition Outline for Zenith Pharma Case Manager\" (TSK-2009). Total tracked: 0.00 hrs.",
+      "type": "info",
+      "readStatus": false,
+      "createdAt": "2026-07-21T08:47:34.477Z"
+    },
+    {
+      "id": "not-1784623638984",
+      "userId": "usr-3",
+      "message": "🔔 TASK UPDATED: \"Prepare Deposition Outline for Zenith Pharma Case Manager\" (TSK-2009). Change: Updated task details",
+      "type": "info",
+      "readStatus": true,
+      "createdAt": "2026-07-21T08:47:18.984Z"
+    },
+    {
+      "id": "not-1784623638930-timer-play",
+      "userId": "usr-102",
+      "message": "⏱️ TIMER STARTED: Tushar bali started the timer on \"Prepare Deposition Outline for Zenith Pharma Case Manager\" (TSK-2009).",
+      "type": "info",
+      "readStatus": false,
+      "createdAt": "2026-07-21T08:47:18.930Z"
+    },
+    {
+      "id": "not-1784623618788",
+      "userId": "usr-3",
+      "message": "🔔 TASK UPDATED: \"Compile Payroll Records for Wage Arbitration\" (TSK-2004). Change: Updated task details",
+      "type": "info",
+      "readStatus": true,
+      "createdAt": "2026-07-21T08:46:58.788Z"
+    },
+    {
+      "id": "not-1784623618733-timer-pause",
+      "userId": "usr-101",
+      "message": "⏱️ TIMER PAUSED: Tushar bali paused the work timer on \"Compile Payroll Records for Wage Arbitration\" (TSK-2004). Total tracked: 0.02 hrs.",
+      "type": "info",
+      "readStatus": false,
+      "createdAt": "2026-07-21T08:46:58.733Z"
+    },
+    {
+      "id": "not-1784623573232-timer-play",
+      "userId": "usr-101",
+      "message": "⏱️ TIMER STARTED: Tushar bali started the timer on \"Compile Payroll Records for Wage Arbitration\" (TSK-2004).",
+      "type": "info",
+      "readStatus": false,
+      "createdAt": "2026-07-21T08:46:13.232Z"
+    },
+    {
+      "id": "not-1784623459009-leave-req-usr-102",
+      "userId": "usr-102",
+      "message": "✈️ LEAVE REQUEST: Tushar bali requested leave from 2026-07-21 to 2026-07-21. Reason: \"Not feeling well\"",
+      "type": "warning",
+      "readStatus": false,
+      "createdAt": "2026-07-21T08:44:19.009Z"
+    },
+    {
+      "id": "not-1784623459009-leave-req-usr-101",
+      "userId": "usr-101",
+      "message": "✈️ LEAVE REQUEST: Tushar bali requested leave from 2026-07-21 to 2026-07-21. Reason: \"Not feeling well\"",
+      "type": "warning",
+      "readStatus": false,
+      "createdAt": "2026-07-21T08:44:19.009Z"
+    },
+    {
+      "id": "not-1784623409239-clockout-usr-102",
+      "userId": "usr-102",
+      "message": "📢 ATTENDANCE: Tushar bali closed session (clocked out at 08:43 UTC).",
+      "type": "info",
+      "readStatus": false,
+      "createdAt": "2026-07-21T08:43:29.239Z"
+    },
+    {
+      "id": "not-1784623409239-clockout-usr-101",
+      "userId": "usr-101",
+      "message": "📢 ATTENDANCE: Tushar bali closed session (clocked out at 08:43 UTC).",
+      "type": "info",
+      "readStatus": false,
+      "createdAt": "2026-07-21T08:43:29.239Z"
+    },
+    {
+      "id": "not-1784623159392",
+      "userId": "usr-3",
+      "message": "🔔 TASK UPDATED: \"File Motion for Extension in Coastal Realty Appeal\" (TSK-2010). Change: Updated task details",
+      "type": "success",
+      "readStatus": true,
+      "createdAt": "2026-07-21T08:39:19.392Z"
+    },
+    {
+      "id": "not-1784623159359-timer-comp",
+      "userId": "usr-102",
+      "message": "✅ TASK COMPLETED: Tushar bali completed \"File Motion for Extension in Coastal Realty Appeal\" (TSK-2010). Tracked time: 0.01 hrs (0 days).",
+      "type": "success",
+      "readStatus": false,
+      "createdAt": "2026-07-21T08:39:19.359Z"
+    },
+    {
+      "id": "not-1784623137112",
+      "userId": "usr-3",
+      "message": "🔔 TASK UPDATED: \"Compile Payroll Records for Wage Arbitration\" (TSK-2004). Change: Updated task details",
+      "type": "info",
+      "readStatus": true,
+      "createdAt": "2026-07-21T08:38:57.112Z"
+    },
+    {
+      "id": "not-1784623136999-timer-pause",
+      "userId": "usr-101",
+      "message": "⏱️ TIMER PAUSED: Tushar bali paused the work timer on \"Compile Payroll Records for Wage Arbitration\" (TSK-2004). Total tracked: 0.00 hrs.",
+      "type": "info",
+      "readStatus": false,
+      "createdAt": "2026-07-21T08:38:56.999Z"
+    },
+    {
+      "id": "not-1784623125954-timer-play",
+      "userId": "usr-101",
+      "message": "⏱️ TIMER STARTED: Tushar bali started the timer on \"Compile Payroll Records for Wage Arbitration\" (TSK-2004).",
+      "type": "info",
+      "readStatus": false,
+      "createdAt": "2026-07-21T08:38:45.954Z"
+    },
+    {
+      "id": "not-1784623121989-timer-play",
+      "userId": "usr-102",
+      "message": "⏱️ TIMER STARTED: Tushar bali started the timer on \"File Motion for Extension in Coastal Realty Appeal\" (TSK-2010).",
+      "type": "info",
+      "readStatus": false,
+      "createdAt": "2026-07-21T08:38:41.989Z"
+    },
+    {
+      "id": "not-1784623114294-clockin-usr-102",
+      "userId": "usr-102",
+      "message": "📢 ATTENDANCE: Tushar bali clocked in from WFO (08:38 UTC).",
+      "type": "info",
+      "readStatus": false,
+      "createdAt": "2026-07-21T08:38:34.294Z"
+    },
+    {
+      "id": "not-1784623114294-clockin-usr-101",
+      "userId": "usr-101",
+      "message": "📢 ATTENDANCE: Tushar bali clocked in from WFO (08:38 UTC).",
+      "type": "info",
+      "readStatus": false,
+      "createdAt": "2026-07-21T08:38:34.294Z"
+    },
+    {
+      "id": "not-1784623108474-clockout-usr-102",
+      "userId": "usr-102",
+      "message": "📢 ATTENDANCE: Tushar bali closed session (clocked out at 08:38 UTC).",
+      "type": "info",
+      "readStatus": false,
+      "createdAt": "2026-07-21T08:38:28.474Z"
+    },
+    {
+      "id": "not-1784623108473-clockout-usr-101",
+      "userId": "usr-101",
+      "message": "📢 ATTENDANCE: Tushar bali closed session (clocked out at 08:38 UTC).",
+      "type": "info",
+      "readStatus": false,
+      "createdAt": "2026-07-21T08:38:28.474Z"
+    },
+    {
+      "id": "not-1784277777962-clockin-usr-102",
+      "userId": "usr-102",
+      "message": "📢 ATTENDANCE: Tushar bali clocked in from WFO (08:42 UTC).",
+      "type": "info",
+      "readStatus": false,
+      "createdAt": "2026-07-17T08:42:57.962Z"
+    },
+    {
+      "id": "not-1784277777962-clockin-usr-101",
+      "userId": "usr-101",
+      "message": "📢 ATTENDANCE: Tushar bali clocked in from WFO (08:42 UTC).",
+      "type": "info",
+      "readStatus": false,
+      "createdAt": "2026-07-17T08:42:57.962Z"
+    },
+    {
+      "id": "not-1784277067089",
+      "userId": "usr-3",
+      "message": "🔔 TASK UPDATED: \"Draft Trademark Settlement & Licensing Term Sheet\" (TSK-2001). Change: Updated task details",
+      "type": "success",
+      "readStatus": true,
+      "createdAt": "2026-07-17T08:31:07.089Z"
+    },
+    {
+      "id": "not-1784277067046-timer-comp",
+      "userId": "usr-102",
+      "message": "✅ TASK COMPLETED: Tushar bali completed \"Draft Trademark Settlement & Licensing Term Sheet\" (TSK-2001). Tracked time: 0 hrs (0 days).",
+      "type": "success",
+      "readStatus": false,
+      "createdAt": "2026-07-17T08:31:07.046Z"
+    },
+    {
+      "id": "not-1784277033404-clockout-usr-102",
+      "userId": "usr-102",
+      "message": "📢 ATTENDANCE: Tushar bali closed session (clocked out at 08:30 UTC).",
+      "type": "info",
+      "readStatus": false,
+      "createdAt": "2026-07-17T08:30:33.404Z"
+    },
+    {
+      "id": "not-1784277033404-clockout-usr-101",
+      "userId": "usr-101",
+      "message": "📢 ATTENDANCE: Tushar bali closed session (clocked out at 08:30 UTC).",
+      "type": "info",
+      "readStatus": false,
+      "createdAt": "2026-07-17T08:30:33.404Z"
+    },
+    {
+      "id": "not-1784277025940-timer-pause",
+      "userId": "usr-102",
+      "message": "⏱️ TIMER PAUSED: Tushar bali paused the work timer on \"Draft Trademark Settlement & Licensing Term Sheet\" (TSK-2001). Total tracked: 0.00 hrs.",
+      "type": "info",
+      "readStatus": false,
+      "createdAt": "2026-07-17T08:30:25.940Z"
+    },
+    {
+      "id": "not-1784277023107-timer-play",
+      "userId": "usr-102",
+      "message": "⏱️ TIMER STARTED: Tushar bali started the timer on \"Draft Trademark Settlement & Licensing Term Sheet\" (TSK-2001).",
+      "type": "info",
+      "readStatus": false,
+      "createdAt": "2026-07-17T08:30:23.107Z"
+    },
+    {
+      "id": "not-seed-1",
+      "userId": "usr-3",
+      "message": "🔔 TASK ASSIGNED: You were assigned \"Draft Trademark Settlement & Licensing Term Sheet\" (TSK-2001) by Arjun Mehta, Esq.",
+      "type": "info",
+      "readStatus": true,
+      "createdAt": "2026-07-10T09:05:00.000Z"
+    },
+    {
+      "id": "not-seed-2",
+      "userId": "usr-3",
+      "message": "📅 Reminder: Task \"Compile Payroll Records for Wage Arbitration\" (TSK-2004) is due in 4 days.",
+      "type": "warning",
+      "readStatus": true,
+      "createdAt": "2026-07-17T08:00:00.000Z"
+    },
+    {
+      "id": "not-seed-3",
+      "userId": "usr-101",
+      "message": "✅ TASK COMPLETED: Ritika Sharma completed \"Review Expert Witness Report on Drug Formulation\" (TSK-2005).",
+      "type": "success",
+      "readStatus": true,
+      "createdAt": "2026-07-14T16:30:00.000Z"
+    },
+    {
+      "id": "not-seed-4",
+      "userId": "usr-3",
+      "message": "🔔 TASK ASSIGNED: You were assigned \"Prepare Deposition Outline for Zenith Pharma Case Manager\" (TSK-2009) by Arjun Mehta, Esq.",
+      "type": "info",
+      "readStatus": true,
+      "createdAt": "2026-07-13T09:05:00.000Z"
+    },
+    {
+      "id": "not-seed-5",
+      "userId": "usr-3",
+      "message": "🔔 TASK ASSIGNED: You were assigned \"File Motion for Extension in Coastal Realty Appeal\" (TSK-2010) by Arjun Mehta, Esq.",
+      "type": "info",
+      "readStatus": true,
+      "createdAt": "2026-07-15T09:05:00.000Z"
+    }
+  ],
+  "activityLogs": [
+    {
+      "id": "log-1784779094433",
+      "taskId": "TSK-2009",
+      "userId": "usr-3",
+      "userName": "Tushar bali",
+      "action": "Updated task details",
+      "timestamp": "2026-07-23T03:58:14.433Z"
+    },
+    {
+      "id": "log-1784779094298-timer-comp",
+      "taskId": "TSK-2009",
+      "userId": "usr-3",
+      "userName": "Tushar bali",
+      "action": "Completed task. Working-time: 0.86 hours, 0.04 days.",
+      "timestamp": "2026-07-23T03:58:14.298Z"
+    },
+    {
+      "id": "log-1784704640009-timer-pause",
+      "taskId": "TSK-2010",
+      "userId": "usr-3",
+      "userName": "Tushar bali",
+      "action": "Paused work timer. Total active session: 1.11 hours.",
+      "timestamp": "2026-07-22T07:17:20.009Z"
+    },
+    {
+      "id": "log-1784704638493-timer-play",
+      "taskId": "TSK-2010",
+      "userId": "usr-3",
+      "userName": "Tushar bali",
+      "action": "Started/Resumed work timer (Status: In Progress)",
+      "timestamp": "2026-07-22T07:17:18.493Z"
+    },
+    {
+      "id": "log-1784701450525-timer-pause",
+      "taskId": "TSK-2010",
+      "userId": "usr-3",
+      "userName": "Tushar bali",
+      "action": "Paused work timer. Total active session: 1.11 hours.",
+      "timestamp": "2026-07-22T06:24:10.525Z"
+    },
+    {
+      "id": "log-1784700510225-timer-play",
+      "taskId": "TSK-2010",
+      "userId": "usr-3",
+      "userName": "Tushar bali",
+      "action": "Started/Resumed work timer (Status: In Progress)",
+      "timestamp": "2026-07-22T06:08:30.225Z"
+    },
+    {
+      "id": "log-1784700434378",
+      "taskId": "TSK-2004",
+      "userId": "usr-3",
+      "userName": "Tushar bali",
+      "action": "Updated task details",
+      "timestamp": "2026-07-22T06:07:14.378Z"
+    },
+    {
+      "id": "log-1784700434315-timer-comp",
+      "taskId": "TSK-2004",
+      "userId": "usr-3",
+      "userName": "Tushar bali",
+      "action": "Completed task. Working-time: 0.09 hours, 0 days.",
+      "timestamp": "2026-07-22T06:07:14.315Z"
+    },
+    {
+      "id": "log-1784695986187-timer-pause",
+      "taskId": "TSK-2004",
+      "userId": "usr-3",
+      "userName": "Tushar bali",
+      "action": "Paused work timer. Total active session: 0.09 hours.",
+      "timestamp": "2026-07-22T04:53:06.187Z"
+    },
+    {
+      "id": "log-1784695732586-timer-play",
+      "taskId": "TSK-2004",
+      "userId": "usr-3",
+      "userName": "Tushar bali",
+      "action": "Started/Resumed work timer (Status: Blocked)",
+      "timestamp": "2026-07-22T04:48:52.586Z"
+    },
+    {
+      "id": "log-1784636183378-timer-pause",
+      "taskId": "TSK-2010",
+      "userId": "d71b7ed9-aede-4c80-a57a-2c9221ca5018",
+      "userName": "Tushar Bali",
+      "action": "Paused work timer. Total active session: 0.85 hours.",
+      "timestamp": "2026-07-21T12:16:23.378Z"
+    },
+    {
+      "id": "log-1784636181211-timer-play",
+      "taskId": "TSK-2010",
+      "userId": "d71b7ed9-aede-4c80-a57a-2c9221ca5018",
+      "userName": "Tushar Bali",
+      "action": "Started/Resumed work timer (Status: In Progress)",
+      "timestamp": "2026-07-21T12:16:21.211Z"
+    },
+    {
+      "id": "log-1784630208041-timer-pause",
+      "taskId": "TSK-2010",
+      "userId": "usr-3",
+      "userName": "Tushar bali",
+      "action": "Paused work timer. Total active session: 0.85 hours.",
+      "timestamp": "2026-07-21T10:36:48.041Z"
+    },
+    {
+      "id": "log-1784630206965-timer-pause",
+      "taskId": "TSK-2009",
+      "userId": "usr-3",
+      "userName": "Tushar bali",
+      "action": "Paused work timer. Total active session: 0.86 hours.",
+      "timestamp": "2026-07-21T10:36:46.965Z"
+    },
+    {
+      "id": "log-1784627188794-timer-play",
+      "taskId": "TSK-2010",
+      "userId": "usr-3",
+      "userName": "Tushar bali",
+      "action": "Started/Resumed work timer (Status: In Progress)",
+      "timestamp": "2026-07-21T09:46:28.794Z"
+    },
+    {
+      "id": "log-1784627185297-timer-play",
+      "taskId": "TSK-2009",
+      "userId": "usr-3",
+      "userName": "Tushar bali",
+      "action": "Started/Resumed work timer (Status: In Progress)",
+      "timestamp": "2026-07-21T09:46:25.297Z"
+    },
+    {
+      "id": "log-1784627066263",
+      "taskId": "TSK-2004",
+      "userId": "usr-3",
+      "userName": "Tushar bali",
+      "action": "Updated task details",
+      "timestamp": "2026-07-21T09:44:26.263Z"
+    },
+    {
+      "id": "log-1784627066168-timer-pause",
+      "taskId": "TSK-2004",
+      "userId": "usr-3",
+      "userName": "Tushar bali",
+      "action": "Paused work timer. Total active session: 0.02 hours.",
+      "timestamp": "2026-07-21T09:44:26.168Z"
+    },
+    {
+      "id": "log-1784627048863-timer-play",
+      "taskId": "TSK-2004",
+      "userId": "usr-3",
+      "userName": "Tushar bali",
+      "action": "Started/Resumed work timer (Status: Blocked)",
+      "timestamp": "2026-07-21T09:44:08.863Z"
+    },
+    {
+      "id": "log-1784625788525",
+      "taskId": "TSK-2010",
+      "userId": "usr-3",
+      "userName": "Tushar bali",
+      "action": "Updated task details",
+      "timestamp": "2026-07-21T09:23:08.525Z"
+    },
+    {
+      "id": "log-1784625788450-timer-pause",
+      "taskId": "TSK-2010",
+      "userId": "usr-3",
+      "userName": "Tushar bali",
+      "action": "Paused work timer. Total active session: 0.01 hours.",
+      "timestamp": "2026-07-21T09:23:08.450Z"
+    },
+    {
+      "id": "log-1784625781174-timer-play",
+      "taskId": "TSK-2010",
+      "userId": "usr-3",
+      "userName": "Tushar bali",
+      "action": "Started/Resumed work timer (Status: In Progress)",
+      "timestamp": "2026-07-21T09:23:01.174Z"
+    },
+    {
+      "id": "log-1784625779858-timer-pause",
+      "taskId": "TSK-2009",
+      "userId": "usr-3",
+      "userName": "Tushar bali",
+      "action": "Paused work timer. Total active session: 0.02 hours.",
+      "timestamp": "2026-07-21T09:22:59.858Z"
+    },
+    {
+      "id": "log-1784625778607-timer-play",
+      "taskId": "TSK-2009",
+      "userId": "usr-3",
+      "userName": "Tushar bali",
+      "action": "Started/Resumed work timer (Status: In Progress)",
+      "timestamp": "2026-07-21T09:22:58.607Z"
+    },
+    {
+      "id": "log-1784625776926-timer-pause",
+      "taskId": "TSK-2004",
+      "userId": "usr-3",
+      "userName": "Tushar bali",
+      "action": "Paused work timer. Total active session: 0.02 hours.",
+      "timestamp": "2026-07-21T09:22:56.926Z"
+    },
+    {
+      "id": "log-1784625775074-timer-play",
+      "taskId": "TSK-2004",
+      "userId": "usr-3",
+      "userName": "Tushar bali",
+      "action": "Started/Resumed work timer (Status: Blocked)",
+      "timestamp": "2026-07-21T09:22:55.074Z"
+    },
+    {
+      "id": "log-1784625653445-timer-pause",
+      "taskId": "TSK-2004",
+      "userId": "usr-3",
+      "userName": "Tushar bali",
+      "action": "Paused work timer. Total active session: 0.02 hours.",
+      "timestamp": "2026-07-21T09:20:53.445Z"
+    },
+    {
+      "id": "log-1784625651290-timer-play",
+      "taskId": "TSK-2004",
+      "userId": "usr-3",
+      "userName": "Tushar bali",
+      "action": "Started/Resumed work timer (Status: Blocked)",
+      "timestamp": "2026-07-21T09:20:51.290Z"
+    },
+    {
+      "id": "log-1784624962436",
+      "taskId": "TSK-2010",
+      "userId": "usr-3",
+      "userName": "Tushar bali",
+      "action": "Updated Task status from \"Completed\" to \"In Progress\"",
+      "timestamp": "2026-07-21T09:09:22.436Z"
+    },
+    {
+      "id": "log-1784624570286-timer-pause",
+      "taskId": "TSK-2009",
+      "userId": "usr-3",
+      "userName": "Tushar bali",
+      "action": "Paused work timer. Total active session: 0.02 hours.",
+      "timestamp": "2026-07-21T09:02:50.286Z"
+    },
+    {
+      "id": "log-1784624526190-timer-play",
+      "taskId": "TSK-2009",
+      "userId": "usr-3",
+      "userName": "Tushar bali",
+      "action": "Started/Resumed work timer (Status: In Progress)",
+      "timestamp": "2026-07-21T09:02:06.190Z"
+    },
+    {
+      "id": "log-1784623654563",
+      "taskId": "TSK-2009",
+      "userId": "usr-3",
+      "userName": "Tushar bali",
+      "action": "Updated task details",
+      "timestamp": "2026-07-21T08:47:34.563Z"
+    },
+    {
+      "id": "log-1784623654477-timer-pause",
+      "taskId": "TSK-2009",
+      "userId": "usr-3",
+      "userName": "Tushar bali",
+      "action": "Paused work timer. Total active session: 0.00 hours.",
+      "timestamp": "2026-07-21T08:47:34.477Z"
+    },
+    {
+      "id": "log-1784623638984",
+      "taskId": "TSK-2009",
+      "userId": "usr-3",
+      "userName": "Tushar bali",
+      "action": "Updated task details",
+      "timestamp": "2026-07-21T08:47:18.984Z"
+    },
+    {
+      "id": "log-1784623638930-timer-play",
+      "taskId": "TSK-2009",
+      "userId": "usr-3",
+      "userName": "Tushar bali",
+      "action": "Started/Resumed work timer (Status: In Progress)",
+      "timestamp": "2026-07-21T08:47:18.930Z"
+    },
+    {
+      "id": "log-1784623618788",
+      "taskId": "TSK-2004",
+      "userId": "usr-3",
+      "userName": "Tushar bali",
+      "action": "Updated task details",
+      "timestamp": "2026-07-21T08:46:58.788Z"
+    },
+    {
+      "id": "log-1784623618733-timer-pause",
+      "taskId": "TSK-2004",
+      "userId": "usr-3",
+      "userName": "Tushar bali",
+      "action": "Paused work timer. Total active session: 0.02 hours.",
+      "timestamp": "2026-07-21T08:46:58.733Z"
+    },
+    {
+      "id": "log-1784623573232-timer-play",
+      "taskId": "TSK-2004",
+      "userId": "usr-3",
+      "userName": "Tushar bali",
+      "action": "Started/Resumed work timer (Status: Blocked)",
+      "timestamp": "2026-07-21T08:46:13.232Z"
+    },
+    {
+      "id": "log-1784623159392",
+      "taskId": "TSK-2010",
+      "userId": "usr-3",
+      "userName": "Tushar bali",
+      "action": "Updated task details",
+      "timestamp": "2026-07-21T08:39:19.392Z"
+    },
+    {
+      "id": "log-1784623159359-timer-comp",
+      "taskId": "TSK-2010",
+      "userId": "usr-3",
+      "userName": "Tushar bali",
+      "action": "Completed task. Working-time: 0.01 hours, 0 days.",
+      "timestamp": "2026-07-21T08:39:19.359Z"
+    },
+    {
+      "id": "log-1784623137112",
+      "taskId": "TSK-2004",
+      "userId": "usr-3",
+      "userName": "Tushar bali",
+      "action": "Updated task details",
+      "timestamp": "2026-07-21T08:38:57.112Z"
+    },
+    {
+      "id": "log-1784623136999-timer-pause",
+      "taskId": "TSK-2004",
+      "userId": "usr-3",
+      "userName": "Tushar bali",
+      "action": "Paused work timer. Total active session: 0.00 hours.",
+      "timestamp": "2026-07-21T08:38:56.999Z"
+    },
+    {
+      "id": "log-1784623125954-timer-play",
+      "taskId": "TSK-2004",
+      "userId": "usr-3",
+      "userName": "Tushar bali",
+      "action": "Started/Resumed work timer (Status: Blocked)",
+      "timestamp": "2026-07-21T08:38:45.954Z"
+    },
+    {
+      "id": "log-1784623121989-timer-play",
+      "taskId": "TSK-2010",
+      "userId": "usr-3",
+      "userName": "Tushar bali",
+      "action": "Started/Resumed work timer (Status: In Progress)",
+      "timestamp": "2026-07-21T08:38:41.989Z"
+    },
+    {
+      "id": "log-1784277067089",
+      "taskId": "TSK-2001",
+      "userId": "usr-3",
+      "userName": "Tushar bali",
+      "action": "Updated task details",
+      "timestamp": "2026-07-17T08:31:07.089Z"
+    },
+    {
+      "id": "log-1784277067046-timer-comp",
+      "taskId": "TSK-2001",
+      "userId": "usr-3",
+      "userName": "Tushar bali",
+      "action": "Completed task. Working-time: 0 hours, 0 days.",
+      "timestamp": "2026-07-17T08:31:07.046Z"
+    },
+    {
+      "id": "log-1784277025940-timer-pause",
+      "taskId": "TSK-2001",
+      "userId": "usr-3",
+      "userName": "Tushar bali",
+      "action": "Paused work timer. Total active session: 0.00 hours.",
+      "timestamp": "2026-07-17T08:30:25.940Z"
+    },
+    {
+      "id": "log-1784277023107-timer-play",
+      "taskId": "TSK-2001",
+      "userId": "usr-3",
+      "userName": "Tushar bali",
+      "action": "Started/Resumed work timer (Status: In Progress)",
+      "timestamp": "2026-07-17T08:30:23.107Z"
+    },
+    {
+      "id": "log-seed-1",
+      "taskId": "TSK-2001",
+      "userId": "usr-102",
+      "userName": "Arjun Mehta, Esq.",
+      "action": "Assigned TSK-2001: Draft Trademark Settlement & Licensing Term Sheet to Tushar bali",
+      "timestamp": "2026-07-10T09:00:00Z"
+    },
+    {
+      "id": "log-seed-2",
+      "taskId": "TSK-2001",
+      "userId": "usr-3",
+      "userName": "Tushar bali",
+      "action": "Started drafting the licensing term sheet",
+      "timestamp": "2026-07-12T10:00:00Z"
+    },
+    {
+      "id": "log-seed-3",
+      "taskId": "TSK-2005",
+      "userId": "usr-103",
+      "userName": "Ritika Sharma",
+      "action": "Completed task. Working-time: 11 hours, 1.32 days.",
+      "timestamp": "2026-07-14T16:30:00Z"
+    },
+    {
+      "id": "log-seed-4",
+      "taskId": "TSK-2009",
+      "userId": "usr-3",
+      "userName": "Tushar bali",
+      "action": "Started drafting the deposition outline",
+      "timestamp": "2026-07-14T09:00:00Z"
+    }
+  ],
+  "settings": {
+    "reminderInDays": 3,
+    "enableEmailNotifications": true,
+    "enableUrgentAlerts": true,
+    "autoRiskAnalysis": true
+  },
+  "goals": [
+    {
+      "id": "G-2001",
+      "title": "Data Breach Regulatory Response Readiness",
+      "description": "Ensure all state disclosure notices and compliance documentation are filed ahead of statutory deadlines for the Meridian Bank matter.",
+      "assignedTo": "usr-101",
+      "accountable": "usr-102",
+      "assignedBy": "usr-102",
+      "targetDate": "2026-08-05T00:00:00.000Z",
+      "progress": 40,
+      "status": "In Progress",
+      "accountableNotes": "Regulator notice draft is in review; on track for the state filing window.",
+      "createdAt": "2026-07-06T10:00:00.000Z",
+      "updatedAt": "2026-07-13T16:00:00.000Z"
+    },
+    {
+      "id": "G-2002",
+      "title": "Trademark Matter Early Resolution",
+      "description": "Reach a signed licensing settlement with Horizon Textiles' counterpart before the scheduled hearing date.",
+      "assignedTo": "usr-3",
+      "accountable": "usr-102",
+      "assignedBy": "usr-102",
+      "targetDate": "2026-07-28T00:00:00.000Z",
+      "progress": 55,
+      "status": "In Progress",
+      "accountableNotes": "Settlement term sheet drafted; awaiting counterpart's counter-offer on royalty rate.",
+      "createdAt": "2026-07-10T09:00:00.000Z",
+      "updatedAt": "2026-07-13T14:20:00.000Z"
+    }
+  ],
+  "attendances": [
+    {
+      "id": "att-1784789034796",
+      "userId": "usr-3",
+      "userName": "Tushar bali",
+      "date": "2026-07-23",
+      "type": "WFH",
+      "status": "Closed",
+      "clockInTime": "2026-07-23T06:43:54.797Z",
+      "clockOutTime": "2026-07-23T06:48:50.144Z"
+    },
+    {
+      "id": "att-1784698189355",
+      "userId": "usr-3",
+      "userName": "Tushar bali",
+      "date": "2026-07-22",
+      "type": "WFH",
+      "status": "Closed",
+      "clockInTime": "2026-07-22T05:29:49.355Z",
+      "clockOutTime": "2026-07-22T05:32:11.547Z"
+    },
+    {
+      "id": "att-1784636034014",
+      "userId": "d71b7ed9-aede-4c80-a57a-2c9221ca5018",
+      "userName": "Tushar Bali",
+      "date": "2026-07-21",
+      "type": "WFH",
+      "status": "Closed",
+      "clockInTime": "2026-07-21T12:13:54.014Z",
+      "clockOutTime": "2026-07-21T12:13:56.677Z"
+    },
+    {
+      "id": "att-1784635992366",
+      "userId": "d71b7ed9-aede-4c80-a57a-2c9221ca5018",
+      "userName": "Tushar Bali",
+      "date": "2026-07-21",
+      "type": "WFH",
+      "status": "Closed",
+      "clockInTime": "2026-07-21T12:13:12.366Z",
+      "clockOutTime": "2026-07-21T12:13:15.215Z"
+    },
+    {
+      "id": "att-1784635936145",
+      "userId": "d71b7ed9-aede-4c80-a57a-2c9221ca5018",
+      "userName": "Tushar Bali",
+      "date": "2026-07-21",
+      "type": "WFH",
+      "status": "Closed",
+      "clockInTime": "2026-07-21T12:12:16.145Z",
+      "clockOutTime": "2026-07-21T12:13:04.283Z"
+    },
+    {
+      "id": "att-1784630519997",
+      "userId": "usr-3",
+      "userName": "Tushar bali",
+      "date": "2026-07-21",
+      "type": "WFH",
+      "status": "Open",
+      "clockInTime": "2026-07-21T10:41:59.997Z"
+    },
+    {
+      "id": "att-1784625609201",
+      "userId": "usr-3",
+      "userName": "Tushar bali",
+      "date": "2026-07-21",
+      "type": "WFO",
+      "status": "Closed",
+      "clockInTime": "2026-07-21T09:20:09.201Z",
+      "clockOutTime": "2026-07-21T09:20:11.299Z"
+    },
+    {
+      "id": "att-1784623114293",
+      "userId": "usr-3",
+      "userName": "Tushar bali",
+      "date": "2026-07-21",
+      "type": "WFO",
+      "status": "Closed",
+      "clockInTime": "2026-07-21T08:38:34.293Z",
+      "clockOutTime": "2026-07-21T08:43:29.239Z"
+    },
+    {
+      "id": "att-1784277777961",
+      "userId": "usr-3",
+      "userName": "Tushar bali",
+      "date": "2026-07-17",
+      "type": "WFO",
+      "status": "Closed",
+      "clockInTime": "2026-07-17T08:42:57.961Z",
+      "clockOutTime": "2026-07-21T08:38:28.473Z"
+    },
+    {
+      "id": "att-seed-1",
+      "userId": "usr-3",
+      "userName": "Tushar bali",
+      "date": "2026-07-17",
+      "type": "WFO",
+      "status": "Closed",
+      "clockInTime": "2026-07-17T04:00:00.000Z",
+      "clockOutTime": "2026-07-17T08:30:33.404Z"
+    },
+    {
+      "id": "att-seed-2",
+      "userId": "usr-101",
+      "userName": "Priya Desai, Esq.",
+      "date": "2026-07-17",
+      "type": "WFO",
+      "status": "Closed",
+      "clockInTime": "2026-07-17T03:30:00.000Z",
+      "clockOutTime": "2026-07-17T11:30:00.000Z"
+    }
+  ],
+  "leaveRequests": [
+    {
+      "id": "lv-1784695562249",
+      "userId": "usr-3",
+      "userName": "Tushar bali",
+      "startDate": "2026-07-22",
+      "endDate": "2026-07-22",
+      "reason": "Not feeling well",
+      "status": "Approved",
+      "createdAt": "2026-07-22T04:46:02.249Z"
+    },
+    {
+      "id": "lv-1784624221957",
+      "userId": "usr-3",
+      "userName": "Tushar bali",
+      "startDate": "2026-07-21",
+      "endDate": "2026-07-21",
+      "reason": "Not feeling well - testing note",
+      "status": "Approved",
+      "createdAt": "2026-07-21T08:57:01.957Z"
+    },
+    {
+      "id": "lv-1784623459008",
+      "userId": "usr-3",
+      "userName": "Tushar bali",
+      "startDate": "2026-07-21",
+      "endDate": "2026-07-21",
+      "reason": "Not feeling well",
+      "status": "Rejected",
+      "createdAt": "2026-07-21T08:44:19.008Z"
+    },
+    {
+      "id": "lv-seed-1",
+      "userId": "usr-104",
+      "userName": "Karan Malhotra",
+      "startDate": "2026-07-21",
+      "endDate": "2026-07-22",
+      "reason": "Personal work",
+      "status": "Rejected",
+      "createdAt": "2026-07-16T09:00:00.000Z"
+    }
+  ]
+}

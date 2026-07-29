@@ -1,0 +1,6 @@
+{
+  "name": "Ashutosh Nagar & Associates - Legal Practice Manager",
+  "description": "Complete SaaS platform for task assignment, team coordination, Kanban boarding, automated deadline reminders, and gemini AI-powered analytics and reports.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
