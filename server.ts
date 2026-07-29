@@ -82,7 +82,24 @@ function ensureInitialized(): Promise<void> {
 }
 
 app.use((req, res, next) => {
-  ensureInitialized().then(() => next()).catch(next);
+  ensureInitialized()
+    .then(() => {
+      // On Vercel, different requests can land on different serverless
+      // instances, each holding its own copy of memoryDb loaded once at cold
+      // start. Without this, a user/task/etc. created by a request handled
+      // on instance A never shows up for requests handled by instance B
+      // until B happens to cold-start again. Refreshing from Supabase on
+      // every request keeps reads consistent across instances; traditional
+      // hosts (Render/local, one persistent process) skip this since their
+      // single memoryDb is already kept current by every write.
+      if (process.env.VERCEL && supabaseAdmin) {
+        return loadMemoryDbFromSupabase().catch((err) => {
+          console.error("Failed to refresh memoryDb from Supabase:", err);
+        });
+      }
+    })
+    .then(() => next())
+    .catch(next);
 });
 
 // Initialize Gemini SDK with telemetry compliance User-Agent
