@@ -61,6 +61,31 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
   next();
 });
 
+// Lazily runs the Supabase seed/load sequence exactly once per process.
+// Traditional hosts (Render/local) trigger this from startServer() before
+// listening; serverless hosts (Vercel) have no such boot hook, so this
+// middleware guarantees it still runs before the first request is handled.
+let initPromise: Promise<void> | null = null;
+function ensureInitialized(): Promise<void> {
+  if (!initPromise) {
+    initPromise = (async () => {
+      if (supabaseAdmin) {
+        try {
+          await initializeSupabaseDatabase();
+          await loadMemoryDbFromSupabase();
+        } catch (err) {
+          console.error("Critical error during Supabase initialization sequence:", err);
+        }
+      }
+    })();
+  }
+  return initPromise;
+}
+
+app.use((req, res, next) => {
+  ensureInitialized().then(() => next()).catch(next);
+});
+
 // Initialize Gemini SDK with telemetry compliance User-Agent
 const geminiApiKey = process.env.GEMINI_API_KEY || "";
 let ai: GoogleGenAI | null = null;
@@ -2433,15 +2458,7 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
 
 // Integrate Vite Middleware for Client Application Access
 async function startServer() {
-  // If Supabase data client is active, ensure tables are seeded and fetch state
-  if (supabaseAdmin) {
-    try {
-      await initializeSupabaseDatabase();
-      await loadMemoryDbFromSupabase();
-    } catch (err) {
-      console.error("Critical error during Supabase initialization sequence:", err);
-    }
-  }
+  await ensureInitialized();
 
   if (process.env.NODE_ENV !== "production") {
     // Development mode
@@ -2465,4 +2482,12 @@ async function startServer() {
   });
 }
 
-startServer();
+// Vercel invokes this module as a serverless function per request (see api/index.ts)
+// instead of calling listen() on a persistent port, so the traditional boot
+// sequence (static file serving, vite dev middleware, app.listen) only runs
+// on hosts that actually own a long-lived process (Render, Railway, local dev).
+export default app;
+
+if (!process.env.VERCEL) {
+  startServer();
+}
