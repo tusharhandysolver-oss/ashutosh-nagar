@@ -6,7 +6,6 @@
 import express from "express";
 import path from "path";
 import fs from "fs";
-import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
@@ -2461,7 +2460,10 @@ async function startServer() {
   await ensureInitialized();
 
   if (process.env.NODE_ENV !== "production") {
-    // Development mode
+    // Development mode. Imported lazily (not at module top-level) so the
+    // vite dev-server toolchain is never pulled into the Vercel serverless
+    // function bundle, where it has no reason to run and can fail to load.
+    const { createServer: createViteServer } = await import("vite");
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa"
