@@ -1076,7 +1076,7 @@ app.post("/api/auth/oauth-profile", async (req, res) => {
   let user = db.users.find(u => u.email.toLowerCase() === data.user.email!.toLowerCase());
   if (!user) {
     user = { id: data.user.id, name: data.user.user_metadata?.full_name || data.user.user_metadata?.name || data.user.email.split("@")[0], email: data.user.email, role: "Team Member", department: "General", avatar: data.user.user_metadata?.avatar_url, createdAt: new Date().toISOString() };
-    db.users.push(user); writeDatabase(db);
+    db.users.push(user); await writeDatabase(db);
   }
   res.json({ success: true, user, token });
 });
@@ -1103,7 +1103,7 @@ app.post("/api/auth/login", async (req, res) => {
         createdAt: new Date().toISOString()
       };
       db.users.push(user);
-      writeDatabase(db);
+      await writeDatabase(db);
     }
     return res.json({ success: true, token: `mock-jwt-token-for-${user.id}`, user });
   }
@@ -1128,7 +1128,7 @@ app.post("/api/auth/login", async (req, res) => {
         createdAt: new Date().toISOString()
       };
       db.users.push(user);
-      writeDatabase(db);
+      await writeDatabase(db);
     }
     return res.json({ success: true, token: data.session.access_token, user });
   }
@@ -1191,7 +1191,7 @@ app.post("/api/auth/signup", async (req, res) => {
   };
 
   db.users.push(newUser);
-  writeDatabase(db);
+  await writeDatabase(db);
 
   res.status(201).json({
     success: true,
@@ -1206,7 +1206,7 @@ app.get("/api/users", (req, res) => {
   res.json(db.users);
 });
 
-app.put("/api/users/:id", (req, res) => {
+app.put("/api/users/:id", async (req, res) => {
   const { id } = req.params;
   const { name, phone, role, avatar } = req.body;
   const db = readDatabase();
@@ -1228,11 +1228,11 @@ app.put("/api/users/:id", (req, res) => {
     role: requestedRole,
     avatar: avatar?.trim() ? avatar : db.users[userIndex].avatar
   };
-  writeDatabase(db);
+  await writeDatabase(db);
   res.json(db.users[userIndex]);
 });
 
-app.post("/api/users", (req, res) => {
+app.post("/api/users", async (req, res) => {
   const { name, email, role, department, avatar } = req.body;
   const db = readDatabase();
 
@@ -1255,16 +1255,16 @@ app.post("/api/users", (req, res) => {
   };
 
   db.users.push(newUser);
-  writeDatabase(db);
+  await writeDatabase(db);
 
   res.status(201).json(newUser);
 });
 
-app.delete("/api/users/:id", (req, res) => {
+app.delete("/api/users/:id", async (req, res) => {
   const { id } = req.params;
   const db = readDatabase();
   db.users = db.users.filter((u) => u.id !== id);
-  writeDatabase(db);
+  await writeDatabase(db);
   res.json({ success: true });
 });
 
@@ -1274,7 +1274,7 @@ app.get("/api/projects", (req, res) => {
   res.json(db.projects);
 });
 
-app.post("/api/projects", (req, res) => {
+app.post("/api/projects", async (req, res) => {
   const { name, description, clientName, matterCode, practiceArea, status, budget, clientEmail, clientPhone } = req.body;
   const db = readDatabase();
 
@@ -1297,12 +1297,12 @@ app.post("/api/projects", (req, res) => {
   };
 
   db.projects.push(newProject);
-  writeDatabase(db);
+  await writeDatabase(db);
 
   res.status(201).json(newProject);
 });
 
-app.put("/api/projects/:id", (req, res) => {
+app.put("/api/projects/:id", async (req, res) => {
   const { id } = req.params;
   const { name, description, clientName, matterCode, practiceArea, status, budget, clientEmail, clientPhone } = req.body;
   const db = readDatabase();
@@ -1334,7 +1334,7 @@ app.put("/api/projects/:id", (req, res) => {
     });
   }
 
-  writeDatabase(db);
+  await writeDatabase(db);
   res.json(project);
 });
 
@@ -1346,7 +1346,7 @@ app.get("/api/tasks", (req, res) => {
   res.json(db.tasks);
 });
 
-app.post("/api/tasks", (req, res) => {
+app.post("/api/tasks", async (req, res) => {
   const { title, description, priority, stage, dueDate, assignedTo, projectId, tags, estimatedHours, attachments, isBillable, hourlyRate, clientApprovalStatus, matterCode } = req.body;
   const db = readDatabase();
 
@@ -1415,12 +1415,12 @@ app.post("/api/tasks", (req, res) => {
     timestamp: new Date().toISOString()
   });
 
-  writeDatabase(db);
+  await writeDatabase(db);
   res.status(201).json(newTask);
 });
 
 // Update Task (Full details or single-property drags)
-app.put("/api/tasks/:id", (req, res) => {
+app.put("/api/tasks/:id", async (req, res) => {
   const { id } = req.params;
   const updates = req.body;
   const db = readDatabase();
@@ -1518,7 +1518,7 @@ app.put("/api/tasks/:id", (req, res) => {
     timestamp: new Date().toISOString()
   });
 
-  writeDatabase(db);
+  await writeDatabase(db);
   res.json(updatedTask);
 });
 
@@ -1530,7 +1530,7 @@ app.get("/api/tasks/:id/comments", (req, res) => {
   res.json(taskComments);
 });
 
-app.post("/api/tasks/:id/comments", (req, res) => {
+app.post("/api/tasks/:id/comments", async (req, res) => {
   const { id } = req.params;
   const { comment, userId, userName } = req.body;
   const db = readDatabase();
@@ -1574,7 +1574,7 @@ app.post("/api/tasks/:id/comments", (req, res) => {
     createdAt: new Date().toISOString()
   });
 
-  writeDatabase(db);
+  await writeDatabase(db);
   res.status(201).json(newComment);
 });
 
@@ -1591,20 +1591,20 @@ app.get("/api/notifications", (req, res) => {
   res.json(userNotifications);
 });
 
-app.post("/api/notifications/:id/read", (req, res) => {
+app.post("/api/notifications/:id/read", async (req, res) => {
   const { id } = req.params;
   const db = readDatabase();
 
   const note = db.notifications.find((n) => n.id === id);
   if (note) {
     note.readStatus = true;
-    writeDatabase(db);
+    await writeDatabase(db);
   }
 
   res.json({ success: true });
 });
 
-app.post("/api/notifications/read-all", (req, res) => {
+app.post("/api/notifications/read-all", async (req, res) => {
   const { userId } = req.body;
   const db = readDatabase();
 
@@ -1614,7 +1614,7 @@ app.post("/api/notifications/read-all", (req, res) => {
     }
   });
 
-  writeDatabase(db);
+  await writeDatabase(db);
   res.json({ success: true });
 });
 
@@ -1624,7 +1624,7 @@ app.get("/api/settings", (req, res) => {
   res.json(db.settings);
 });
 
-app.post("/api/settings", (req, res) => {
+app.post("/api/settings", async (req, res) => {
   const updates = req.body;
   const db = readDatabase();
 
@@ -1633,7 +1633,7 @@ app.post("/api/settings", (req, res) => {
     ...updates
   };
 
-  writeDatabase(db);
+  await writeDatabase(db);
   res.json(db.settings);
 });
 
@@ -1654,7 +1654,7 @@ app.get("/api/goals", (req, res) => {
   res.json(db.goals || []);
 });
 
-app.post("/api/goals", (req, res) => {
+app.post("/api/goals", async (req, res) => {
   const { title, description, assignedTo, accountable, assignedBy, targetDate } = req.body;
   const db = readDatabase();
 
@@ -1723,11 +1723,11 @@ app.post("/api/goals", (req, res) => {
     });
   }
 
-  writeDatabase(db);
+  await writeDatabase(db);
   res.status(201).json(newGoal);
 });
 
-app.put("/api/goals/:id", (req, res) => {
+app.put("/api/goals/:id", async (req, res) => {
   const { id } = req.params;
   const updates = req.body;
   const db = readDatabase();
@@ -1788,11 +1788,11 @@ app.put("/api/goals/:id", (req, res) => {
     }
   });
 
-  writeDatabase(db);
+  await writeDatabase(db);
   res.json(updatedGoal);
 });
 
-app.delete("/api/goals/:id", (req, res) => {
+app.delete("/api/goals/:id", async (req, res) => {
   const { id } = req.params;
   const db = readDatabase();
 
@@ -1804,7 +1804,7 @@ app.delete("/api/goals/:id", (req, res) => {
     return res.status(404).json({ error: "Goal not found" });
   }
 
-  writeDatabase(db);
+  await writeDatabase(db);
   res.json({ success: true });
 });
 
@@ -1812,7 +1812,7 @@ app.delete("/api/goals/:id", (req, res) => {
 // Task Timer Play, Pause & Completion APIs
 // ==========================================
 
-app.post("/api/tasks/:id/play", (req, res) => {
+app.post("/api/tasks/:id/play", async (req, res) => {
   const { id } = req.params;
   const { userId, userName } = req.body;
   const db = readDatabase();
@@ -1859,11 +1859,11 @@ app.post("/api/tasks/:id/play", (req, res) => {
     timestamp: new Date().toISOString()
   });
 
-  writeDatabase(db);
+  await writeDatabase(db);
   res.json(task);
 });
 
-app.post("/api/tasks/:id/pause", (req, res) => {
+app.post("/api/tasks/:id/pause", async (req, res) => {
   const { id } = req.params;
   const { userId, userName } = req.body;
   const db = readDatabase();
@@ -1908,11 +1908,11 @@ app.post("/api/tasks/:id/pause", (req, res) => {
     timestamp: new Date().toISOString()
   });
 
-  writeDatabase(db);
+  await writeDatabase(db);
   res.json(task);
 });
 
-app.post("/api/tasks/:id/complete", (req, res) => {
+app.post("/api/tasks/:id/complete", async (req, res) => {
   const { id } = req.params;
   const { userId, userName } = req.body;
   const db = readDatabase();
@@ -1979,7 +1979,7 @@ app.post("/api/tasks/:id/complete", (req, res) => {
     timestamp: new Date().toISOString()
   });
 
-  writeDatabase(db);
+  await writeDatabase(db);
   res.json(task);
 });
 
@@ -2123,14 +2123,14 @@ app.get("/api/leaves", (req, res) => {
   res.json(leaves);
 });
 
-app.delete("/api/leaves", (req, res) => {
+app.delete("/api/leaves", async (req, res) => {
   const db = readDatabase();
   db.leaveRequests = [];
-  writeDatabase(db);
+  await writeDatabase(db);
   res.json({ success: true });
 });
 
-app.post("/api/leaves", (req, res) => {
+app.post("/api/leaves", async (req, res) => {
   const { userId, userName, startDate, endDate, reason } = req.body;
   const db = readDatabase();
 
@@ -2166,11 +2166,11 @@ app.post("/api/leaves", (req, res) => {
     });
   });
 
-  writeDatabase(db);
+  await writeDatabase(db);
   res.status(201).json(newLeave);
 });
 
-app.post("/api/leaves/:id/status", (req, res) => {
+app.post("/api/leaves/:id/status", async (req, res) => {
   const { id } = req.params;
   const { status, adminName } = req.body; // status: "Approved" | "Rejected"
   const db = readDatabase();
@@ -2199,7 +2199,7 @@ app.post("/api/leaves/:id/status", (req, res) => {
     createdAt: new Date().toISOString()
   });
 
-  writeDatabase(db);
+  await writeDatabase(db);
   res.json(leave);
 });
 
