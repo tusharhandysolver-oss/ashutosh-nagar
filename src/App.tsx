@@ -1057,8 +1057,8 @@ export default function App() {
                 <button
                   type="button"
                   onClick={handleSignUp}
-                  disabled={authLoading}
-                  className="w-full rounded-xl bg-gradient-to-r from-blue-700 to-cyan-600 hover:from-blue-800 hover:to-cyan-700 py-3 text-sm font-bold text-white transition-all hover:shadow-lg active:scale-98 cursor-pointer flex items-center justify-center gap-2 shadow-sm"
+                  disabled={authLoading || !signUpTermsAccepted}
+                  className="w-full rounded-xl bg-gradient-to-r from-blue-700 to-cyan-600 hover:from-blue-800 hover:to-cyan-700 py-3 text-sm font-bold text-white transition-all hover:shadow-lg active:scale-98 cursor-pointer flex items-center justify-center gap-2 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none"
                 >
                   {authLoading ? <RefreshCw className="h-4 w-4 animate-spin" /> : null}
                   <span>Create Account</span>
@@ -1240,7 +1240,7 @@ export default function App() {
       Calendar: "Team Calendar",
       ClientCases: "Client Cases",
       Attendance: "Attendance Logs"
-      ,Chatbot: "AI BOT"
+      ,Chatbot: "AI Bot"
     };
     return labels[view] || view;
   };
@@ -1291,7 +1291,7 @@ export default function App() {
                   { id: "Calendar", label: "Team Calendar", icon: CalendarIcon, color: "bg-blue-800 text-white" },
                   { id: "ClientCases", label: "Client Cases", icon: Briefcase, color: "bg-blue-800 text-white" },
                   { id: "Attendance", label: "Attendance Logs", icon: Clock, color: "bg-blue-800 text-white" },
-                  { id: "Chatbot", label: "AI BOT", icon: Bot, color: "bg-blue-800 text-white" }
+                  { id: "Chatbot", label: "AI Bot", icon: Bot, color: "bg-blue-800 text-white" }
                 ].map((item) => {
                   const Icon = item.icon;
                   const isActive = currentView === item.id;
@@ -1345,7 +1345,7 @@ export default function App() {
           { id: "Calendar", label: "Team Calendar", icon: CalendarIcon },
           { id: "ClientCases", label: "Clients", icon: Briefcase },
           { id: "Attendance", label: "Logs", icon: Clock },
-          { id: "Chatbot", label: "AI BOT", icon: Bot }
+          { id: "Chatbot", label: "AI Bot", icon: Bot }
         ].map((item) => {
           const Icon = item.icon;
           const isActive = currentView === item.id;

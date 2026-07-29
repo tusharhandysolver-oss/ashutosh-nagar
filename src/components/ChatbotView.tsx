@@ -15,7 +15,7 @@ export default function ChatbotView({ users }: { users: User[] }) {
   const [loading, setLoading] = useState(false);
   const [messages, setMessages] = useState<Message[]>([{
     role: "bot",
-    text: "Hi! I am AI BOT. I can summarize live attendance, leave, and case progress records from your workspace."
+    text: "Hi! I am AI Bot. I can summarize live attendance, leave, and case progress records from your workspace."
   }]);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -131,7 +131,7 @@ export default function ChatbotView({ users }: { users: User[] }) {
                 <span className="absolute -right-1 -top-1 h-3.5 w-3.5 rounded-full border-2 border-blue-950 bg-emerald-400" />
               </div>
               <div>
-                <div className="flex items-center gap-2"><h2 className="text-2xl font-extrabold">AI BOT</h2><span className="rounded-full bg-blue-400/15 px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-blue-200">Agent</span></div>
+                <div className="flex items-center gap-2"><h2 className="text-2xl font-extrabold">AI Bot</h2><span className="rounded-full bg-blue-400/15 px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-blue-200">Agent</span></div>
                 <p className="mt-1 text-xs text-blue-200/75">Your intelligent workspace assistant</p>
               </div>
             </div>
@@ -172,7 +172,7 @@ export default function ChatbotView({ users }: { users: User[] }) {
                 <input ref={inputRef} value={question} onChange={e => setQuestion(e.target.value)} placeholder="Ask about any user, task, comment or activity..." className="min-w-0 flex-1 border-0 bg-transparent px-3 py-2 text-sm outline-none focus:shadow-none" />
                 <button disabled={!question.trim() || loading} aria-label="Send message" className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-blue-700 text-white transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-40"><ArrowUp className="h-4 w-4" /></button>
               </form>
-              <p className="mt-2 text-center text-[10px] text-slate-400">AI BOT summarizes your current workspace records. Verify critical decisions.</p>
+              <p className="mt-2 text-center text-[10px] text-slate-400">AI Bot summarizes your current workspace records. Verify critical decisions.</p>
             </div>
           </section>
         </div>
