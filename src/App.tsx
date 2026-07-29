@@ -1067,8 +1067,8 @@ export default function App() {
             </div>
           )}
           <p className="border-t border-slate-100 pt-4 text-center text-xs font-medium text-slate-500">
-            <span className="mr-1 text-rose-500" aria-hidden="true">♡</span>
-            made with love by handysolver @2026
+            <span className="mr-1" aria-hidden="true">🧡</span>
+            Made with love by Handysolver © 2026
           </p>
         </motion.div>
 
@@ -1326,9 +1326,9 @@ export default function App() {
         </div>
 
         <div className={sidebarCollapsed ? "px-3" : "px-5"}>
-          <p title="made with love by handysolver @2026" className={`mb-2 text-center text-[10px] font-medium leading-relaxed text-slate-400 ${sidebarCollapsed ? "text-base" : ""}`}>
-            <span className="text-rose-400" aria-hidden="true">♡</span>
-            {!sidebarCollapsed && <span> made with love by handysolver @2026</span>}
+          <p title="Made with love by Handysolver © 2026" className={`mb-2 text-center text-[10px] font-medium leading-relaxed text-slate-400 ${sidebarCollapsed ? "text-base" : ""}`}>
+            <span aria-hidden="true">🧡</span>
+            {!sidebarCollapsed && <span> Made with love by Handysolver © 2026</span>}
           </p>
           <button onClick={() => setSidebarCollapsed(!sidebarCollapsed)} className="sidebar-collapse" aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}>
             {sidebarCollapsed ? <PanelLeftOpen className="h-4 w-4" /> : <><PanelLeftClose className="h-4 w-4" /><span>Collapse</span></>}
