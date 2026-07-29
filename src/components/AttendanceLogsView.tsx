@@ -26,6 +26,7 @@ interface AttendanceLogsViewProps {
   currentUser: User;
   users: User[];
   onUpdateLeaveStatus: (leaveId: string, status: "Approved" | "Rejected") => void;
+  onCelebrate?: (title: string, message: string) => void;
 }
 
 const leaveReasonOptions = [
@@ -37,7 +38,8 @@ const leaveReasonOptions = [
 export default function AttendanceLogsView({ 
   currentUser, 
   users, 
-  onUpdateLeaveStatus 
+  onUpdateLeaveStatus,
+  onCelebrate
 }: AttendanceLogsViewProps) {
   // Default to the current local date dynamically as requested by the user
   const [selectedDate, setSelectedDate] = useState<string>(() => {
@@ -150,7 +152,10 @@ export default function AttendanceLogsView({
         })
       });
       if (res.ok) {
-        await fetchData();
+        const created: Attendance = await res.json();
+        setAttendances((current) => [created, ...current.filter((row) => row.id !== created.id)]);
+        onCelebrate?.("Attendance marked!", `You have successfully clocked in from ${created.type}.`);
+        void fetchData();
       } else {
         const err = await res.json();
         setErrorMessage(err.error || "Failed to register clock-in.");
@@ -172,7 +177,10 @@ export default function AttendanceLogsView({
         body: JSON.stringify({ userId: currentUser.id })
       });
       if (res.ok) {
-        await fetchData();
+        const updated: Attendance = await res.json();
+        setAttendances((current) => current.map((row) => row.id === updated.id ? updated : row));
+        onCelebrate?.("Day complete!", "You have successfully clocked out. Great work today.");
+        void fetchData();
       } else {
         const err = await res.json();
         setErrorMessage(err.error || "Failed to register clock-out.");

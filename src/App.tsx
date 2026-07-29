@@ -528,6 +528,9 @@ export default function App() {
       });
 
       if (res.ok) {
+        const createdTask: Task = await res.json();
+        setTasksList((current) => [createdTask, ...current.filter((task) => task.id !== createdTask.id)]);
+        triggerCelebration("Task created!", `“${createdTask.title}” has been created successfully.`);
         // Reset states
         setNewTaskTitle("");
         setNewTaskDesc("");
@@ -538,7 +541,7 @@ export default function App() {
         setNewTaskClientApproval("Not Required");
         setNewTaskMatterCode("");
         setShowCreateTaskModal(false);
-        fetchDatabase(); // Refresh charts & lists
+        void fetchDatabase(); // Reconcile the remaining dashboard data in the background.
       } else {
         const d = await res.json().catch(() => null);
         setCreateTaskError(d?.error || "Failed to create task.");
@@ -734,7 +737,10 @@ export default function App() {
         body: JSON.stringify(pFields)
       });
       if (res.ok) {
-        fetchDatabase();
+        const createdProject: Project = await res.json();
+        setProjectsList((current) => [...current.filter((project) => project.id !== createdProject.id), createdProject]);
+        triggerCelebration("Case created!", `“${createdProject.name}” has been created successfully.`);
+        void fetchDatabase();
         return true;
       }
       return false;
@@ -1575,6 +1581,7 @@ export default function App() {
                   currentUser={currentUser}
                   users={usersList}
                   onUpdateLeaveStatus={handleUpdateLeaveStatus}
+                  onCelebrate={triggerCelebration}
                 />
               )}
               {currentView === "Chatbot" && <ChatbotView users={usersList} />}

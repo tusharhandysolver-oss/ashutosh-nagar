@@ -142,7 +142,10 @@ export default function DashboardView({
       if (res.ok) {
         const data = await res.json();
         setTodayAttendance(data);
-        fetchAttendanceAndLeaves();
+        setAllAttendances((current) => [data, ...current.filter((row) => row.id !== data.id)]);
+        setShowPresenceModal(false);
+        onCelebrate?.("Attendance marked!", `You have successfully clocked in from ${data.type}.`);
+        void fetchAttendanceAndLeaves();
       } else {
         const err = await res.json();
         setAttendanceError(err.error || "Failed to mark attendance.");
@@ -166,7 +169,8 @@ export default function DashboardView({
       if (res.ok) {
         const data = await res.json();
         setTodayAttendance(data);
-        fetchAttendanceAndLeaves();
+        setAllAttendances((current) => current.map((row) => row.id === data.id ? data : row));
+        void fetchAttendanceAndLeaves();
         onCelebrate?.("Day complete!", "You have successfully clocked out. Great work today.");
       } else {
         const err = await res.json();
