@@ -581,8 +581,6 @@ export default function App() {
           triggerCelebration("Case completed!", freshTask.title ? `${freshTask.title} is now complete.` : "The task is now complete.");
         }
         
-        // Refresh fully to reload logs & audits
-        fetchDatabase();
       }
     } catch (e) {
       console.error(e);
@@ -662,7 +660,6 @@ export default function App() {
         if (selectedTask && selectedTask.id === task.id) {
           setSelectedTask(freshTask);
         }
-        fetchDatabase();
       }
     } catch (e) {
       console.error(e);
@@ -682,7 +679,6 @@ export default function App() {
         if (selectedTask && selectedTask.id === task.id) {
           setSelectedTask(freshTask);
         }
-        fetchDatabase();
       }
     } catch (e) {
       console.error(e);
@@ -1646,7 +1642,22 @@ export default function App() {
             currentUser={currentUser}
             users={usersList}
             onClose={() => setSelectedTask(null)}
-            onUpdate={(fields) => handleUpdateTask(selectedTask.id, fields)}
+            onUpdate={(fields) => {
+              // Timer endpoints already return the fully persisted task. Apply it
+              // directly instead of sending a second PUT that can restore stale state.
+              if ("id" in fields && fields.id === selectedTask.id) {
+                const freshTask = fields as Task;
+                const wasComplete = selectedTask.status === "Completed" || selectedTask.stage === "Completed";
+                const isComplete = freshTask.status === "Completed" || freshTask.stage === "Completed";
+                setTasksList((current) => current.map((task) => task.id === freshTask.id ? freshTask : task));
+                setSelectedTask(freshTask);
+                if (!wasComplete && isComplete) {
+                  triggerCelebration("Task completed!", `${freshTask.title} is now in the Completed column.`);
+                }
+                return;
+              }
+              void handleUpdateTask(selectedTask.id, fields);
+            }}
           />
         )}
       </AnimatePresence>

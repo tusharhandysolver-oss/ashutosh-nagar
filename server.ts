@@ -739,6 +739,14 @@ const rowMappers = {
   }
 };
 
+async function persistTaskRow(task: AppData["tasks"][number]) {
+  if (!supabaseAdmin) return;
+  const { error } = await supabaseAdmin
+    .from("tasks")
+    .upsert(rowMappers.tasks.toRow(task), { onConflict: "id" });
+  if (error) throw new Error(error.message);
+}
+
 // Sync one collection: delete rows no longer present locally, then upsert the current rows.
 async function syncTable<T extends keyof typeof rowMappers>(table: T, localRows: any[]) {
   if (!supabaseAdmin) return;
@@ -1343,6 +1351,7 @@ app.get("/api/tasks", (req, res) => {
   // Let's run a check on reminders before returning tasks
   runReminderScanner();
   const db = readDatabase();
+  res.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
   res.json(db.tasks);
 });
 
@@ -1474,6 +1483,8 @@ app.put("/api/tasks/:id", async (req, res) => {
     actionDetails = `Updated Task status from "${oldStatus}" to "${updates.status}"`;
     if (updates.status === "Completed") {
       updates.stage = "Completed";
+      updates.timerState = "idle";
+      updates.lastStartedAt = null;
     } else if (oldStatus === "Completed" && (!updates.stage || updates.stage === "Completed")) {
       updates.stage = updates.status === "Not Started" ? "Case Intake" : "In Progress";
     }
@@ -1542,8 +1553,17 @@ app.put("/api/tasks/:id", async (req, res) => {
     timestamp: new Date().toISOString()
   });
 
-  await writeDatabase(db);
-  res.json(updatedTask);
+  try {
+    await persistTaskRow(updatedTask);
+    void writeDatabase(db);
+    res.json(updatedTask);
+  } catch (error) {
+    db.tasks[taskIndex] = task;
+    db.notifications.shift();
+    db.activityLogs.shift();
+    console.error("Task update persistence failed:", error);
+    res.status(500).json({ error: "Task update could not be saved. Please try again." });
+  }
 });
 
 // Comments API
@@ -1847,7 +1867,7 @@ app.post("/api/tasks/:id/play", async (req, res) => {
   }
 
   const task = db.tasks[taskIndex];
-  const oldStatus = task.status;
+  const previousTask = { ...task };
 
   // Set timer to running
   task.timerState = "running";
@@ -1859,6 +1879,7 @@ app.post("/api/tasks/:id/play", async (req, res) => {
   if (!task.startedAt) {
     task.startedAt = new Date().toISOString();
   }
+  task.lastUpdatedDate = new Date().toISOString();
 
   const message = `⏱️ TIMER STARTED: ${userName || "Team member"} started the timer on "${task.title}" (${task.id}).`;
 
@@ -1883,8 +1904,17 @@ app.post("/api/tasks/:id/play", async (req, res) => {
     timestamp: new Date().toISOString()
   });
 
-  await writeDatabase(db);
-  res.json(task);
+  try {
+    await persistTaskRow(task);
+    void writeDatabase(db);
+    res.json(task);
+  } catch (error) {
+    db.tasks[taskIndex] = previousTask;
+    db.notifications.shift();
+    db.activityLogs.shift();
+    console.error("Task timer start persistence failed:", error);
+    res.status(500).json({ error: "Timer start could not be saved. Please try again." });
+  }
 });
 
 app.post("/api/tasks/:id/pause", async (req, res) => {
@@ -1898,6 +1928,7 @@ app.post("/api/tasks/:id/pause", async (req, res) => {
   }
 
   const task = db.tasks[taskIndex];
+  const previousTask = { ...task };
 
   if (task.timerState === "running" && task.lastStartedAt) {
     const elapsedMs = Date.now() - new Date(task.lastStartedAt).getTime();
@@ -1908,6 +1939,7 @@ app.post("/api/tasks/:id/pause", async (req, res) => {
 
   task.timerState = "paused";
   task.lastStartedAt = null;
+  task.lastUpdatedDate = new Date().toISOString();
 
   const totalHrs = task.totalActiveMs ? (task.totalActiveMs / (1000 * 60 * 60)).toFixed(2) : "0.00";
   const message = `⏱️ TIMER PAUSED: ${userName || "Team member"} paused the work timer on "${task.title}" (${task.id}). Total tracked: ${totalHrs} hrs.`;
@@ -1932,8 +1964,17 @@ app.post("/api/tasks/:id/pause", async (req, res) => {
     timestamp: new Date().toISOString()
   });
 
-  await writeDatabase(db);
-  res.json(task);
+  try {
+    await persistTaskRow(task);
+    void writeDatabase(db);
+    res.json(task);
+  } catch (error) {
+    db.tasks[taskIndex] = previousTask;
+    db.notifications.shift();
+    db.activityLogs.shift();
+    console.error("Task timer pause persistence failed:", error);
+    res.status(500).json({ error: "Timer pause could not be saved. Please try again." });
+  }
 });
 
 app.post("/api/tasks/:id/complete", async (req, res) => {
@@ -1947,6 +1988,7 @@ app.post("/api/tasks/:id/complete", async (req, res) => {
   }
 
   const task = db.tasks[taskIndex];
+  const previousTask = { ...task };
 
   // If timer is running, calculate final elapsed
   if (task.timerState === "running" && task.lastStartedAt) {
@@ -1961,6 +2003,7 @@ app.post("/api/tasks/:id/complete", async (req, res) => {
   task.status = "Completed";
   task.stage = "Completed";
   task.completedAt = new Date().toISOString();
+  task.lastUpdatedDate = task.completedAt;
 
   if (task.totalActiveMs) {
     task.actualHoursElapsed = parseFloat((task.totalActiveMs / (1000 * 60 * 60)).toFixed(2));
@@ -2003,8 +2046,17 @@ app.post("/api/tasks/:id/complete", async (req, res) => {
     timestamp: new Date().toISOString()
   });
 
-  await writeDatabase(db);
-  res.json(task);
+  try {
+    await persistTaskRow(task);
+    void writeDatabase(db);
+    res.json(task);
+  } catch (error) {
+    db.tasks[taskIndex] = previousTask;
+    db.notifications.shift();
+    db.activityLogs.shift();
+    console.error("Task completion persistence failed:", error);
+    res.status(500).json({ error: "Task completion could not be saved. Please try again." });
+  }
 });
 
 // ==========================================
