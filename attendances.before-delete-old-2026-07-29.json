@@ -1,0 +1,102 @@
+[
+  {
+    "id": "att-1784789034796",
+    "user_id": "usr-3",
+    "user_name": "Tushar bali",
+    "date": "2026-07-23",
+    "type": "WFH",
+    "status": "Closed",
+    "clock_in_time": "2026-07-23T06:43:54.797+00:00",
+    "clock_out_time": "2026-07-23T06:48:50.144+00:00"
+  },
+  {
+    "id": "att-1784698189355",
+    "user_id": "usr-3",
+    "user_name": "Tushar bali",
+    "date": "2026-07-22",
+    "type": "WFH",
+    "status": "Closed",
+    "clock_in_time": "2026-07-22T05:29:49.355+00:00",
+    "clock_out_time": "2026-07-22T05:32:11.547+00:00"
+  },
+  {
+    "id": "att-1784636034014",
+    "user_id": "d71b7ed9-aede-4c80-a57a-2c9221ca5018",
+    "user_name": "Tushar Bali",
+    "date": "2026-07-21",
+    "type": "WFH",
+    "status": "Closed",
+    "clock_in_time": "2026-07-21T12:13:54.014+00:00",
+    "clock_out_time": "2026-07-21T12:13:56.677+00:00"
+  },
+  {
+    "id": "att-1784635992366",
+    "user_id": "d71b7ed9-aede-4c80-a57a-2c9221ca5018",
+    "user_name": "Tushar Bali",
+    "date": "2026-07-21",
+    "type": "WFH",
+    "status": "Closed",
+    "clock_in_time": "2026-07-21T12:13:12.366+00:00",
+    "clock_out_time": "2026-07-21T12:13:15.215+00:00"
+  },
+  {
+    "id": "att-1784635936145",
+    "user_id": "d71b7ed9-aede-4c80-a57a-2c9221ca5018",
+    "user_name": "Tushar Bali",
+    "date": "2026-07-21",
+    "type": "WFH",
+    "status": "Closed",
+    "clock_in_time": "2026-07-21T12:12:16.145+00:00",
+    "clock_out_time": "2026-07-21T12:13:04.283+00:00"
+  },
+  {
+    "id": "att-1784630519997",
+    "user_id": "usr-3",
+    "user_name": "Tushar bali",
+    "date": "2026-07-21",
+    "type": "WFH",
+    "status": "Open",
+    "clock_in_time": "2026-07-21T10:41:59.997+00:00",
+    "clock_out_time": null
+  },
+  {
+    "id": "att-1784625609201",
+    "user_id": "usr-3",
+    "user_name": "Tushar bali",
+    "date": "2026-07-21",
+    "type": "WFO",
+    "status": "Closed",
+    "clock_in_time": "2026-07-21T09:20:09.201+00:00",
+    "clock_out_time": "2026-07-21T09:20:11.299+00:00"
+  },
+  {
+    "id": "att-1784623114293",
+    "user_id": "usr-3",
+    "user_name": "Tushar bali",
+    "date": "2026-07-21",
+    "type": "WFO",
+    "status": "Closed",
+    "clock_in_time": "2026-07-21T08:38:34.293+00:00",
+    "clock_out_time": "2026-07-21T08:43:29.239+00:00"
+  },
+  {
+    "id": "att-1784277777961",
+    "user_id": "usr-3",
+    "user_name": "Tushar bali",
+    "date": "2026-07-17",
+    "type": "WFO",
+    "status": "Closed",
+    "clock_in_time": "2026-07-17T08:42:57.961+00:00",
+    "clock_out_time": "2026-07-21T08:38:28.473+00:00"
+  },
+  {
+    "id": "att-seed-1",
+    "user_id": "usr-3",
+    "user_name": "Tushar bali",
+    "date": "2026-07-17",
+    "type": "WFO",
+    "status": "Closed",
+    "clock_in_time": "2026-07-17T04:00:00+00:00",
+    "clock_out_time": "2026-07-17T08:30:33.404+00:00"
+  }
+]

@@ -644,8 +644,6 @@ function mapStage(stage: any): "Case Intake" | "In Progress" | "Completed" {
 
 // Cache memory database representing current live application state
 let memoryDb: AppData | null = null;
-let isSyncing = false;
-let pendingSync = false;
 
 // Supabase's live tables use snake_case (created independently of this app);
 // the app's in-memory AppData shape uses camelCase. These mappers translate both ways.
@@ -847,14 +845,23 @@ async function loadMemoryDbFromSupabase() {
   }
 }
 
-// 3. Sync memoryDb to Supabase (upserts current rows, deletes rows no longer present locally)
-async function syncMemoryDbToSupabase() {
+// 3. Sync memoryDb to Supabase (upserts current rows, deletes rows no longer present locally).
+// Runs are serialized on a promise chain (rather than a skip-if-busy flag) so that
+// every caller's `await syncMemoryDbToSupabase()` is guaranteed to resolve only once
+// a sync that reflects their own write has actually completed. On a serverless host
+// the request/response can end the moment the handler returns, so a "fire and skip"
+// sync (the old isSyncing/pendingSync guard) could get dropped entirely before it
+// ever ran, silently losing the write.
+let syncChain: Promise<void> = Promise.resolve();
+function syncMemoryDbToSupabase(): Promise<void> {
+  if (!supabaseAdmin || !memoryDb) return Promise.resolve();
+  const run = syncChain.then(doSyncMemoryDbToSupabase, doSyncMemoryDbToSupabase);
+  syncChain = run;
+  return run;
+}
+
+async function doSyncMemoryDbToSupabase() {
   if (!supabaseAdmin || !memoryDb) return;
-  if (isSyncing) {
-    pendingSync = true;
-    return;
-  }
-  isSyncing = true;
   try {
     const db = JSON.parse(JSON.stringify(memoryDb)); // Deep copy to prevent race conditions during express routing updates
 
@@ -878,12 +885,6 @@ async function syncMemoryDbToSupabase() {
     console.log('Live state synchronized to Supabase successfully.');
   } catch (err) {
     console.error('Error synchronizing state to Supabase:', err);
-  } finally {
-    isSyncing = false;
-    if (pendingSync) {
-      pendingSync = false;
-      syncMemoryDbToSupabase();
-    }
   }
 }
 
@@ -954,7 +955,12 @@ function readDatabase(): AppData {
   return initialData;
 }
 
-function writeDatabase(data: AppData) {
+// Callers that can afford to (route handlers that haven't already responded)
+// should `await` this so the write is durably in Supabase before the HTTP
+// response goes out - see syncMemoryDbToSupabase() for why that matters on
+// a serverless host. Callers that don't await it keep the old fire-and-forget
+// behavior, which is fine for local/persistent hosts.
+function writeDatabase(data: AppData): Promise<void> {
   memoryDb = data;
   try {
     fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2), "utf-8");
@@ -963,8 +969,9 @@ function writeDatabase(data: AppData) {
   }
 
   if (supabaseAdmin) {
-    syncMemoryDbToSupabase();
+    return syncMemoryDbToSupabase();
   }
+  return Promise.resolve();
 }
 
 // Automatic reminder scheduler scanner
@@ -1994,7 +2001,7 @@ function getAttendanceDateKey(date = new Date()) {
   return `${value("year")}-${value("month")}-${value("day")}`;
 }
 
-app.post("/api/attendance/clock-in", (req, res) => {
+app.post("/api/attendance/clock-in", async (req, res) => {
   const { userId, userName, type } = req.body;
   const db = readDatabase();
 
@@ -2041,11 +2048,11 @@ app.post("/api/attendance/clock-in", (req, res) => {
     });
   });
 
-  writeDatabase(db);
+  await writeDatabase(db);
   res.status(201).json(newAttendance);
 });
 
-app.post("/api/attendance/clock-out", (req, res) => {
+app.post("/api/attendance/clock-out", async (req, res) => {
   const { userId } = req.body;
   const db = readDatabase();
 
@@ -2084,7 +2091,7 @@ app.post("/api/attendance/clock-out", (req, res) => {
     });
   });
 
-  writeDatabase(db);
+  await writeDatabase(db);
   res.json(record);
 });
 
