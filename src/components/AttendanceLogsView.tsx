@@ -82,8 +82,8 @@ export default function AttendanceLogsView({
     setErrorMessage("");
     try {
       const [attRes, leaveRes] = await Promise.all([
-        fetch("/api/attendance"),
-        fetch("/api/leaves")
+        fetch(`/api/attendance?_=${Date.now()}`, { cache: "no-store" }),
+        fetch(`/api/leaves?_=${Date.now()}`, { cache: "no-store" })
       ]);
       if (attRes.ok) {
         const attData = await attRes.json();

@@ -2016,6 +2016,7 @@ app.get("/api/attendance", (req, res) => {
   const db = readDatabase();
   let records = db.attendances || [];
 
+  res.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
   if (userId) {
     records = records.filter((r) => r.userId === userId);
   }
@@ -2076,6 +2077,20 @@ app.post("/api/attendance/clock-in", async (req, res) => {
 
   db.attendances.unshift(newAttendance);
 
+  // Verify the attendance row itself is durably stored before reporting success.
+  // The full-state sync below also persists notifications, but historically it
+  // logged Supabase errors without failing this request.
+  if (supabaseAdmin) {
+    const { error } = await supabaseAdmin
+      .from("attendances")
+      .upsert(rowMappers.attendances.toRow(newAttendance), { onConflict: "id" });
+    if (error) {
+      db.attendances.shift();
+      console.error("Attendance clock-in persistence failed:", error.message);
+      return res.status(500).json({ error: "Clock-in could not be saved. Please try again." });
+    }
+  }
+
   // Notify Admins
   const admins = db.users.filter((u) => u.role === "Admin" || u.role === "Manager");
   admins.forEach((admin) => {
@@ -2116,8 +2131,21 @@ app.post("/api/attendance/clock-out", async (req, res) => {
   }
 
   const record = db.attendances[openRecordIndex];
+  const previousClockOutTime = record.clockOutTime;
   record.status = "Closed";
   record.clockOutTime = new Date().toISOString();
+
+  if (supabaseAdmin) {
+    const { error } = await supabaseAdmin
+      .from("attendances")
+      .upsert(rowMappers.attendances.toRow(record), { onConflict: "id" });
+    if (error) {
+      record.status = "Open";
+      record.clockOutTime = previousClockOutTime;
+      console.error("Attendance clock-out persistence failed:", error.message);
+      return res.status(500).json({ error: "Clock-out could not be saved. Please try again." });
+    }
+  }
 
   // Notify Admins
   const admins = db.users.filter((u) => u.role === "Admin" || u.role === "Manager");
