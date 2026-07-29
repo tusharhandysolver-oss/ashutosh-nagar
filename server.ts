@@ -1347,31 +1347,38 @@ app.get("/api/tasks", (req, res) => {
 });
 
 app.post("/api/tasks", async (req, res) => {
-  const { title, description, priority, stage, dueDate, assignedTo, projectId, tags, estimatedHours, attachments, isBillable, hourlyRate, clientApprovalStatus, matterCode } = req.body;
+  const { title, description, priority, stage, dueDate, assignedTo, projectId, tags, estimatedHours, attachments, isBillable, hourlyRate, clientApprovalStatus, matterCode, createdBy } = req.body;
   const db = readDatabase();
 
-  if (!title || !dueDate || !assignedTo || !projectId) {
+  if (!title?.trim() || !dueDate || !assignedTo || !projectId || !createdBy) {
     return res.status(400).json({ error: "Title, Due Date, Assignee and Project are required." });
   }
 
   const project = db.projects.find((p) => p.id === projectId);
   const assignee = db.users.find((u) => u.id === assignedTo);
+  const creator = db.users.find((u) => u.id === createdBy);
+  if (!project) {
+    return res.status(400).json({ error: "Please select a valid project." });
+  }
+  if (!assignee) {
+    return res.status(400).json({ error: "Please select a valid assignee." });
+  }
+  if (!creator) {
+    return res.status(401).json({ error: "Your login session is no longer valid. Please sign in again." });
+  }
 
   // Generate complete sequence Task ID
-  const lastTask = db.tasks[db.tasks.length - 1];
-  let nextNum = 1006;
-  if (lastTask && lastTask.id.startsWith("TSK-")) {
-    const lastNum = parseInt(lastTask.id.split("-")[1]);
-    if (!isNaN(lastNum)) {
-      nextNum = lastNum + 1;
-    }
-  }
+  const highestTaskNumber = db.tasks.reduce((highest, task) => {
+    const match = /^TSK-(\d+)$/.exec(task.id);
+    return match ? Math.max(highest, Number(match[1])) : highest;
+  }, 1005);
+  const nextNum = highestTaskNumber + 1;
 
   const nextId = `TSK-${nextNum}`;
 
   const newTask = {
     id: nextId,
-    title,
+    title: title.trim(),
     description: description || "",
     priority: (priority || "Medium") as "Critical" | "High" | "Medium" | "Low",
     status: "Not Started" as const,
@@ -1379,10 +1386,10 @@ app.post("/api/tasks", async (req, res) => {
     dueDate,
     createdAt: new Date().toISOString(),
     lastUpdatedDate: new Date().toISOString(),
-    assignedBy: "usr-2", // Default to marcus representing lead log
+    assignedBy: creator.id,
     assignedTo,
     projectId,
-    projectName: project ? project.name : "General Project",
+    projectName: project.name,
     tags: tags || [],
     estimatedHours: estimatedHours ? Number(estimatedHours) : 0,
     actualHours: 0,
@@ -1409,14 +1416,31 @@ app.post("/api/tasks", async (req, res) => {
   db.activityLogs.unshift({
     id: `log-${Date.now()}`,
     taskId: nextId,
-    userId: "usr-2",
-    userName: "Marcus Vance",
+    userId: creator.id,
+    userName: creator.name,
     action: `Created task ${nextId} and assigned to ${assignee?.name || "Team member"}`,
     timestamp: new Date().toISOString()
   });
 
-  await writeDatabase(db);
-  res.status(201).json(newTask);
+  try {
+    if (supabaseAdmin) {
+      const { error } = await supabaseAdmin
+        .from("tasks")
+        .upsert(rowMappers.tasks.toRow(newTask), { onConflict: "id" });
+      if (error) {
+        db.tasks.pop();
+        db.notifications.shift();
+        db.activityLogs.shift();
+        console.error("Task creation failed in Supabase:", error.message);
+        return res.status(500).json({ error: "Task could not be saved in the database. Please try again." });
+      }
+    }
+    await writeDatabase(db);
+    res.status(201).json(newTask);
+  } catch (error) {
+    console.error("Task creation failed:", error);
+    res.status(500).json({ error: "Task could not be saved. Please try again." });
+  }
 });
 
 // Update Task (Full details or single-property drags)

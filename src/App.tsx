@@ -516,7 +516,8 @@ export default function App() {
       isBillable: newTaskIsBillable,
       hourlyRate: Number(newTaskHourlyRate),
       clientApprovalStatus: newTaskClientApproval,
-      matterCode: newTaskMatterCode
+      matterCode: newTaskMatterCode,
+      createdBy: currentUser?.id
     };
 
     try {
@@ -539,8 +540,8 @@ export default function App() {
         setShowCreateTaskModal(false);
         fetchDatabase(); // Refresh charts & lists
       } else {
-        const d = await res.json();
-        setCreateTaskError(d.error || "Failed to create task.");
+        const d = await res.json().catch(() => null);
+        setCreateTaskError(d?.error || "Failed to create task.");
       }
     } catch (error) {
       setCreateTaskError("Task dispatcher service unreachable.");
