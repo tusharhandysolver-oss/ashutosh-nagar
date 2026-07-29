@@ -48,6 +48,7 @@ import {
   Settings,
   Camera
   ,Bot
+  ,X
 } from "lucide-react";
 
 const SESSION_STORAGE_KEY = "legal_app_session_user";
@@ -930,6 +931,8 @@ export default function App() {
                     <button
                       type="button"
                       onClick={() => setShowLoginPassword(!showLoginPassword)}
+                      aria-label={showLoginPassword ? "Hide password" : "Show password"}
+                      title={showLoginPassword ? "Hide password" : "Show password"}
                       className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-600 cursor-pointer"
                     >
                       {showLoginPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -1017,6 +1020,8 @@ export default function App() {
                     <button
                       type="button"
                       onClick={() => setShowSignUpPassword(!showSignUpPassword)}
+                      aria-label={showSignUpPassword ? "Hide password" : "Show password"}
+                      title={showSignUpPassword ? "Hide password" : "Show password"}
                       className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-600 cursor-pointer"
                     >
                       {showSignUpPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -1097,9 +1102,11 @@ export default function App() {
                   <button
                     type="button"
                     onClick={() => setShowTermsModal(false)}
-                    className="text-slate-400 hover:text-slate-600 bg-slate-100 hover:bg-slate-200 p-1.5 rounded-full transition-all cursor-pointer text-xs font-black"
+                    aria-label="Close"
+                    title="Close"
+                    className="grid h-9 w-9 place-items-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-800 transition-all cursor-pointer shrink-0"
                   >
-                    ✕
+                    <X className="h-4 w-4" />
                   </button>
                 </div>
 
@@ -1404,6 +1411,7 @@ export default function App() {
                 onClick={() => setShowNotificationsDropdown(!showNotificationsDropdown)}
                 className="topbar-icon relative p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-650 hover:text-slate-950 hover:bg-slate-100 active:scale-95 transition-all text-sm cursor-pointer"
                 aria-label="Open notifications"
+                title="Notifications"
                 aria-expanded={showNotificationsDropdown}
               >
               <Bell className="h-4.5 w-4.5" />
@@ -1607,7 +1615,7 @@ export default function App() {
                   <input type="file" accept="image/*" onChange={handleProfileAvatarSelect} hidden />
                 </label>
                 <div><span>Account settings</span><h2>Edit profile</h2><p>Update your personal and access details.</p></div>
-                <button type="button" onClick={() => setShowProfileModal(false)} aria-label="Close">×</button>
+                <button type="button" onClick={() => setShowProfileModal(false)} aria-label="Close" title="Close"><X className="h-4 w-4" /></button>
               </div>
               <div className="profile-fields">
                 <label><span>Username</span><input value={profileName} onChange={(e) => setProfileName(e.target.value)} placeholder="Your name" /></label>
@@ -1666,10 +1674,13 @@ export default function App() {
                   <p className="text-sm text-slate-500 font-medium mt-1.5">Assign work to a team member.</p>
                 </div>
                 <button
+                  type="button"
                   onClick={() => setShowCreateTaskModal(false)}
-                  className="text-slate-450 hover:text-slate-900 transition-all text-xs cursor-pointer font-bold focus:outline-hidden p-1.5 hover:bg-slate-50 rounded-lg"
+                  aria-label="Close"
+                  title="Close"
+                  className="grid h-9 w-9 place-items-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-800 transition-all cursor-pointer shrink-0"
                 >
-                  Cancel
+                  <X className="h-4 w-4" />
                 </button>
               </div>
 

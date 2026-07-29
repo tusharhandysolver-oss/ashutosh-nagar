@@ -407,14 +407,14 @@ export default function DashboardView({
         </div>
 
         {/* Fast summaries */}
-      <div className="grid grid-cols-1 min-[390px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-5">
+      <div className="grid grid-cols-1 min-[390px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 auto-rows-fr gap-3 sm:gap-5">
           <motion.div
             custom={0}
             initial="hidden"
             animate="visible"
             variants={cardEntrance}
             whileHover={{ scale: 1.035, y: -4 }}
-            className="bg-gradient-to-br from-violet-100 to-indigo-200 p-6 rounded-3xl relative overflow-hidden soft-shadow"
+            className="bg-gradient-to-br from-violet-100 to-indigo-200 p-6 rounded-3xl relative overflow-hidden soft-shadow h-full flex flex-col justify-center"
           >
             <span className="text-xs font-bold text-indigo-900/60 uppercase tracking-wider block">Assigned</span>
             <div className="text-3xl font-black mt-2 font-mono text-indigo-950">{myTasks.length}</div>
@@ -427,7 +427,7 @@ export default function DashboardView({
             animate="visible"
             variants={cardEntrance}
             whileHover={{ scale: 1.035, y: -4 }}
-            className="bg-gradient-to-br from-amber-100 to-orange-200 p-6 rounded-3xl relative overflow-hidden soft-shadow"
+            className="bg-gradient-to-br from-amber-100 to-orange-200 p-6 rounded-3xl relative overflow-hidden soft-shadow h-full flex flex-col justify-center"
           >
             <span className="text-xs font-bold text-amber-900/60 uppercase tracking-wider block">In Progress</span>
             <div className="text-3xl font-black mt-2 text-amber-950 font-mono">{myInProgressTasks.length}</div>
@@ -440,7 +440,7 @@ export default function DashboardView({
             animate="visible"
             variants={cardEntrance}
             whileHover={{ scale: 1.035, y: -4 }}
-            className="bg-gradient-to-br from-emerald-100 to-teal-200 p-6 rounded-3xl relative overflow-hidden soft-shadow"
+            className="bg-gradient-to-br from-emerald-100 to-teal-200 p-6 rounded-3xl relative overflow-hidden soft-shadow h-full flex flex-col justify-center"
           >
             <span className="text-xs font-bold text-emerald-900/60 uppercase tracking-wider block">Completed</span>
             <div className="text-3xl font-black mt-2 text-emerald-950 font-mono">{myCompletedTasks.length}</div>
@@ -453,7 +453,7 @@ export default function DashboardView({
             animate="visible"
             variants={cardEntrance}
             whileHover={{ scale: 1.035, y: -4 }}
-            className="bg-gradient-to-br from-rose-100 to-pink-200 p-6 rounded-3xl relative overflow-hidden soft-shadow"
+            className="bg-gradient-to-br from-rose-100 to-pink-200 p-6 rounded-3xl relative overflow-hidden soft-shadow h-full flex flex-col justify-center"
           >
             <span className="text-xs font-bold text-rose-900/60 uppercase tracking-wider block">Overdue</span>
             <div className="text-3xl font-black mt-2 text-rose-950 font-mono">{myOverdueTasks.length}</div>
@@ -466,7 +466,7 @@ export default function DashboardView({
             animate="visible"
             variants={cardEntrance}
             whileHover={{ scale: 1.035, y: -4 }}
-            className="bg-gradient-to-br from-sky-100 to-blue-200 p-6 rounded-3xl relative overflow-hidden soft-shadow"
+            className="bg-gradient-to-br from-sky-100 to-blue-200 p-6 rounded-3xl relative overflow-hidden soft-shadow h-full flex flex-col justify-center"
           >
             <span className="text-xs font-bold text-blue-900/60 uppercase tracking-wider block">Hours Tracked</span>
             <div className="text-3xl font-black mt-2 text-blue-950 font-mono">

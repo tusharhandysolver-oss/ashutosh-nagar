@@ -562,9 +562,11 @@ export default function AttendanceLogsView({
                             <span>Reason</span>
                             <button
                               onClick={(e) => { e.stopPropagation(); setClickedReasonUserId(null); }}
-                              className="text-slate-400 hover:text-white transition-colors text-xs"
+                              aria-label="Close"
+                              title="Close"
+                              className="grid h-5 w-5 place-items-center rounded-full text-slate-400 hover:bg-white/10 hover:text-white transition-colors cursor-pointer"
                             >
-                              ✕
+                              <X className="h-3 w-3" />
                             </button>
                           </div>
                           <div>"{leaveReason}"</div>

@@ -118,7 +118,7 @@ export default function CalendarView({ tasks, users, onSelectTask }: Props) {
           <div className="event-form-header">
             <div className="event-form-icon"><Calendar className="h-5 w-5" /></div>
             <div className="min-w-0 flex-1"><p>Team calendar</p><h3>Add a new event</h3><span>Schedule work, meetings, and important matter dates.</span></div>
-            <button type="button" aria-label="Close add event dialog" onClick={() => setShowAdd(false)}><X className="h-5 w-5" /></button>
+            <button type="button" aria-label="Close" title="Close" onClick={() => setShowAdd(false)}><X className="h-4 w-4" /></button>
           </div>
           <div className="event-form-body">
             <div className="form-field"><label htmlFor="event-title">Event title</label><input id="event-title" required value={title} onChange={e => setTitle(e.target.value)} placeholder="e.g. Client strategy meeting" /></div>

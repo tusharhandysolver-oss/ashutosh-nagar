@@ -253,8 +253,9 @@ export default function TaskModal({ task, currentUser, users, onClose, onUpdate 
           <button
             id="close-modal-btn"
             onClick={onClose}
-            aria-label="Close task dialog"
-            className="rounded-full h-8 w-8 flex items-center justify-center bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-800 transition-all cursor-pointer"
+            aria-label="Close"
+            title="Close"
+            className="rounded-full h-9 w-9 flex items-center justify-center bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-800 transition-all cursor-pointer shrink-0"
           >
             <X className="h-4 w-4" />
           </button>

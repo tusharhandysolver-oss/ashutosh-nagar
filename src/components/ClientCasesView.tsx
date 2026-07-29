@@ -103,7 +103,7 @@ export default function ClientCasesView({ projects, tasks, onAddProject, onUpdat
       const caseClosedAt = activeCase.status === "Closed" && completedDates.length ? new Date(Math.max(...completedDates)) : null;
       return <div className="fixed inset-0 z-[250] flex items-center justify-center bg-slate-950/65 p-3 backdrop-blur-md animate-fade-in" onMouseDown={(event) => { if (event.target === event.currentTarget) setActiveCase(null); }}>
         <section role="dialog" aria-modal="true" aria-label={`${activeCase.name} case file`} className="case-file-dialog relative w-full max-w-5xl max-h-[calc(100dvh-24px)] overflow-y-auto rounded-[30px] border border-white/70 bg-[#f8f7f3] shadow-[0_36px_110px_-24px_rgba(0,0,0,.65)]">
-          <button onClick={() => setActiveCase(null)} aria-label="Close case file" className="absolute right-4 top-4 z-50 grid h-9 w-9 place-items-center rounded-full bg-white/90 text-slate-500 shadow-sm hover:text-slate-900"><X className="h-4 w-4" /></button>
+          <button onClick={() => setActiveCase(null)} aria-label="Close" title="Close" className="absolute right-4 top-4 z-50 grid h-9 w-9 place-items-center rounded-full bg-white/90 text-slate-500 shadow-sm hover:bg-white hover:text-slate-900 transition-all cursor-pointer"><X className="h-4 w-4" /></button>
 
           <div className="case-folder-stage">
             <div className="case-folder">
