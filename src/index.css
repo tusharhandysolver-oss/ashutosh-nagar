@@ -270,30 +270,107 @@ main .soft-shadow:hover { box-shadow:0 16px 38px -22px rgba(15,23,42,.28); }
 @keyframes modalIn { from { opacity:0; transform:translateY(12px) scale(.985); } to { opacity:1; transform:translateY(0) scale(1); } }
 @keyframes fadeOnly { from { opacity:0; } to { opacity:1; } }
 
-.legal-app.dark { background:#0b1120; color:#e5e7eb; }
-.legal-app.dark main { background:#0b1120; }
+.legal-app.dark { background:#0b1120 !important; color:#e5e7eb !important; }
+.legal-app.dark main { background:#0b1120 !important; }
 .legal-app.dark .legal-topbar {
   background: linear-gradient(135deg, #16223d 0%, #101a30 55%, #0d1526 100%) !important;
-  border-color: #2a3a5c;
-  box-shadow: 0 1px 0 rgba(96,165,250,.14), 0 16px 34px -22px rgba(0,0,0,.65);
+  border-color:#2a3a5c !important;
+  box-shadow:0 1px 0 rgba(96,165,250,.14), 0 16px 34px -22px rgba(0,0,0,.65) !important;
 }
-.legal-app.dark main .bg-white, .legal-app.dark .search-shortcut { background:#111827; color:#e5e7eb; border-color:#273449; }
-.legal-app.dark .topbar-icon { background:rgba(59,130,246,.12); color:#dbeafe; border-color:#2a3a5c; }
-.legal-app.dark .topbar-icon:hover { background:rgba(59,130,246,.2); color:#fff; }
-.legal-app.dark main .bg-slate-50, .legal-app.dark main .bg-slate-100 { background:#172033; }
-.legal-app.dark main .text-slate-900, .legal-app.dark main .text-slate-800, .legal-app.dark .legal-topbar .text-slate-900 { color:#f8fafc; }
-.legal-app.dark main .text-slate-700, .legal-app.dark main .text-slate-600 { color:#cbd5e1; }
-.legal-app.dark main .border-slate-200, .legal-app.dark main .border-slate-100 { border-color:#273449; }
-.legal-app.dark .global-search { background:#111827; border-color:#273449; color:#fff; }
-.legal-app.dark .profile-trigger { background:#111827; color:#f8fafc; border-color:#273449; }
-.legal-app.dark .profile-modal { background:#111827; border-color:#273449; }
-.legal-app.dark .profile-modal-head, .legal-app.dark .profile-actions { border-color:#273449; }
-.legal-app.dark .profile-modal-head h2 { color:#f8fafc; }
-.legal-app.dark .profile-fields label > span, .legal-app.dark .profile-modal-head p { color:#94a3b8; }
-.legal-app.dark .profile-fields input, .legal-app.dark .profile-fields select { background:#172033; border-color:#273449; color:#f8fafc; }
+
+/* Neutral surfaces: NOT scoped to "main" - TaskModal, the quick Create Task
+   dialog, and the profile modal render as siblings after </main>, not inside
+   it, so a "main .bg-white" selector never reached them and they stayed
+   full-white/unreadable regardless of theme. */
+.legal-app.dark .bg-white,
+.legal-app.dark .bg-white\/95,
+.legal-app.dark .bg-white\/90,
+.legal-app.dark .bg-white\/80,
+.legal-app.dark .bg-white\/40,
+.legal-app.dark .search-shortcut { background:#111827 !important; color:#e5e7eb !important; border-color:#273449 !important; }
+.legal-app.dark .bg-slate-50, .legal-app.dark .bg-slate-100,
+.legal-app.dark .bg-slate-150, .legal-app.dark .bg-slate-200 { background:#172033 !important; }
+.legal-app.dark .bg-slate-300, .legal-app.dark .bg-slate-400 { background:#2a3a5c !important; }
+.legal-app.dark .bg-slate-900, .legal-app.dark .bg-slate-950 { background:#05070d !important; }
+.legal-app.dark .text-slate-900, .legal-app.dark .text-slate-850, .legal-app.dark .text-slate-800,
+.legal-app.dark .legal-topbar .text-slate-900 { color:#f8fafc !important; }
+.legal-app.dark .text-slate-700, .legal-app.dark .text-slate-650, .legal-app.dark .text-slate-600 { color:#cbd5e1 !important; }
+.legal-app.dark .text-slate-550, .legal-app.dark .text-slate-500, .legal-app.dark .text-slate-450 { color:#94a3b8 !important; }
+.legal-app.dark .text-slate-400, .legal-app.dark .text-slate-350, .legal-app.dark .text-slate-300 { color:#64748b !important; }
+.legal-app.dark .border-slate-100, .legal-app.dark .border-slate-150,
+.legal-app.dark .border-slate-200, .legal-app.dark .border-slate-300 { border-color:#273449 !important; }
+.legal-app.dark .border-slate-400 { border-color:#334155 !important; }
+
+.legal-app.dark .topbar-icon { background:rgba(59,130,246,.12) !important; color:#dbeafe !important; border-color:#2a3a5c !important; }
+.legal-app.dark .topbar-icon:hover { background:rgba(59,130,246,.2) !important; color:#fff !important; }
+.legal-app.dark .global-search { background:#111827 !important; border-color:#273449 !important; color:#fff !important; }
+.legal-app.dark .profile-trigger { background:#111827 !important; color:#f8fafc !important; border-color:#273449 !important; }
+.legal-app.dark .profile-modal { background:#111827 !important; border-color:#273449 !important; }
+.legal-app.dark .profile-modal-head, .legal-app.dark .profile-actions { border-color:#273449 !important; }
+.legal-app.dark .profile-modal-head h2 { color:#f8fafc !important; }
+.legal-app.dark .profile-fields label > span, .legal-app.dark .profile-modal-head p { color:#94a3b8 !important; }
+.legal-app.dark .profile-fields input, .legal-app.dark .profile-fields select { background:#172033 !important; border-color:#273449 !important; color:#f8fafc !important; }
+
+/* Pale colored chips/badges (priority tags, status pills, stat cards) pair a
+   light bg-{hue}-50/100 with a dark text-{hue}-700/800/900 - that combo was
+   designed for a white card. Re-tint each hue family together instead of
+   flattening everything to gray, so the semantic color survives on a dark
+   card and the text stays legible against it. */
+.legal-app.dark .bg-rose-50, .legal-app.dark .bg-rose-100 { background:rgba(244,63,94,.16) !important; }
+.legal-app.dark .border-rose-100, .legal-app.dark .border-rose-200,
+.legal-app.dark .border-rose-250, .legal-app.dark .border-rose-300 { border-color:rgba(244,63,94,.4) !important; }
+.legal-app.dark .text-rose-600, .legal-app.dark .text-rose-650, .legal-app.dark .text-rose-700,
+.legal-app.dark .text-rose-750, .legal-app.dark .text-rose-800, .legal-app.dark .text-rose-900,
+.legal-app.dark .text-rose-950 { color:#fda4af !important; }
+
+.legal-app.dark .bg-amber-50, .legal-app.dark .bg-amber-100 { background:rgba(245,158,11,.16) !important; }
+.legal-app.dark .border-amber-100, .legal-app.dark .border-amber-200,
+.legal-app.dark .border-amber-300, .legal-app.dark .border-amber-400 { border-color:rgba(245,158,11,.4) !important; }
+.legal-app.dark .text-amber-600, .legal-app.dark .text-amber-700, .legal-app.dark .text-amber-800,
+.legal-app.dark .text-amber-900, .legal-app.dark .text-amber-950 { color:#fcd34d !important; }
+
+.legal-app.dark .bg-emerald-50, .legal-app.dark .bg-emerald-100 { background:rgba(16,185,129,.16) !important; }
+.legal-app.dark .border-emerald-100, .legal-app.dark .border-emerald-200, .legal-app.dark .border-emerald-300,
+.legal-app.dark .border-emerald-400, .legal-app.dark .border-emerald-900 { border-color:rgba(16,185,129,.4) !important; }
+.legal-app.dark .text-emerald-600, .legal-app.dark .text-emerald-700, .legal-app.dark .text-emerald-800,
+.legal-app.dark .text-emerald-900, .legal-app.dark .text-emerald-950 { color:#6ee7b7 !important; }
+
+.legal-app.dark .bg-sky-50, .legal-app.dark .bg-sky-100 { background:rgba(14,165,233,.16) !important; }
+.legal-app.dark .border-sky-100, .legal-app.dark .border-sky-200 { border-color:rgba(14,165,233,.4) !important; }
+.legal-app.dark .text-sky-600, .legal-app.dark .text-sky-700 { color:#7dd3fc !important; }
+
+.legal-app.dark .bg-blue-50, .legal-app.dark .bg-blue-100 { background:rgba(37,99,235,.18) !important; }
+.legal-app.dark .border-blue-100, .legal-app.dark .border-blue-200, .legal-app.dark .border-blue-300 { border-color:rgba(37,99,235,.4) !important; }
+.legal-app.dark .text-blue-600, .legal-app.dark .text-blue-700, .legal-app.dark .text-blue-800,
+.legal-app.dark .text-blue-900, .legal-app.dark .text-blue-950 { color:#93c5fd !important; }
+
+.legal-app.dark .bg-teal-50 { background:rgba(20,184,166,.16) !important; }
+.legal-app.dark .border-teal-100, .legal-app.dark .border-teal-200 { border-color:rgba(20,184,166,.4) !important; }
+.legal-app.dark .text-teal-600, .legal-app.dark .text-teal-650, .legal-app.dark .text-teal-700 { color:#5eead4 !important; }
+
+.legal-app.dark .bg-violet-50 { background:rgba(139,92,246,.16) !important; }
+.legal-app.dark .border-violet-100, .legal-app.dark .border-violet-200 { border-color:rgba(139,92,246,.4) !important; }
+.legal-app.dark .text-violet-700, .legal-app.dark .text-violet-800 { color:#c4b5fd !important; }
+
+.legal-app.dark .bg-indigo-50 { background:rgba(79,70,229,.16) !important; }
+.legal-app.dark .text-indigo-900, .legal-app.dark .text-indigo-950 { color:#a5b4fc !important; }
+
+/* Same pale-surface tints, but for Tailwind's opacity-modifier form
+   (bg-amber-50/50, bg-white/90, etc.) - a distinct generated class from the
+   plain one above, so it needs its own attribute selector. The trailing "/"
+   keeps "bg-rose-50/40" from also matching "bg-rose-500". */
+.legal-app.dark [class*="bg-white/"] { background:#111827 !important; }
+.legal-app.dark [class*="bg-slate-50/"], .legal-app.dark [class*="bg-slate-100/"] { background:#172033 !important; }
+.legal-app.dark [class*="bg-slate-900/"], .legal-app.dark [class*="bg-slate-950/"] { background:rgba(5,7,13,.7) !important; }
+.legal-app.dark [class*="bg-rose-50/"], .legal-app.dark [class*="bg-rose-100/"] { background:rgba(244,63,94,.16) !important; }
+.legal-app.dark [class*="bg-amber-50/"], .legal-app.dark [class*="bg-amber-100/"] { background:rgba(245,158,11,.16) !important; }
+.legal-app.dark [class*="bg-emerald-50/"], .legal-app.dark [class*="bg-emerald-100/"] { background:rgba(16,185,129,.16) !important; }
+.legal-app.dark [class*="bg-blue-50/"], .legal-app.dark [class*="bg-blue-100/"] { background:rgba(37,99,235,.18) !important; }
+.legal-app.dark [class*="bg-teal-50/"] { background:rgba(20,184,166,.16) !important; }
+.legal-app.dark [class*="bg-sky-50/"] { background:rgba(14,165,233,.16) !important; }
 
 @media (max-width: 767px) {
-  .legal-app main { background:#f8fafc; }
+  .legal-app:not(.dark) main { background:#f8fafc; }
   .legal-topbar { position:sticky; top:0; z-index:30; min-height:72px; padding-inline:16px; gap:10px; }
   .legal-topbar > div:first-child { min-width:0; }
   .legal-topbar > div:first-child span:first-child { max-width:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
