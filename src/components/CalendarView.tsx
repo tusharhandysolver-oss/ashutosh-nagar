@@ -1,9 +1,15 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Attendance, CalendarEvent, LeaveRequest, Task, User } from "../types";
 import { Calendar, ChevronLeft, ChevronRight, Clock, Home, Info, Palmtree, Plus, UserRound, X } from "lucide-react";
 
-interface Props { tasks: Task[]; users: User[]; onSelectTask: (task: Task) => void; }
-const EVENT_KEY = "legal_calendar_events";
+interface Props {
+  tasks: Task[];
+  users: User[];
+  events: CalendarEvent[];
+  onSelectTask: (task: Task) => void;
+  onCreateEvent: (event: { title: string; description: string; dueDate: string; time: string; assigneeIds: string[] }) => void;
+}
 const legendItems = [
   { color: "bg-amber-400", label: "Task deadline", detail: "Matter task due on this date" },
   { color: "bg-blue-600", label: "Team event", detail: "Scheduled calendar event" },
@@ -22,31 +28,59 @@ function CalendarItem({ label, tone, title, meta, description, people, alignRigh
     violet: "bg-violet-50 text-violet-800 border-violet-200 before:bg-violet-500"
   };
   const Tag = onClick ? "button" : "div";
-  return <div className="group/event relative min-w-0">
-    <Tag onClick={onClick} tabIndex={0} className={`calendar-event relative block w-full truncate rounded-lg border py-1 pl-2.5 pr-1.5 text-left text-[9px] font-bold before:absolute before:bottom-1.5 before:left-1 before:top-1.5 before:w-0.5 before:rounded-full sm:text-[10px] ${tones[tone]}`}>
+  const triggerRef = useRef<HTMLElement | null>(null);
+  const [show, setShow] = useState(false);
+  const [pos, setPos] = useState<{ top?: number; bottom?: number; left?: number; right?: number }>({});
+
+  // The day cell scrolls (so a day with many entries doesn't spill into the
+  // row below), which clips a plain absolutely-positioned tooltip to the
+  // cell's small clip box. Portalling it out and positioning it with fixed
+  // coordinates (computed from the trigger's own rect) escapes that clip.
+  function showTooltip() {
+    const el = triggerRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const next: { top?: number; bottom?: number; left?: number; right?: number } = {};
+    if (openUp) next.bottom = window.innerHeight - rect.top + 7;
+    else next.top = rect.bottom + 7;
+    if (alignRight) next.right = window.innerWidth - rect.right;
+    else next.left = rect.left;
+    setPos(next);
+    setShow(true);
+  }
+  function hideTooltip() {
+    setShow(false);
+  }
+
+  const portalTarget = typeof document !== "undefined" ? document.querySelector(".legal-app") || document.body : null;
+
+  return <div className="group/event relative min-w-0" onMouseEnter={showTooltip} onMouseLeave={hideTooltip} onFocus={showTooltip} onBlur={hideTooltip}>
+    <Tag ref={triggerRef as any} onClick={onClick} tabIndex={0} className={`calendar-event relative block w-full truncate rounded-lg border py-1 pl-2.5 pr-1.5 text-left text-[9px] font-bold before:absolute before:bottom-1.5 before:left-1 before:top-1.5 before:w-0.5 before:rounded-full sm:text-[10px] ${tones[tone]}`}>
       <span className="inline-flex max-w-full items-center gap-1 truncate">{icon}{label}</span>
     </Tag>
-    <div role="tooltip" className={`pointer-events-none absolute z-[80] hidden w-64 rounded-2xl border border-slate-200/80 bg-white p-4 text-left shadow-[0_20px_55px_-18px_rgba(15,23,42,.42)] group-hover/event:block group-focus-within/event:block ${alignRight ? "right-0" : "left-0"} ${openUp ? "bottom-[calc(100%+7px)]" : "top-[calc(100%+7px)]"}`}>
-      <div className="mb-2 flex items-center gap-2"><span className={`h-2 w-2 rounded-full ${tone === "amber" ? "bg-amber-400" : tone === "blue" ? "bg-blue-500" : tone === "emerald" ? "bg-emerald-500" : "bg-violet-500"}`} /><span className="text-[9px] font-extrabold uppercase tracking-[.16em] text-slate-400">{title}</span></div>
-      <p className="text-xs font-extrabold leading-snug text-slate-900">{label}</p>
-      <div className="mt-2.5 space-y-1.5 text-[10px] leading-relaxed text-slate-500">
-        <p className="flex items-start gap-1.5"><Clock className="mt-0.5 h-3 w-3 shrink-0" />{meta}</p>
-        {people && <p className="flex items-start gap-1.5"><UserRound className="mt-0.5 h-3 w-3 shrink-0" />{people}</p>}
-        {description && <p className="border-t border-slate-100 pt-2 text-slate-600">{description}</p>}
-      </div>
-      {onClick && <p className="mt-3 text-[9px] font-bold text-blue-700">Click to open task →</p>}
-    </div>
+    {show && portalTarget && createPortal(
+      <div role="tooltip" className="pointer-events-none fixed z-[200] w-64 rounded-2xl border border-slate-200/80 bg-white p-4 text-left shadow-[0_20px_55px_-18px_rgba(15,23,42,.42)]" style={pos}>
+        <div className="mb-2 flex items-center gap-2"><span className={`h-2 w-2 rounded-full ${tone === "amber" ? "bg-amber-400" : tone === "blue" ? "bg-blue-500" : tone === "emerald" ? "bg-emerald-500" : "bg-violet-500"}`} /><span className="text-[9px] font-extrabold uppercase tracking-[.16em] text-slate-400">{title}</span></div>
+        <p className="text-xs font-extrabold leading-snug text-slate-900">{label}</p>
+        <div className="mt-2.5 space-y-1.5 text-[10px] leading-relaxed text-slate-500">
+          <p className="flex items-start gap-1.5"><Clock className="mt-0.5 h-3 w-3 shrink-0" />{meta}</p>
+          {people && <p className="flex items-start gap-1.5"><UserRound className="mt-0.5 h-3 w-3 shrink-0" />{people}</p>}
+          {description && <p className="border-t border-slate-100 pt-2 text-slate-600">{description}</p>}
+        </div>
+        {onClick && <p className="mt-3 text-[9px] font-bold text-blue-700">Click to open task →</p>}
+      </div>,
+      portalTarget
+    )}
   </div>;
 }
 
-export default function CalendarView({ tasks, users, onSelectTask }: Props) {
+export default function CalendarView({ tasks, users, events, onSelectTask, onCreateEvent }: Props) {
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth());
   const [filterAssignee, setFilterAssignee] = useState("");
   const [showAdd, setShowAdd] = useState(false);
   const [showLegend, setShowLegend] = useState(false);
-  const [events, setEvents] = useState<CalendarEvent[]>(() => { try { return JSON.parse(localStorage.getItem(EVENT_KEY) || "[]"); } catch { return []; } });
   const [attendance, setAttendance] = useState<Attendance[]>([]);
   const [leaves, setLeaves] = useState<LeaveRequest[]>([]);
   const [title, setTitle] = useState("");
@@ -56,7 +90,6 @@ export default function CalendarView({ tasks, users, onSelectTask }: Props) {
   const [assignees, setAssignees] = useState<string[]>([]);
 
   useEffect(() => { Promise.all([fetch("/api/attendance").then(r => r.json()), fetch("/api/leaves").then(r => r.json())]).then(([a, l]) => { setAttendance(a); setLeaves(l); }).catch(() => {}); }, []);
-  useEffect(() => localStorage.setItem(EVENT_KEY, JSON.stringify(events)), [events]);
 
   const cells = useMemo(() => {
     const result: Array<string | null> = Array(new Date(year, month, 1).getDay()).fill(null);
@@ -70,7 +103,7 @@ export default function CalendarView({ tasks, users, onSelectTask }: Props) {
   const addEvent = (event: React.FormEvent) => {
     event.preventDefault();
     if (!title.trim() || !dueDate || !time || !assignees.length) return;
-    setEvents(value => [...value, { id: `evt-${Date.now()}`, title: title.trim(), description: description.trim(), dueDate, time, assigneeIds: assignees, createdAt: new Date().toISOString() }]);
+    onCreateEvent({ title: title.trim(), description: description.trim(), dueDate, time, assigneeIds: assignees });
     setTitle(""); setDescription(""); setDueDate(""); setTime(""); setAssignees([]); setShowAdd(false);
   };
   const monthName = new Date(year, month).toLocaleString("en", { month: "long" });

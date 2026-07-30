@@ -89,6 +89,7 @@ export interface CalendarEvent {
   dueDate: string;
   time: string;
   assigneeIds: string[];
+  createdBy?: string;
   createdAt: string;
 }
 
@@ -131,6 +132,7 @@ export interface SystemSettings {
   enableEmailNotifications: boolean;
   enableUrgentAlerts: boolean;
   autoRiskAnalysis: boolean;
+  eventReminderMinutesBefore?: number;
 }
 
 export interface Goal {

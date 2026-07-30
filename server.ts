@@ -218,6 +218,7 @@ interface AppData {
     enableEmailNotifications: boolean;
     enableUrgentAlerts: boolean;
     autoRiskAnalysis: boolean;
+    eventReminderMinutesBefore?: number;
   };
   goals: Array<{
     id: string;
@@ -251,6 +252,16 @@ interface AppData {
     endDate: string;
     reason: string;
     status: "Pending" | "Approved" | "Rejected";
+    createdAt: string;
+  }>;
+  calendarEvents?: Array<{
+    id: string;
+    title: string;
+    description: string;
+    dueDate: string; // YYYY-MM-DD
+    time: string; // HH:MM, 24h
+    assigneeIds: string[];
+    createdBy: string;
     createdAt: string;
   }>;
 }
@@ -586,8 +597,10 @@ const initialData: AppData = {
     reminderInDays: 3,
     enableEmailNotifications: true,
     enableUrgentAlerts: true,
-    autoRiskAnalysis: true
+    autoRiskAnalysis: true,
+    eventReminderMinutesBefore: 10
   },
+  calendarEvents: [],
   goals: [
     {
       id: "G-2001",
@@ -748,6 +761,10 @@ const rowMappers = {
   leave_requests: {
     toRow: (lv: any) => ({ id: lv.id, user_id: lv.userId, user_name: lv.userName, start_date: lv.startDate, end_date: lv.endDate, reason: lv.reason, status: lv.status, created_at: lv.createdAt }),
     fromRow: (r: any) => ({ id: r.id, userId: r.user_id, userName: r.user_name, startDate: r.start_date, endDate: r.end_date, reason: r.reason, status: r.status, createdAt: r.created_at })
+  },
+  calendar_events: {
+    toRow: (e: any) => ({ id: e.id, title: e.title, description: e.description || "", due_date: e.dueDate, time: e.time, assignee_ids: e.assigneeIds || [], created_by: e.createdBy || null, created_at: e.createdAt }),
+    fromRow: (r: any) => ({ id: r.id, title: r.title, description: r.description, dueDate: r.due_date, time: r.time, assigneeIds: Array.isArray(r.assignee_ids) ? r.assignee_ids : [], createdBy: r.created_by, createdAt: r.created_at })
   }
 };
 
@@ -812,11 +829,13 @@ async function initializeSupabaseDatabase() {
     await syncTable("goals", localData.goals || []);
     await syncTable("attendances", localData.attendances || []);
     await syncTable("leave_requests", localData.leaveRequests || []);
+    await syncTable("calendar_events", localData.calendarEvents || []);
 
-    const s = localData.settings || { reminderInDays: 3, enableEmailNotifications: true, enableUrgentAlerts: true, autoRiskAnalysis: true };
+    const s = localData.settings || { reminderInDays: 3, enableEmailNotifications: true, enableUrgentAlerts: true, autoRiskAnalysis: true, eventReminderMinutesBefore: 10 };
     await supabaseAdmin.from("settings").upsert({
       id: 1, reminder_in_days: s.reminderInDays, enable_email_notifications: s.enableEmailNotifications,
-      enable_urgent_alerts: s.enableUrgentAlerts, auto_risk_analysis: s.autoRiskAnalysis
+      enable_urgent_alerts: s.enableUrgentAlerts, auto_risk_analysis: s.autoRiskAnalysis,
+      event_reminder_minutes_before: s.eventReminderMinutesBefore ?? 10
     }, { onConflict: "id" });
 
     console.log("Supabase initial data pre-seeded successfully.");
@@ -833,7 +852,7 @@ async function loadMemoryDbFromSupabase() {
 
     const [
       usersRes, projectsRes, tasksRes, commentsRes, notificationsRes,
-      activityLogsRes, settingsRes, goalsRes, attendancesRes, leaveRequestsRes
+      activityLogsRes, settingsRes, goalsRes, attendancesRes, leaveRequestsRes, calendarEventsRes
     ] = await Promise.all([
       supabaseAdmin.from('users').select('*'),
       supabaseAdmin.from('projects').select('*'),
@@ -844,14 +863,23 @@ async function loadMemoryDbFromSupabase() {
       supabaseAdmin.from('settings').select('*').eq('id', 1).maybeSingle(),
       supabaseAdmin.from('goals').select('*'),
       supabaseAdmin.from('attendances').select('*'),
-      supabaseAdmin.from('leave_requests').select('*')
+      supabaseAdmin.from('leave_requests').select('*'),
+      supabaseAdmin.from('calendar_events').select('*')
     ]);
 
+    // calendar_events is intentionally excluded from this strict check: it's a
+    // newer table that may not exist yet in an older Supabase project (needs
+    // a one-time migration the user runs manually). Failing the ENTIRE load
+    // over one missing optional table would take down tasks/users/projects
+    // too, so it degrades to an empty list instead.
     const results = { usersRes, projectsRes, tasksRes, commentsRes, notificationsRes, activityLogsRes, goalsRes, attendancesRes, leaveRequestsRes };
     for (const [name, res] of Object.entries(results)) {
       if ((res as any).error) throw new Error(`${name} query failed: ${(res as any).error.message}`);
     }
     if (settingsRes.error) throw new Error(`settingsRes query failed: ${settingsRes.error.message}`);
+    if (calendarEventsRes.error) {
+      console.warn("calendar_events table not available yet (run the migration to enable Team Calendar sync):", calendarEventsRes.error.message);
+    }
 
     const db: AppData = {
       users: (usersRes.data || []).map(rowMappers.users.fromRow),
@@ -865,12 +893,14 @@ async function loadMemoryDbFromSupabase() {
             reminderInDays: settingsRes.data.reminder_in_days,
             enableEmailNotifications: settingsRes.data.enable_email_notifications,
             enableUrgentAlerts: settingsRes.data.enable_urgent_alerts,
-            autoRiskAnalysis: settingsRes.data.auto_risk_analysis
+            autoRiskAnalysis: settingsRes.data.auto_risk_analysis,
+            eventReminderMinutesBefore: settingsRes.data.event_reminder_minutes_before ?? 10
           }
-        : { reminderInDays: 3, enableEmailNotifications: true, enableUrgentAlerts: true, autoRiskAnalysis: true },
+        : { reminderInDays: 3, enableEmailNotifications: true, enableUrgentAlerts: true, autoRiskAnalysis: true, eventReminderMinutesBefore: 10 },
       goals: (goalsRes.data || []).map(rowMappers.goals.fromRow),
       attendances: (attendancesRes.data || []).map(rowMappers.attendances.fromRow),
-      leaveRequests: (leaveRequestsRes.data || []).map(rowMappers.leave_requests.fromRow)
+      leaveRequests: (leaveRequestsRes.data || []).map(rowMappers.leave_requests.fromRow),
+      calendarEvents: (calendarEventsRes.data || []).map(rowMappers.calendar_events.fromRow)
     };
 
     memoryDb = db;
@@ -911,11 +941,13 @@ async function doSyncMemoryDbToSupabase() {
     await syncTable('goals', db.goals);
     await syncTable('attendances', db.attendances || []);
     await syncTable('leave_requests', db.leaveRequests || []);
+    await syncTable('calendar_events', db.calendarEvents || []);
 
-    const s = db.settings || { reminderInDays: 3, enableEmailNotifications: true, enableUrgentAlerts: true, autoRiskAnalysis: true };
+    const s = db.settings || { reminderInDays: 3, enableEmailNotifications: true, enableUrgentAlerts: true, autoRiskAnalysis: true, eventReminderMinutesBefore: 10 };
     const { error: settingsError } = await supabaseAdmin.from('settings').upsert({
       id: 1, reminder_in_days: s.reminderInDays, enable_email_notifications: s.enableEmailNotifications,
-      enable_urgent_alerts: s.enableUrgentAlerts, auto_risk_analysis: s.autoRiskAnalysis
+      enable_urgent_alerts: s.enableUrgentAlerts, auto_risk_analysis: s.autoRiskAnalysis,
+      event_reminder_minutes_before: s.eventReminderMinutesBefore ?? 10
     }, { onConflict: 'id' });
     if (settingsError) console.error('Error upserting settings into Supabase:', settingsError.message);
 
@@ -945,7 +977,13 @@ function readDatabase(): AppData {
       if (!db.leaveRequests) {
         db.leaveRequests = [];
       }
-      
+      if (!db.calendarEvents) {
+        db.calendarEvents = [];
+      }
+      if (db.settings && db.settings.eventReminderMinutesBefore === undefined) {
+        db.settings.eventReminderMinutesBefore = 10;
+      }
+
       // Dynamic migration on load
       let needsWrite = false;
       if (db.tasks && Array.isArray(db.tasks)) {
@@ -1070,6 +1108,48 @@ function runReminderScanner() {
         updated = true;
       }
     }
+  });
+
+  if (updated) {
+    writeDatabase(db);
+  }
+}
+
+// Calendar event reminders are minute-granular ("10 min before a 3pm
+// meeting"), so unlike runReminderScanner's day-granularity task reminders
+// (which use a fixed mock "today" for demo consistency), this needs the
+// real wall-clock time to mean anything.
+function runEventReminderScanner() {
+  const db = readDatabase();
+  if (!db.calendarEvents || db.calendarEvents.length === 0) return;
+
+  const leadMinutes = db.settings?.eventReminderMinutesBefore ?? 10;
+  const now = Date.now();
+  let updated = false;
+
+  db.calendarEvents.forEach((event) => {
+    const eventTime = new Date(`${event.dueDate}T${event.time}:00`).getTime();
+    if (Number.isNaN(eventTime)) return;
+    const reminderTime = eventTime - leadMinutes * 60000;
+
+    // Only fire within the reminder window itself (not before it opens, and
+    // not once the event has already started) - a scan cadence of a few
+    // seconds/minutes means this window is what actually catches the moment.
+    if (now < reminderTime || now >= eventTime) return;
+
+    event.assigneeIds.forEach((userId) => {
+      const exists = db.notifications.some((n) => n.userId === userId && n.message.includes(event.id));
+      if (exists) return;
+      db.notifications.unshift({
+        id: `not-${Date.now()}-${Math.floor(Math.random() * 1000)}-evt`,
+        userId,
+        message: `⏰ EVENT REMINDER: "${event.title}" starts at ${event.time} today (in ~${leadMinutes} min). (${event.id})`,
+        type: "warning",
+        readStatus: false,
+        createdAt: new Date().toISOString()
+      });
+      updated = true;
+    });
   });
 
   if (updated) {
@@ -1632,6 +1712,9 @@ app.post("/api/tasks/:id/comments", async (req, res) => {
 
 // Notifications API
 app.get("/api/notifications", (req, res) => {
+  // Frontend polls this endpoint every 8s while logged in, which makes it a
+  // convenient, always-warm hook for scanning upcoming calendar events.
+  runEventReminderScanner();
   const { userId } = req.query;
   const db = readDatabase();
 
@@ -1665,6 +1748,63 @@ app.post("/api/notifications/read-all", async (req, res) => {
 
   db.notifications = db.notifications.filter((n) => n.userId !== userId);
 
+  void writeDatabase(db);
+  res.json({ success: true });
+});
+
+// Team Calendar events API. Shared across every assignee's device (unlike
+// the old localStorage-only version), so the reminder scan above can notify
+// everyone assigned, not just whoever's browser created the event.
+app.get("/api/events", (req, res) => {
+  runEventReminderScanner();
+  const db = readDatabase();
+  res.json(db.calendarEvents || []);
+});
+
+app.post("/api/events", async (req, res) => {
+  const { title, description, dueDate, time, assigneeIds, createdBy } = req.body;
+  const db = readDatabase();
+
+  if (!title?.trim() || !dueDate || !time || !Array.isArray(assigneeIds) || assigneeIds.length === 0) {
+    return res.status(400).json({ error: "Title, date, time and at least one assignee are required." });
+  }
+
+  const newEvent = {
+    id: `evt-${Date.now()}`,
+    title: title.trim(),
+    description: description || "",
+    dueDate,
+    time,
+    assigneeIds,
+    createdBy: createdBy || "",
+    createdAt: new Date().toISOString()
+  };
+
+  if (!db.calendarEvents) db.calendarEvents = [];
+  db.calendarEvents.push(newEvent);
+
+  try {
+    if (supabaseAdmin) {
+      const { error } = await supabaseAdmin.from("calendar_events").upsert(rowMappers.calendar_events.toRow(newEvent), { onConflict: "id" });
+      if (error) {
+        db.calendarEvents.pop();
+        console.error("Event creation failed in Supabase:", error.message);
+        return res.status(500).json({ error: "Event could not be saved. Please try again." });
+      }
+    }
+    void writeDatabase(db);
+    res.status(201).json(newEvent);
+  } catch (error) {
+    db.calendarEvents.pop();
+    console.error("Event creation failed:", error);
+    res.status(500).json({ error: "Event could not be saved. Please try again." });
+  }
+});
+
+app.delete("/api/events/:id", async (req, res) => {
+  const { id } = req.params;
+  const db = readDatabase();
+  db.calendarEvents = (db.calendarEvents || []).filter((e) => e.id !== id);
   void writeDatabase(db);
   res.json({ success: true });
 });

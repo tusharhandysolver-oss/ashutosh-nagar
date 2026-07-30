@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect, useRef } from "react";
-import { User, Task, Project, SystemSettings, AppNotification, UserRole, TaskStage, LeaveRequest } from "./types";
+import { User, Task, Project, SystemSettings, AppNotification, UserRole, TaskStage, LeaveRequest, CalendarEvent } from "./types";
 import DashboardView from "./components/DashboardView";
 import KanbanView from "./components/KanbanView";
 import CalendarView from "./components/CalendarView";
@@ -175,12 +175,20 @@ export default function App() {
   const [projectsList, setProjectsList] = useState<Project[]>([]);
   const [notificationsList, setNotificationsList] = useState<AppNotification[]>([]);
   const [leavesList, setLeavesList] = useState<LeaveRequest[]>([]);
+  const [eventsList, setEventsList] = useState<CalendarEvent[]>([]);
   const [systemSettings, setSystemSettings] = useState<SystemSettings>({
     reminderInDays: 3,
     enableEmailNotifications: true,
     enableUrgentAlerts: true,
-    autoRiskAnalysis: true
+    autoRiskAnalysis: true,
+    eventReminderMinutesBefore: 10
   });
+  const [reminderMinutesInput, setReminderMinutesInput] = useState("10");
+  const [notifPermission, setNotifPermission] = useState<NotificationPermission | "unsupported">(
+    typeof Notification !== "undefined" ? Notification.permission : "unsupported"
+  );
+  const notifiedEventReminderIds = useRef<Set<string>>(new Set());
+  const hasLoadedNotificationsOnce = useRef(false);
 
   // UI state controllers
   const [currentView, setCurrentView] = useState<"Dashboard" | "Kanban" | "Calendar" | "ClientCases" | "Attendance" | "Chatbot">("Dashboard");
@@ -267,24 +275,53 @@ export default function App() {
 
   async function fetchDatabase() {
     try {
-      const [uRes, tRes, pRes, nRes, sRes, lvRes] = await Promise.all([
+      const [uRes, tRes, pRes, nRes, sRes, lvRes, evRes] = await Promise.all([
         fetch("/api/users"),
         fetch("/api/tasks"),
         fetch("/api/projects"),
         fetch(`/api/notifications?userId=${currentUser?.id || ""}`),
         fetch("/api/settings"),
-        fetch("/api/leaves")
+        fetch("/api/leaves"),
+        fetch("/api/events")
       ]);
 
       if (uRes.ok) setUsersList(await uRes.json());
       if (tRes.ok) setTasksList(await tRes.json());
       if (pRes.ok) setProjectsList(await pRes.json());
-      if (nRes.ok) setNotificationsList(await nRes.json());
-      if (sRes.ok) setSystemSettings(await sRes.json());
+      if (nRes.ok) applyFreshNotifications(await nRes.json());
+      if (sRes.ok) {
+        const fresh = await sRes.json();
+        setSystemSettings(fresh);
+        setReminderMinutesInput(String(fresh.eventReminderMinutesBefore ?? 10));
+      }
       if (lvRes.ok) setLeavesList(await lvRes.json());
+      if (evRes.ok) setEventsList(await evRes.json());
     } catch (e) {
       console.error("Database connection failure:", e);
     }
+  }
+
+  // Shared by the initial load and the 8s poll: diffs incoming notifications
+  // against what's already on screen and, for any brand-new event-reminder
+  // entry, fires a native browser Notification popup (if permission was
+  // granted) in addition to the in-app bell - this is what makes the
+  // reminder actually pop up for a user with the tab open in the background.
+  function applyFreshNotifications(fresh: AppNotification[]) {
+    const isFirstLoad = !hasLoadedNotificationsOnce.current;
+    const canPop = typeof Notification !== "undefined" && Notification.permission === "granted";
+    fresh.forEach((n) => {
+      const alreadySeen = notifiedEventReminderIds.current.has(n.id);
+      notifiedEventReminderIds.current.add(n.id);
+      // Skip popping on the very first load of a session - otherwise every
+      // pre-existing reminder notification would re-pop the moment the tab
+      // opens, instead of only genuinely new ones found on later polls.
+      if (isFirstLoad || alreadySeen || !canPop) return;
+      if (n.message.startsWith("⏰ EVENT REMINDER")) {
+        try { new Notification("Event reminder", { body: n.message.replace(/^⏰ EVENT REMINDER: /, "").replace(/\s*\(evt-\d+\)$/, "") }); } catch { /* ignore */ }
+      }
+    });
+    hasLoadedNotificationsOnce.current = true;
+    setNotificationsList(fresh);
   }
 
   async function fetchNotificationsOnly() {
@@ -292,7 +329,7 @@ export default function App() {
     try {
       const res = await fetch(`/api/notifications?userId=${currentUser.id}`);
       if (res.ok) {
-        setNotificationsList(await res.json());
+        applyFreshNotifications(await res.json());
       }
     } catch (error) {
       console.error(error);
@@ -787,6 +824,32 @@ export default function App() {
         const fresh = await res.json();
         setSystemSettings(fresh);
       }
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  async function handleCreateEvent(fields: { title: string; description: string; dueDate: string; time: string; assigneeIds: string[] }) {
+    try {
+      const res = await fetch("/api/events", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...fields, createdBy: currentUser?.id })
+      });
+      if (res.ok) {
+        const created = await res.json();
+        setEventsList((prev) => [...prev, created]);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  async function handleRequestNotificationPermission() {
+    if (typeof Notification === "undefined") return;
+    try {
+      const result = await Notification.requestPermission();
+      setNotifPermission(result);
     } catch (e) {
       console.error(e);
     }
@@ -1556,7 +1619,9 @@ export default function App() {
                 <CalendarView
                   tasks={tasksList}
                   users={usersList}
+                  events={eventsList}
                   onSelectTask={(t) => setSelectedTask(t)}
+                  onCreateEvent={handleCreateEvent}
                 />
               )}
 
@@ -1627,6 +1692,45 @@ export default function App() {
                 <label><span>Role</span><select value={profileRole} onChange={(e) => setProfileRole(e.target.value as UserRole)} disabled={currentUser.role !== "Admin"} title={currentUser.role !== "Admin" ? "Only an admin can change user roles" : "Change role"}><option value="Team Member">Attorney</option><option value="Manager">Manager</option><option value="Admin">Admin</option></select>{currentUser.role !== "Admin" && <small className="text-[10px] text-slate-400 mt-1 block">Only an admin can change user roles.</small>}</label>
                 <label><span>Email</span><input value={currentUser.email} disabled /></label>
               </div>
+
+              <div className="profile-fields" style={{ marginTop: 4 }}>
+                <label>
+                  <span>Desktop notifications</span>
+                  <button
+                    type="button"
+                    onClick={handleRequestNotificationPermission}
+                    disabled={notifPermission === "granted" || notifPermission === "unsupported"}
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2 text-xs font-bold text-slate-700 disabled:opacity-60 cursor-pointer"
+                  >
+                    {notifPermission === "granted" ? "Enabled" : notifPermission === "denied" ? "Blocked in browser settings" : notifPermission === "unsupported" ? "Not supported on this device" : "Enable popup reminders"}
+                  </button>
+                  <small className="text-[10px] text-slate-400 mt-1 block">Lets event reminders pop up as a browser notification, not just the in-app bell.</small>
+                </label>
+                {currentUser.role === "Admin" && (
+                  <label>
+                    <span>Event reminder lead time</span>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="number"
+                        min={1}
+                        max={1440}
+                        value={reminderMinutesInput}
+                        onChange={(e) => setReminderMinutesInput(e.target.value)}
+                        className="flex-1"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleSaveSettings({ eventReminderMinutesBefore: Math.max(1, Number(reminderMinutesInput) || 10) })}
+                        className="shrink-0 rounded-xl bg-blue-900 text-white px-3 py-2 text-xs font-bold cursor-pointer"
+                      >
+                        Save
+                      </button>
+                    </div>
+                    <small className="text-[10px] text-slate-400 mt-1 block">Minutes before a calendar event that assignees get reminded (applies to every event).</small>
+                  </label>
+                )}
+              </div>
+
               {profileError && <p className="profile-error">{profileError}</p>}
               <div className="profile-actions"><button type="button" onClick={() => setShowProfileModal(false)}>Cancel</button><button type="submit" disabled={profileSaving}>{profileSaving ? "Saving…" : "Save changes"}</button></div>
             </motion.form>
