@@ -797,6 +797,21 @@ async function persistTaskRow(task: AppData["tasks"][number]) {
   if (error) throw error;
 }
 
+// Signup/OAuth-profile create the user's account row this way rather than
+// through the fire-and-forget writeDatabase() -> syncMemoryDbToSupabase()
+// path: that path only console.error's a failed upsert, so a brand new user
+// could get a 201/success response and a session even though their row never
+// actually landed in Supabase. The next request from a cold instance (or the
+// same instance's throttled reload) would then see them as a nonexistent
+// user and reject everything they try to do. Persisting - and checking the
+// result - before responding means a failed write surfaces immediately as a
+// registration error instead of a confusing "logged in but can't do anything".
+async function persistUserRow(user: AppData["users"][number]) {
+  if (!supabaseAdmin) return;
+  const { error } = await upsertResilient("users", [rowMappers.users.toRow(user)], "id");
+  if (error) throw error;
+}
+
 // Some columns (reminded_user_ids, reminded_trigger_keys, ...) get added to a
 // row mapper ahead of the matching Supabase migration actually being run -
 // without this, upserting a row with a column the live table doesn't have
@@ -1244,7 +1259,15 @@ app.post("/api/auth/oauth-profile", async (req, res) => {
   let user = db.users.find(u => u.email.toLowerCase() === data.user.email!.toLowerCase());
   if (!user) {
     user = { id: data.user.id, name: data.user.user_metadata?.full_name || data.user.user_metadata?.name || data.user.email.split("@")[0], email: data.user.email, role: "Team Member", department: "General", avatar: data.user.user_metadata?.avatar_url, createdAt: new Date().toISOString() };
-    db.users.push(user); await writeDatabase(db);
+    db.users.push(user);
+    try {
+      await persistUserRow(user);
+      void writeDatabase(db);
+    } catch (err: any) {
+      db.users.pop();
+      console.error("OAuth profile persistence failed:", err.message);
+      return res.status(500).json({ error: "Could not save your account. Please try signing in again." });
+    }
   }
   res.json({ success: true, user, token });
 });
@@ -1359,7 +1382,15 @@ app.post("/api/auth/signup", async (req, res) => {
   };
 
   db.users.push(newUser);
-  await writeDatabase(db);
+
+  try {
+    await persistUserRow(newUser);
+    void writeDatabase(db);
+  } catch (error: any) {
+    db.users.pop();
+    console.error("Signup persistence failed:", error.message);
+    return res.status(500).json({ error: "Could not save your account. Please try registering again." });
+  }
 
   res.status(201).json({
     success: true,
