@@ -35,6 +35,7 @@ interface DashboardViewProps {
   leaveRequests?: LeaveRequest[];
   onUpdateLeaveStatus?: (leaveId: string, status: "Approved" | "Rejected") => void;
   onCelebrate?: (title: string, message: string) => void;
+  onSessionExpired?: () => void;
 }
 
 export default function DashboardView({
@@ -46,7 +47,8 @@ export default function DashboardView({
   onPauseTask,
   leaveRequests,
   onUpdateLeaveStatus,
-  onCelebrate
+  onCelebrate,
+  onSessionExpired
 }: DashboardViewProps) {
   const isManagerOrAdmin = currentUser.role === "Admin" || currentUser.role === "Manager";
 
@@ -146,6 +148,8 @@ export default function DashboardView({
         setShowPresenceModal(false);
         onCelebrate?.("Attendance marked!", `You have successfully clocked in from ${data.type}.`);
         void fetchAttendanceAndLeaves();
+      } else if (res.status === 401) {
+        onSessionExpired?.();
       } else {
         const err = await res.json();
         setAttendanceError(err.error || "Failed to mark attendance.");

@@ -598,6 +598,8 @@ export default function App() {
         setNewTaskMatterCode("");
         setShowCreateTaskModal(false);
         void fetchDatabase(); // Reconcile the remaining dashboard data in the background.
+      } else if (res.status === 401) {
+        handleLogOut();
       } else {
         const d = await res.json().catch(() => null);
         setCreateTaskError(d?.error || "Failed to create task.");
@@ -1619,6 +1621,7 @@ export default function App() {
                   leaveRequests={leavesList}
                   onUpdateLeaveStatus={handleUpdateLeaveStatus}
                   onCelebrate={triggerCelebration}
+                  onSessionExpired={handleLogOut}
                 />
               )}
 

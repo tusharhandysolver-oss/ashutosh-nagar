@@ -91,6 +91,7 @@ export interface CalendarEvent {
   assigneeIds: string[];
   createdBy?: string;
   createdAt: string;
+  remindedUserIds?: string[];
 }
 
 export interface LeaveRequest {

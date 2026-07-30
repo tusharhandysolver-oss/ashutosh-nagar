@@ -187,6 +187,7 @@ interface AppData {
     timerState?: "idle" | "running" | "paused";
     lastStartedAt?: string | null;
     totalActiveMs?: number;
+    remindedTriggerKeys?: string[];
   }>;
   comments: Array<{
     id: string;
@@ -263,6 +264,7 @@ interface AppData {
     assigneeIds: string[];
     createdBy: string;
     createdAt: string;
+    remindedUserIds?: string[];
   }>;
 }
 
@@ -715,7 +717,8 @@ const rowMappers = {
       client_approval_status: t.clientApprovalStatus || "Not Required", matter_code: t.matterCode || null,
       started_at: t.startedAt || null, completed_at: t.completedAt || null, actual_days_elapsed: t.actualDaysElapsed ?? null,
       actual_hours_elapsed: t.actualHoursElapsed ?? null, timer_state: t.timerState || "idle",
-      last_started_at: t.lastStartedAt || null, total_active_ms: t.totalActiveMs || 0
+      last_started_at: t.lastStartedAt || null, total_active_ms: t.totalActiveMs || 0,
+      reminded_trigger_keys: t.remindedTriggerKeys || []
     }),
     fromRow: (r: any) => ({
       id: r.id, title: r.title, description: r.description, priority: r.priority, status: r.status,
@@ -727,7 +730,8 @@ const rowMappers = {
       hourlyRate: r.hourly_rate, clientApprovalStatus: r.client_approval_status, matterCode: r.matter_code,
       startedAt: r.started_at, completedAt: r.completed_at, actualDaysElapsed: r.actual_days_elapsed,
       actualHoursElapsed: r.actual_hours_elapsed, timerState: r.timer_state, lastStartedAt: r.last_started_at,
-      totalActiveMs: r.total_active_ms !== null ? parseInt(r.total_active_ms, 10) : 0
+      totalActiveMs: r.total_active_ms !== null ? parseInt(r.total_active_ms, 10) : 0,
+      remindedTriggerKeys: Array.isArray(r.reminded_trigger_keys) ? r.reminded_trigger_keys : []
     })
   },
   comments: {
@@ -763,8 +767,8 @@ const rowMappers = {
     fromRow: (r: any) => ({ id: r.id, userId: r.user_id, userName: r.user_name, startDate: r.start_date, endDate: r.end_date, reason: r.reason, status: r.status, createdAt: r.created_at })
   },
   calendar_events: {
-    toRow: (e: any) => ({ id: e.id, title: e.title, description: e.description || "", due_date: e.dueDate, time: e.time, assignee_ids: e.assigneeIds || [], created_by: e.createdBy || null, created_at: e.createdAt }),
-    fromRow: (r: any) => ({ id: r.id, title: r.title, description: r.description, dueDate: r.due_date, time: r.time, assigneeIds: Array.isArray(r.assignee_ids) ? r.assignee_ids : [], createdBy: r.created_by, createdAt: r.created_at })
+    toRow: (e: any) => ({ id: e.id, title: e.title, description: e.description || "", due_date: e.dueDate, time: e.time, assignee_ids: e.assigneeIds || [], created_by: e.createdBy || null, created_at: e.createdAt, reminded_user_ids: e.remindedUserIds || [] }),
+    fromRow: (r: any) => ({ id: r.id, title: r.title, description: r.description, dueDate: r.due_date, time: r.time, assigneeIds: Array.isArray(r.assignee_ids) ? r.assignee_ids : [], createdBy: r.created_by, createdAt: r.created_at, remindedUserIds: Array.isArray(r.reminded_user_ids) ? r.reminded_user_ids : [] })
   }
 };
 
@@ -789,10 +793,31 @@ function notifyAdminsOfTaskCompletion(db: AppData, task: AppData["tasks"][number
 
 async function persistTaskRow(task: AppData["tasks"][number]) {
   if (!supabaseAdmin) return;
-  const { error } = await supabaseAdmin
-    .from("tasks")
-    .upsert(rowMappers.tasks.toRow(task), { onConflict: "id" });
-  if (error) throw new Error(error.message);
+  const { error } = await upsertResilient("tasks", [rowMappers.tasks.toRow(task)], "id");
+  if (error) throw error;
+}
+
+// Some columns (reminded_user_ids, reminded_trigger_keys, ...) get added to a
+// row mapper ahead of the matching Supabase migration actually being run -
+// without this, upserting a row with a column the live table doesn't have
+// yet fails the WHOLE write, not just that field, breaking basic things like
+// creating a task until the migration catches up. Drop whichever column
+// PostgREST reports missing and retry, so writes keep working either way;
+// once the migration runs, nothing needs to change here.
+async function upsertResilient(table: string, rows: Record<string, any>[], onConflict: string): Promise<{ error: Error | null }> {
+  if (rows.length === 0) return { error: null };
+  let currentRows = rows;
+  for (let attempt = 0; attempt < 4; attempt++) {
+    const { error } = await supabaseAdmin!.from(table).upsert(currentRows, { onConflict });
+    if (!error) return { error: null };
+    const match = /Could not find the '([\w]+)' column/.exec(error.message);
+    if (!match) return { error: new Error(error.message) };
+    currentRows = currentRows.map((row) => {
+      const { [match[1]]: _dropped, ...rest } = row;
+      return rest;
+    });
+  }
+  return { error: new Error(`Too many missing-column retries upserting into "${table}"`) };
 }
 
 // Sync one collection: delete rows no longer present locally, then upsert the current rows.
@@ -806,12 +831,20 @@ async function syncTable<T extends keyof typeof rowMappers>(table: T, localRows:
   }
   const localIds = new Set(localRows.map((r) => r.id));
   const toDelete = (existing || []).map((r: any) => r.id).filter((id: string) => !localIds.has(id));
-  if (toDelete.length > 0) {
+  // Refuse to let a sync wipe out an entire table. A local snapshot with 0
+  // rows while Supabase still has data is a sign the in-memory state is
+  // stale, mid-reload, or coming from a second process racing the live
+  // deployment - not genuine proof everything was deleted. Silently trusting
+  // it here is exactly what turned a transient local hiccup into deleting
+  // every real task/project/comment from the live database.
+  if (existing && existing.length > 0 && toDelete.length === existing.length) {
+    console.error(`Refusing to sync "${table}": local snapshot has ${localRows.length} row(s) but would delete all ${existing.length} row(s) in Supabase. Skipping the delete step to avoid data loss - upsert (if any local rows exist) still proceeds below.`);
+  } else if (toDelete.length > 0) {
     const { error: deleteError } = await supabaseAdmin.from(table).delete().in("id", toDelete);
     if (deleteError) console.error(`Error deleting stale rows from "${table}":`, deleteError.message);
   }
   if (localRows.length > 0) {
-    const { error: upsertError } = await supabaseAdmin.from(table).upsert(localRows.map(mapper.toRow), { onConflict: "id" });
+    const { error: upsertError } = await upsertResilient(table, localRows.map(mapper.toRow), "id");
     if (upsertError) console.error(`Error upserting rows into "${table}":`, upsertError.message);
   }
 }
@@ -1110,12 +1143,15 @@ function runReminderScanner() {
     }
 
     if (message) {
-      // Check if this notification has already been triggered
-      const exists = db.notifications.some(
-        (n) => n.userId === task.assignedTo && n.message.includes(task.id) && n.message.slice(0, 15) === message.slice(0, 15)
-      );
-
-      if (!exists) {
+      // Whether this was already sent is tracked on the task itself, not by
+      // scanning for a matching notification - scanning breaks the moment
+      // the user dismisses it (Dismiss All deletes notifications outright),
+      // since the scanner would then see no record and recreate the exact
+      // same alert on the very next /api/tasks fetch. Same fix as the
+      // calendar-event reminder loop, applied here too.
+      if (!task.remindedTriggerKeys) task.remindedTriggerKeys = [];
+      if (!task.remindedTriggerKeys.includes(triggerKey)) {
+        task.remindedTriggerKeys.push(triggerKey);
         db.notifications.unshift({
           id: `not-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
           userId: task.assignedTo,
@@ -1162,9 +1198,16 @@ function runEventReminderScanner() {
     // seconds/minutes means this window is what actually catches the moment.
     if (now < reminderTime || now >= eventTime) return;
 
+    // Whether a reminder already fired is tracked on the event itself, not
+    // by scanning for a matching notification - "Dismiss All" deletes
+    // notifications outright, and if that were the only record, dismissing
+    // the reminder while the event's window was still open would make the
+    // scanner think it never sent one and immediately recreate it, which is
+    // exactly the "reminder keeps coming back" loop this fixes.
+    if (!event.remindedUserIds) event.remindedUserIds = [];
     event.assigneeIds.forEach((userId) => {
-      const exists = db.notifications.some((n) => n.userId === userId && n.message.includes(event.id));
-      if (exists) return;
+      if (event.remindedUserIds!.includes(userId)) return;
+      event.remindedUserIds!.push(userId);
       db.notifications.unshift({
         id: `not-${Date.now()}-${Math.floor(Math.random() * 1000)}-evt`,
         userId,
@@ -1817,7 +1860,7 @@ app.post("/api/events", async (req, res) => {
 
   try {
     if (supabaseAdmin) {
-      const { error } = await supabaseAdmin.from("calendar_events").upsert(rowMappers.calendar_events.toRow(newEvent), { onConflict: "id" });
+      const { error } = await upsertResilient("calendar_events", [rowMappers.calendar_events.toRow(newEvent)], "id");
       if (error) {
         db.calendarEvents.pop();
         console.error("Event creation failed in Supabase:", error.message);
@@ -2283,6 +2326,14 @@ app.post("/api/attendance/clock-in", async (req, res) => {
     return res.status(400).json({ error: "User ID and Work From Home attendance type are required." });
   }
 
+  // userId comes from the client's cached session, which can outlive the
+  // actual user record (e.g. the account was removed server-side). Catching
+  // that here gives a clear "session invalid" signal instead of letting the
+  // write fail downstream with an opaque FK/db error.
+  if (!db.users.find((u) => u.id === userId)) {
+    return res.status(401).json({ error: "Your login session is no longer valid. Please sign in again." });
+  }
+
   if (!db.attendances) db.attendances = [];
 
   const todayStr = getAttendanceDateKey();
@@ -2346,6 +2397,10 @@ app.post("/api/attendance/clock-out", async (req, res) => {
 
   if (!userId) {
     return res.status(400).json({ error: "User ID is required." });
+  }
+
+  if (!db.users.find((u) => u.id === userId)) {
+    return res.status(401).json({ error: "Your login session is no longer valid. Please sign in again." });
   }
 
   if (!db.attendances) db.attendances = [];
