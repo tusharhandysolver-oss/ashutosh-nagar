@@ -301,11 +301,29 @@ export default function App() {
     }
   }
 
+  // Maps a notification's fixed emoji/label prefix (set server-side) to a
+  // human title for the popup, and strips that prefix plus any trailing
+  // "(id)" tag from the body text. Falls through to a generic title for
+  // anything that doesn't match a known prefix, so new notification types
+  // added later still pop instead of silently doing nothing.
+  const PUSH_NOTIFICATION_PREFIXES: Array<[string, string]> = [
+    ["⏰ EVENT REMINDER: ", "Event reminder"],
+    ["✈️ LEAVE REQUEST: ", "New leave request"],
+    ["✈️ LEAVE DECISION: ", "Leave request update"],
+    ["📋 NEW TASK ASSIGNED: ", "New task assigned"],
+    ["🔔 TASK UPDATED: ", "Task updated"],
+    ["⏱️ TIMER STARTED: ", "Timer started"],
+    ["⏱️ TIMER PAUSED: ", "Timer paused"],
+    ["✅ TASK COMPLETED: ", "Task completed"],
+    ["💬 COMMENT ADDED: ", "New comment"]
+  ];
+
   // Shared by the initial load and the 8s poll: diffs incoming notifications
-  // against what's already on screen and, for any brand-new event-reminder
-  // entry, fires a native browser Notification popup (if permission was
-  // granted) in addition to the in-app bell - this is what makes the
-  // reminder actually pop up for a user with the tab open in the background.
+  // against what's already on screen and, for any brand-new one, fires a
+  // native browser Notification popup (if permission was granted) in
+  // addition to the in-app bell - this is what makes leave requests, leave
+  // decisions, task assignments, and event reminders actually pop up for a
+  // user with the tab open in the background, not just show in the bell.
   function applyFreshNotifications(fresh: AppNotification[]) {
     const isFirstLoad = !hasLoadedNotificationsOnce.current;
     const canPop = typeof Notification !== "undefined" && Notification.permission === "granted";
@@ -313,12 +331,13 @@ export default function App() {
       const alreadySeen = notifiedEventReminderIds.current.has(n.id);
       notifiedEventReminderIds.current.add(n.id);
       // Skip popping on the very first load of a session - otherwise every
-      // pre-existing reminder notification would re-pop the moment the tab
-      // opens, instead of only genuinely new ones found on later polls.
+      // pre-existing notification would re-pop the moment the tab opens,
+      // instead of only genuinely new ones found on later polls.
       if (isFirstLoad || alreadySeen || !canPop) return;
-      if (n.message.startsWith("⏰ EVENT REMINDER")) {
-        try { new Notification("Event reminder", { body: n.message.replace(/^⏰ EVENT REMINDER: /, "").replace(/\s*\(evt-\d+\)$/, "") }); } catch { /* ignore */ }
-      }
+      const match = PUSH_NOTIFICATION_PREFIXES.find(([prefix]) => n.message.startsWith(prefix));
+      const title = match ? match[1] : "Notification";
+      const body = (match ? n.message.slice(match[0].length) : n.message).replace(/\s*\((?:evt|TSK|not)-[\w-]+\)$/, "");
+      try { new Notification(title, { body }); } catch { /* ignore */ }
     });
     hasLoadedNotificationsOnce.current = true;
     setNotificationsList(fresh);

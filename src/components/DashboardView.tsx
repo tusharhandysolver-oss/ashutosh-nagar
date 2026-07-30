@@ -242,8 +242,11 @@ export default function DashboardView({
     return sum + maxTracked;
   }, 0);
   
-  // Calculate overdue tasks (Due date earlier than July 8, 2026)
-  const today = new Date("2026-07-08T00:00:00Z");
+  // Calculate overdue tasks and "days left" against the real current date,
+  // normalized to local midnight so the day-count doesn't shift depending on
+  // what time of day it happens to be when the dashboard renders.
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
   const myOverdueTasks = myPendingTasks.filter(t => new Date(t.dueDate).getTime() < today.getTime());
 
   // All Tasks calculations for Manager Dashboard

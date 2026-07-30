@@ -768,6 +768,25 @@ const rowMappers = {
   }
 };
 
+// Task completion is notable enough that Admins should hear about it
+// regardless of who assigned the task - not just whoever happened to be the
+// assigner. Skips a user who's already getting the assigner notification so
+// an Admin who assigned their own task doesn't get pinged twice.
+function notifyAdminsOfTaskCompletion(db: AppData, task: AppData["tasks"][number], actorName: string, alreadyNotifiedUserId?: string) {
+  const admins = db.users.filter((u) => u.role === "Admin" && u.id !== alreadyNotifiedUserId);
+  const hoursNote = task.actualHoursElapsed != null ? ` Tracked time: ${task.actualHoursElapsed} hrs.` : "";
+  admins.forEach((admin) => {
+    db.notifications.unshift({
+      id: `not-${Date.now()}-${Math.floor(Math.random() * 1000)}-admin-comp`,
+      userId: admin.id,
+      message: `✅ TASK COMPLETED: ${actorName} completed "${task.title}" (${task.id}).${hoursNote}`,
+      type: "success",
+      readStatus: false,
+      createdAt: new Date().toISOString()
+    });
+  });
+}
+
 async function persistTaskRow(task: AppData["tasks"][number]) {
   if (!supabaseAdmin) return;
   const { error } = await supabaseAdmin
@@ -1128,7 +1147,13 @@ function runEventReminderScanner() {
   let updated = false;
 
   db.calendarEvents.forEach((event) => {
-    const eventTime = new Date(`${event.dueDate}T${event.time}:00`).getTime();
+    // The date/time picker is filled in by India-based users (IST, UTC+5:30),
+    // but a bare "YYYY-MM-DDTHH:MM:00" string is parsed in whatever timezone
+    // the Node process itself runs in - Vercel's serverless functions default
+    // to UTC, not IST. Without an explicit offset this silently reinterprets
+    // "3pm" as 3pm UTC (8:30pm IST), so the reminder window opens 5.5 hours
+    // later than the user actually meant - which reads as "never arrived".
+    const eventTime = new Date(`${event.dueDate}T${event.time}:00+05:30`).getTime();
     if (Number.isNaN(eventTime)) return;
     const reminderTime = eventTime - leadMinutes * 60000;
 
@@ -1618,6 +1643,13 @@ app.put("/api/tasks/:id", async (req, res) => {
   };
 
   db.tasks[taskIndex] = updatedTask;
+
+  // Completing a task via drag-to-Completed / the edit modal (as opposed to
+  // the dedicated timer /complete endpoint above) still deserves the same
+  // Admin heads-up.
+  if (finalStatus === "Completed" && oldStatus !== "Completed") {
+    notifyAdminsOfTaskCompletion(db, updatedTask, updates.editorName || "Team member");
+  }
 
   // Notify Assignee of updates
   if (updatedTask.assignedTo) {
@@ -2182,6 +2214,7 @@ app.post("/api/tasks/:id/complete", async (req, res) => {
     readStatus: false,
     createdAt: new Date().toISOString()
   });
+  notifyAdminsOfTaskCompletion(db, task, userName || "Team member", task.assignedBy);
 
   // Log activity
   db.activityLogs.unshift({
