@@ -829,7 +829,7 @@ export default function App() {
         body: JSON.stringify({ userId: currentUser?.id })
       });
       if (res.ok) {
-        setNotificationsList((prev) => prev.map((n) => ({ ...n, readStatus: true })));
+        setNotificationsList((prev) => prev.filter((n) => n.userId !== currentUser?.id));
       }
     } catch (e) {
       console.error(e);

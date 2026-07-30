@@ -81,6 +81,13 @@ function ensureInitialized(): Promise<void> {
   return initPromise;
 }
 
+// Throttles the per-request Vercel reload below: cross-instance staleness of a
+// couple seconds is an acceptable tradeoff for not paying a 9-table Supabase
+// round-trip on every single request in a burst (e.g. a page load firing off
+// tasks/users/projects/notifications/goals/attendance concurrently).
+let lastSupabaseLoadAt = 0;
+const SUPABASE_RELOAD_THROTTLE_MS = 2000;
+
 app.use((req, res, next) => {
   ensureInitialized()
     .then(() => {
@@ -92,7 +99,8 @@ app.use((req, res, next) => {
       // every request keeps reads consistent across instances; traditional
       // hosts (Render/local, one persistent process) skip this since their
       // single memoryDb is already kept current by every write.
-      if (process.env.VERCEL && supabaseAdmin) {
+      if (process.env.VERCEL && supabaseAdmin && Date.now() - lastSupabaseLoadAt > SUPABASE_RELOAD_THROTTLE_MS) {
+        lastSupabaseLoadAt = Date.now();
         return loadMemoryDbFromSupabase().catch((err) => {
           console.error("Failed to refresh memoryDb from Supabase:", err);
         });
@@ -683,7 +691,10 @@ const rowMappers = {
   },
   tasks: {
     toRow: (t: any) => ({
-      id: t.id, title: t.title, description: t.description, priority: t.priority, status: t.status, stage: t.stage,
+      // The live table's legacy stage constraint does not include "Completed".
+      // Completion is canonical in `status`; normalize it back to Completed on read.
+      id: t.id, title: t.title, description: t.description, priority: t.priority, status: t.status,
+      stage: t.status === "Completed" ? "In Progress" : t.stage,
       due_date: t.dueDate, created_at: t.createdAt, last_updated_date: t.lastUpdatedDate,
       assigned_by: t.assignedBy, assigned_to: t.assignedTo, project_id: t.projectId, project_name: t.projectName,
       tags: t.tags || [], estimated_hours: t.estimatedHours || 0, actual_hours: t.actualHours || 0, attachments: t.attachments || [],
@@ -694,7 +705,8 @@ const rowMappers = {
       last_started_at: t.lastStartedAt || null, total_active_ms: t.totalActiveMs || 0
     }),
     fromRow: (r: any) => ({
-      id: r.id, title: r.title, description: r.description, priority: r.priority, status: r.status, stage: r.stage,
+      id: r.id, title: r.title, description: r.description, priority: r.priority, status: r.status,
+      stage: r.status === "Completed" ? "Completed" : r.stage,
       dueDate: r.due_date, createdAt: r.created_at, lastUpdatedDate: r.last_updated_date,
       assignedBy: r.assigned_by, assignedTo: r.assigned_to, projectId: r.project_id, projectName: r.project_name,
       tags: Array.isArray(r.tags) ? r.tags : [], estimatedHours: r.estimated_hours, actualHours: r.actual_hours,
@@ -1432,21 +1444,17 @@ app.post("/api/tasks", async (req, res) => {
   });
 
   try {
-    if (supabaseAdmin) {
-      const { error } = await supabaseAdmin
-        .from("tasks")
-        .upsert(rowMappers.tasks.toRow(newTask), { onConflict: "id" });
-      if (error) {
-        db.tasks.pop();
-        db.notifications.shift();
-        db.activityLogs.shift();
-        console.error("Task creation failed in Supabase:", error.message);
-        return res.status(500).json({ error: "Task could not be saved in the database. Please try again." });
-      }
-    }
-    await writeDatabase(db);
+    // Persist just the new task row before responding (fast, single upsert);
+    // the full multi-table resync (notifications/activity log/etc.) runs in
+    // the background, same pattern as the play/pause/complete/PUT endpoints -
+    // it avoids blocking the response on a 9-table sync round-trip.
+    await persistTaskRow(newTask);
+    void writeDatabase(db);
     res.status(201).json(newTask);
   } catch (error) {
+    db.tasks.pop();
+    db.notifications.shift();
+    db.activityLogs.shift();
     console.error("Task creation failed:", error);
     res.status(500).json({ error: "Task could not be saved. Please try again." });
   }
@@ -1648,17 +1656,16 @@ app.post("/api/notifications/:id/read", async (req, res) => {
   res.json({ success: true });
 });
 
+// "Dismiss All" clears the user's notifications outright (not just marks them
+// read) - the notification center is meant to empty out, not fill up with
+// grayed-out entries the user already dismissed.
 app.post("/api/notifications/read-all", async (req, res) => {
   const { userId } = req.body;
   const db = readDatabase();
 
-  db.notifications.forEach((n) => {
-    if (n.userId === userId) {
-      n.readStatus = true;
-    }
-  });
+  db.notifications = db.notifications.filter((n) => n.userId !== userId);
 
-  await writeDatabase(db);
+  void writeDatabase(db);
   res.json({ success: true });
 });
 
