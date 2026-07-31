@@ -797,6 +797,26 @@ async function persistTaskRow(task: AppData["tasks"][number]) {
   if (error) throw error;
 }
 
+// Play/pause/complete do read-modify-write math on timerState/lastStartedAt/
+// totalActiveMs, and on Vercel the request handling it can land on a
+// serverless instance whose memoryDb is a couple seconds stale (see the
+// throttled per-request reload above). Reading play's "running" state through
+// a stale snapshot means pause's "was it running?" check fails, so its
+// elapsed-time accumulation is silently skipped - the timer just resets to
+// 0.00 instead of recording the time that actually passed. Fetching the
+// authoritative row straight from Supabase right before doing that math -
+// only for these three timer-mutating routes, not every read - avoids it.
+async function getAuthoritativeTimerFields(taskId: string): Promise<Pick<AppData["tasks"][number], "timerState" | "lastStartedAt" | "totalActiveMs"> | null> {
+  if (!supabaseAdmin) return null;
+  const { data, error } = await supabaseAdmin.from("tasks").select("timer_state, last_started_at, total_active_ms").eq("id", taskId).maybeSingle();
+  if (error || !data) return null;
+  return {
+    timerState: data.timer_state || "idle",
+    lastStartedAt: data.last_started_at || null,
+    totalActiveMs: data.total_active_ms !== null && data.total_active_ms !== undefined ? parseInt(data.total_active_ms, 10) : 0
+  };
+}
+
 // Signup/OAuth-profile create the user's account row this way rather than
 // through the fire-and-forget writeDatabase() -> syncMemoryDbToSupabase()
 // path: that path only console.error's a failed upsert, so a brand new user
@@ -1213,15 +1233,14 @@ function runReminderScanner() {
 // meeting"), so unlike runReminderScanner's day-granularity task reminders
 // (which use a fixed mock "today" for demo consistency), this needs the
 // real wall-clock time to mean anything.
-function runEventReminderScanner() {
+async function runEventReminderScanner() {
   const db = readDatabase();
   if (!db.calendarEvents || db.calendarEvents.length === 0) return;
 
   const leadMinutes = db.settings?.eventReminderMinutesBefore ?? 10;
   const now = Date.now();
-  let updated = false;
 
-  db.calendarEvents.forEach((event) => {
+  const dueEvents = db.calendarEvents.filter((event) => {
     // The date/time picker is filled in by India-based users (IST, UTC+5:30),
     // but a bare "YYYY-MM-DDTHH:MM:00" string is parsed in whatever timezone
     // the Node process itself runs in - Vercel's serverless functions default
@@ -1229,24 +1248,52 @@ function runEventReminderScanner() {
     // "3pm" as 3pm UTC (8:30pm IST), so the reminder window opens 5.5 hours
     // later than the user actually meant - which reads as "never arrived".
     const eventTime = new Date(`${event.dueDate}T${event.time}:00+05:30`).getTime();
-    if (Number.isNaN(eventTime)) return;
+    if (Number.isNaN(eventTime)) return false;
     const reminderTime = eventTime - leadMinutes * 60000;
-
     // Only fire within the reminder window itself (not before it opens, and
     // not once the event has already started) - a scan cadence of a few
     // seconds/minutes means this window is what actually catches the moment.
-    if (now < reminderTime || now >= eventTime) return;
+    return now >= reminderTime && now < eventTime;
+  });
+  if (dueEvents.length === 0) return;
 
-    // Whether a reminder already fired is tracked on the event itself, not
-    // by scanning for a matching notification - "Dismiss All" deletes
-    // notifications outright, and if that were the only record, dismissing
-    // the reminder while the event's window was still open would make the
-    // scanner think it never sent one and immediately recreate it, which is
-    // exactly the "reminder keeps coming back" loop this fixes.
-    if (!event.remindedUserIds) event.remindedUserIds = [];
-    event.assigneeIds.forEach((userId) => {
-      if (event.remindedUserIds!.includes(userId)) return;
-      event.remindedUserIds!.push(userId);
+  // Whether a reminder already fired is tracked per-event (reminded_user_ids),
+  // not by scanning for a matching notification - "Dismiss All" deletes
+  // notifications outright, and if that were the only record, dismissing the
+  // reminder while the event's window was still open would make the scanner
+  // think it never sent one and immediately recreate it.
+  //
+  // /api/notifications is polled every 8s by every logged-in client, so this
+  // runs constantly across many serverless instances at once. Deciding
+  // "already reminded?" from this instance's memoryDb - which can be a
+  // couple seconds stale - let a stale instance see an empty
+  // reminded_user_ids that another instance had already filled in moments
+  // earlier, refire the reminder, and overwrite calendar_events with its own
+  // stale copy. That race is exactly the "reminder keeps coming back" loop
+  // reported. Reading the authoritative row straight from Supabase right
+  // before deciding, and writing back just that one row, avoids it.
+  for (const event of dueEvents) {
+    let remindedUserIds = event.remindedUserIds || [];
+    if (supabaseAdmin) {
+      const { data } = await supabaseAdmin.from("calendar_events").select("reminded_user_ids").eq("id", event.id).maybeSingle();
+      if (data) remindedUserIds = Array.isArray(data.reminded_user_ids) ? data.reminded_user_ids : [];
+    }
+
+    const newlyRemindedUserIds = event.assigneeIds.filter((userId) => !remindedUserIds.includes(userId));
+    if (newlyRemindedUserIds.length === 0) continue;
+
+    const updatedRemindedUserIds = [...remindedUserIds, ...newlyRemindedUserIds];
+    event.remindedUserIds = updatedRemindedUserIds;
+
+    if (supabaseAdmin) {
+      const { error } = await supabaseAdmin.from("calendar_events").update({ reminded_user_ids: updatedRemindedUserIds }).eq("id", event.id);
+      if (error) {
+        console.error(`Failed to persist reminded_user_ids for event ${event.id}:`, error.message);
+        continue;
+      }
+    }
+
+    newlyRemindedUserIds.forEach((userId) => {
       db.notifications.unshift({
         id: `not-${Date.now()}-${Math.floor(Math.random() * 1000)}-evt`,
         userId,
@@ -1255,12 +1302,8 @@ function runEventReminderScanner() {
         readStatus: false,
         createdAt: new Date().toISOString()
       });
-      updated = true;
     });
-  });
-
-  if (updated) {
-    writeDatabase(db);
+    void writeDatabase(db);
   }
 }
 
@@ -1889,10 +1932,10 @@ app.post("/api/tasks/:id/comments", async (req, res) => {
 });
 
 // Notifications API
-app.get("/api/notifications", (req, res) => {
+app.get("/api/notifications", async (req, res) => {
   // Frontend polls this endpoint every 8s while logged in, which makes it a
   // convenient, always-warm hook for scanning upcoming calendar events.
-  runEventReminderScanner();
+  await runEventReminderScanner();
   const { userId } = req.query;
   const db = readDatabase();
 
@@ -1933,8 +1976,8 @@ app.post("/api/notifications/read-all", async (req, res) => {
 // Team Calendar events API. Shared across every assignee's device (unlike
 // the old localStorage-only version), so the reminder scan above can notify
 // everyone assigned, not just whoever's browser created the event.
-app.get("/api/events", (req, res) => {
-  runEventReminderScanner();
+app.get("/api/events", async (req, res) => {
+  await runEventReminderScanner();
   const db = readDatabase();
   res.json(db.calendarEvents || []);
 });
@@ -2194,6 +2237,14 @@ app.post("/api/tasks/:id/play", async (req, res) => {
   const task = db.tasks[taskIndex];
   const previousTask = { ...task };
 
+  // persistTaskRow upserts the whole row, so a stale totalActiveMs on this
+  // instance would silently overwrite a more recent value another instance
+  // already saved (e.g. a pause that landed a moment ago) - refresh it first.
+  const authoritative = await getAuthoritativeTimerFields(id);
+  if (authoritative) {
+    task.totalActiveMs = authoritative.totalActiveMs;
+  }
+
   // Set timer to running
   task.timerState = "running";
   task.lastStartedAt = new Date().toISOString();
@@ -2255,6 +2306,13 @@ app.post("/api/tasks/:id/pause", async (req, res) => {
   const task = db.tasks[taskIndex];
   const previousTask = { ...task };
 
+  const authoritative = await getAuthoritativeTimerFields(id);
+  if (authoritative) {
+    task.timerState = authoritative.timerState;
+    task.lastStartedAt = authoritative.lastStartedAt;
+    task.totalActiveMs = authoritative.totalActiveMs;
+  }
+
   if (task.timerState === "running" && task.lastStartedAt) {
     const elapsedMs = Date.now() - new Date(task.lastStartedAt).getTime();
     if (elapsedMs > 0) {
@@ -2315,6 +2373,13 @@ app.post("/api/tasks/:id/complete", async (req, res) => {
   const task = db.tasks[taskIndex];
   const previousTask = { ...task };
 
+  const authoritative = await getAuthoritativeTimerFields(id);
+  if (authoritative) {
+    task.timerState = authoritative.timerState;
+    task.lastStartedAt = authoritative.lastStartedAt;
+    task.totalActiveMs = authoritative.totalActiveMs;
+  }
+
   // If timer is running, calculate final elapsed
   if (task.timerState === "running" && task.lastStartedAt) {
     const elapsedMs = Date.now() - new Date(task.lastStartedAt).getTime();
@@ -2330,24 +2395,15 @@ app.post("/api/tasks/:id/complete", async (req, res) => {
   task.completedAt = new Date().toISOString();
   task.lastUpdatedDate = task.completedAt;
 
-  if (task.totalActiveMs) {
-    task.actualHoursElapsed = parseFloat((task.totalActiveMs / (1000 * 60 * 60)).toFixed(2));
-    task.actualDaysElapsed = parseFloat((task.totalActiveMs / (1000 * 60 * 60 * 24)).toFixed(2));
-    task.actualHours = task.actualHoursElapsed;
-  } else {
-    // Fallback if no timer was ever run, compute from startedAt to completedAt or default to 1 hr
-    const startIso = task.startedAt;
-    if (startIso) {
-      const diffMs = Date.now() - new Date(startIso).getTime();
-      task.actualHoursElapsed = parseFloat((diffMs / (1000 * 60 * 60)).toFixed(2));
-      task.actualDaysElapsed = parseFloat((diffMs / (1000 * 60 * 60 * 24)).toFixed(2));
-      task.actualHours = task.actualHoursElapsed;
-    } else {
-      task.actualHoursElapsed = 1;
-      task.actualDaysElapsed = 0.04;
-      task.actualHours = 1;
-    }
-  }
+  // This is the tracked-timer "Complete" action specifically, so the hours
+  // shown here must come from the timer (totalActiveMs) alone. Falling back
+  // to wall-clock time since startedAt when the timer never accumulated
+  // anything (e.g. it was paused seconds after starting) fabricated a number
+  // that had nothing to do with the timer the user was just looking at -
+  // exactly the "pause shows 0.00, Complete shows 0.03" mismatch reported.
+  task.actualHoursElapsed = task.totalActiveMs ? parseFloat((task.totalActiveMs / (1000 * 60 * 60)).toFixed(2)) : 0;
+  task.actualDaysElapsed = task.totalActiveMs ? parseFloat((task.totalActiveMs / (1000 * 60 * 60 * 24)).toFixed(2)) : 0;
+  task.actualHours = task.actualHoursElapsed;
 
   const message = `✅ TASK COMPLETED: ${userName || "Team member"} completed "${task.title}" (${task.id}). Tracked time: ${task.actualHoursElapsed} hrs (${task.actualDaysElapsed} days).`;
 
