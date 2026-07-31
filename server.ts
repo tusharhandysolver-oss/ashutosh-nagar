@@ -807,7 +807,16 @@ async function persistTaskRow(task: AppData["tasks"][number]) {
 // result - before responding means a failed write surfaces immediately as a
 // registration error instead of a confusing "logged in but can't do anything".
 async function persistUserRow(user: AppData["users"][number]) {
-  if (!supabaseAdmin) return;
+  if (!supabaseAdmin) {
+    // Supabase Auth (anon key) is enough to create the auth.users row and hand
+    // back a session, so signup/OAuth would otherwise look successful while
+    // silently never writing the profile to the public "users" table - the
+    // exact bug this function exists to prevent. If real Supabase Auth is in
+    // play, the service-role key is required too; missing it is a
+    // misconfiguration, not a valid "no persistence needed" state.
+    if (supabaseAuth) throw new Error("SUPABASE_SERVICE_ROLE_KEY is not configured; cannot persist the user profile.");
+    return;
+  }
   const { error } = await upsertResilient("users", [rowMappers.users.toRow(user)], "id");
   if (error) throw error;
 }
