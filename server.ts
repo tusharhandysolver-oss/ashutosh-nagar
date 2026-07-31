@@ -821,6 +821,12 @@ async function persistUserRow(user: AppData["users"][number]) {
   if (error) throw error;
 }
 
+async function deleteUserRow(userId: string) {
+  if (!supabaseAdmin) return;
+  const { error } = await supabaseAdmin.from("users").delete().eq("id", userId);
+  if (error) throw error;
+}
+
 // Some columns (reminded_user_ids, reminded_trigger_keys, ...) get added to a
 // row mapper ahead of the matching Supabase migration actually being run -
 // without this, upserting a row with a column the live table doesn't have
@@ -1008,7 +1014,16 @@ async function doSyncMemoryDbToSupabase() {
   try {
     const db = JSON.parse(JSON.stringify(memoryDb)); // Deep copy to prevent race conditions during express routing updates
 
-    await syncTable('users', db.users);
+    // "users" is deliberately NOT synced here. This function runs after every
+    // write to any table, on whichever serverless instance happened to handle
+    // that request - and each instance's memoryDb.users can be a couple
+    // seconds stale relative to Supabase (see the throttled per-request
+    // reload above). syncTable deletes any Supabase row missing from the
+    // local snapshot, so an unrelated write (e.g. someone dismissing a
+    // notification) on a stale instance would silently delete a user who
+    // signed up moments earlier on a different instance. Every route that
+    // creates/updates/deletes a user does so explicitly via persistUserRow /
+    // deleteUserRow instead, so this table never needs the generic sync.
     await syncTable('projects', db.projects);
     await syncTable('tasks', db.tasks);
     await syncTable('comments', db.comments);
@@ -1303,7 +1318,14 @@ app.post("/api/auth/login", async (req, res) => {
         createdAt: new Date().toISOString()
       };
       db.users.push(user);
-      await writeDatabase(db);
+      try {
+        await persistUserRow(user);
+      } catch (err: any) {
+        db.users.pop();
+        console.error("Google login profile persistence failed:", err.message);
+        return res.status(500).json({ error: "Could not save your account. Please try signing in again." });
+      }
+      void writeDatabase(db);
     }
     return res.json({ success: true, token: `mock-jwt-token-for-${user.id}`, user });
   }
@@ -1328,7 +1350,14 @@ app.post("/api/auth/login", async (req, res) => {
         createdAt: new Date().toISOString()
       };
       db.users.push(user);
-      await writeDatabase(db);
+      try {
+        await persistUserRow(user);
+      } catch (err: any) {
+        db.users.pop();
+        console.error("First-login profile persistence failed:", err.message);
+        return res.status(500).json({ error: "Could not save your account. Please try signing in again." });
+      }
+      void writeDatabase(db);
     }
     return res.json({ success: true, token: data.session.access_token, user });
   }
@@ -1429,14 +1458,23 @@ app.put("/api/users/:id", async (req, res) => {
     return res.status(403).json({ error: "Only an admin can change user roles." });
   }
 
+  const previousUser = db.users[userIndex];
   db.users[userIndex] = {
-    ...db.users[userIndex],
+    ...previousUser,
     name: name.trim(),
     phone: phone?.trim() || "",
     role: requestedRole,
-    avatar: avatar?.trim() ? avatar : db.users[userIndex].avatar
+    avatar: avatar?.trim() ? avatar : previousUser.avatar
   };
-  await writeDatabase(db);
+
+  try {
+    await persistUserRow(db.users[userIndex]);
+  } catch (err: any) {
+    db.users[userIndex] = previousUser;
+    console.error("User update persistence failed:", err.message);
+    return res.status(500).json({ error: "Could not save the changes. Please try again." });
+  }
+  void writeDatabase(db);
   res.json(db.users[userIndex]);
 });
 
@@ -1463,7 +1501,15 @@ app.post("/api/users", async (req, res) => {
   };
 
   db.users.push(newUser);
-  await writeDatabase(db);
+
+  try {
+    await persistUserRow(newUser);
+  } catch (err: any) {
+    db.users.pop();
+    console.error("User creation persistence failed:", err.message);
+    return res.status(500).json({ error: "Could not save the new user. Please try again." });
+  }
+  void writeDatabase(db);
 
   res.status(201).json(newUser);
 });
@@ -1471,8 +1517,16 @@ app.post("/api/users", async (req, res) => {
 app.delete("/api/users/:id", async (req, res) => {
   const { id } = req.params;
   const db = readDatabase();
+
+  try {
+    await deleteUserRow(id);
+  } catch (err: any) {
+    console.error("User deletion persistence failed:", err.message);
+    return res.status(500).json({ error: "Could not delete the user. Please try again." });
+  }
+
   db.users = db.users.filter((u) => u.id !== id);
-  await writeDatabase(db);
+  void writeDatabase(db);
   res.json({ success: true });
 });
 
