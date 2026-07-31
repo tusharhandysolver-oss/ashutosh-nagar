@@ -1282,7 +1282,16 @@ app.post("/api/auth/oauth-profile", async (req, res) => {
   const db = readDatabase();
   let user = db.users.find(u => u.email.toLowerCase() === data.user.email!.toLowerCase());
   if (!user) {
-    user = { id: data.user.id, name: data.user.user_metadata?.full_name || data.user.user_metadata?.name || data.user.email.split("@")[0], email: data.user.email, role: "Team Member", department: "General", avatar: data.user.user_metadata?.avatar_url, createdAt: new Date().toISOString() };
+    const metadata = data.user.user_metadata || {};
+    user = {
+      id: data.user.id,
+      name: metadata.full_name || metadata.name || data.user.email.split("@")[0],
+      email: data.user.email,
+      role: (["Admin", "Manager", "Team Member"].includes(metadata.role) ? metadata.role : "Team Member") as "Admin" | "Manager" | "Team Member",
+      department: metadata.department || "General",
+      avatar: metadata.avatar_url,
+      createdAt: new Date().toISOString()
+    };
     db.users.push(user);
     try {
       await persistUserRow(user);

@@ -425,7 +425,26 @@ export default function App() {
         return;
       }
 
-      const user = appUserFromSupabase(data.user);
+      // Supabase Auth now has the account, but the app's own "users" table
+      // (assignees, attendance, tasks all key off it) does not - that write
+      // has to go through the backend, the same way the OAuth callback below
+      // does it. Skipping this call was the actual bug: it let signup report
+      // success and log the user in locally while no row ever reached
+      // "users", so the new account was invisible everywhere else in the app.
+      let user: User;
+      try {
+        const res = await fetch("/api/auth/oauth-profile", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ accessToken: data.session.access_token }) });
+        const contentType = res.headers.get("content-type") || "";
+        if (res.ok && contentType.includes("application/json")) {
+          const payload = await readApiJson(res);
+          user = payload.user;
+        } else {
+          user = appUserFromSupabase(data.user);
+        }
+      } catch {
+        user = appUserFromSupabase(data.user);
+      }
+
       setSignUpSuccess("Registration successful! Logging you in...");
       setTimeout(() => {
         setCurrentUser(user); setIsLoggedIn(true); persistUser(user); setNewTaskAssignee(user.id);
