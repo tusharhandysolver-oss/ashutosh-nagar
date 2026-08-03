@@ -1553,12 +1553,14 @@ export default function App() {
         </div>
 
         <div className={sidebarCollapsed ? "px-3" : "px-5"}>
-          <p title="Made with love by Handysolver © 2026" className={`mb-2 text-center text-[10px] font-medium leading-relaxed text-slate-400 ${sidebarCollapsed ? "text-base" : ""}`}>
-            <span aria-hidden="true">🧡</span>
-            {!sidebarCollapsed && <span> Made with love by Handysolver © 2026</span>}
-          </p>
+          {!sidebarCollapsed && (
+            <p title="Made with love by Handysolver © 2026" className="mb-2 text-center text-[10px] font-medium leading-relaxed text-slate-400">
+              <span aria-hidden="true">🧡</span>
+              <span> Made with love by Handysolver © 2026</span>
+            </p>
+          )}
           <button onClick={() => setSidebarCollapsed(!sidebarCollapsed)} className="sidebar-collapse" aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}>
-            {sidebarCollapsed ? <PanelLeftOpen className="h-4 w-4" /> : <><PanelLeftClose className="h-4 w-4" /><span>Collapse</span></>}
+            {sidebarCollapsed ? <PanelLeftOpen className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
           </button>
         </div>
 
