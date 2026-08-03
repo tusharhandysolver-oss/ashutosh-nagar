@@ -14,6 +14,7 @@ export interface User {
   avatar?: string;
   phone?: string;
   status?: "active" | "pending";
+  eventReminderMinutesBefore?: number;
   createdAt: string;
 }
 
@@ -70,6 +71,7 @@ export interface Task {
   timerState?: "idle" | "running" | "paused";
   lastStartedAt?: string | null;
   totalActiveMs?: number;
+  reminderDaysBefore?: number | null;
 }
 
 export interface Attendance {

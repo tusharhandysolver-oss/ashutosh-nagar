@@ -184,7 +184,6 @@ export default function App() {
     autoRiskAnalysis: true,
     eventReminderMinutesBefore: 10
   });
-  const [reminderMinutesInput, setReminderMinutesInput] = useState("10");
   const [notifPermission, setNotifPermission] = useState<NotificationPermission | "unsupported">(
     typeof Notification !== "undefined" ? Notification.permission : "unsupported"
   );
@@ -205,6 +204,7 @@ export default function App() {
   const [profilePhone, setProfilePhone] = useState("");
   const [profileRole, setProfileRole] = useState<UserRole>("Team Member");
   const [profileAvatar, setProfileAvatar] = useState("");
+  const [profileEventReminderMinutes, setProfileEventReminderMinutes] = useState("10");
   const [profileSaving, setProfileSaving] = useState(false);
   const [profileError, setProfileError] = useState("");
   const [quickCreateStage, setQuickCreateStage] = useState<TaskStage>("Case Intake");
@@ -225,6 +225,7 @@ export default function App() {
   const [newTaskHourlyRate, setNewTaskHourlyRate] = useState("250");
   const [newTaskClientApproval, setNewTaskClientApproval] = useState<"Approved" | "Pending Review" | "Not Required">("Not Required");
   const [newTaskMatterCode, setNewTaskMatterCode] = useState("");
+  const [newTaskReminderDaysBefore, setNewTaskReminderDaysBefore] = useState("");
   const [createTaskError, setCreateTaskError] = useState("");
 
   function triggerCelebration(title: string, message: string) {
@@ -303,7 +304,6 @@ export default function App() {
       if (sRes.ok) {
         const fresh = await sRes.json();
         setSystemSettings(fresh);
-        setReminderMinutesInput(String(fresh.eventReminderMinutesBefore ?? 10));
       }
       if (lvRes.ok) setLeavesList(await lvRes.json());
       if (evRes.ok) setEventsList(await evRes.json());
@@ -551,6 +551,7 @@ export default function App() {
     setProfilePhone(currentUser.phone || "");
     setProfileRole(currentUser.role);
     setProfileAvatar(currentUser.avatar || "");
+    setProfileEventReminderMinutes(String(currentUser.eventReminderMinutesBefore ?? systemSettings?.eventReminderMinutesBefore ?? 10));
     setProfileError("");
     setShowProfileModal(true);
   }
@@ -602,7 +603,7 @@ export default function App() {
       const res = await fetch(`/api/users/${currentUser.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json", "X-User-Id": currentUser.id },
-        body: JSON.stringify({ name: profileName, phone: profilePhone, role: profileRole, avatar: profileAvatar })
+        body: JSON.stringify({ name: profileName, phone: profilePhone, role: profileRole, avatar: profileAvatar, eventReminderMinutesBefore: Math.max(1, Number(profileEventReminderMinutes) || 10) })
       });
       const rawBody = await res.text();
       let data: any;
@@ -672,6 +673,7 @@ export default function App() {
       hourlyRate: Number(newTaskHourlyRate),
       clientApprovalStatus: newTaskClientApproval,
       matterCode: newTaskMatterCode,
+      reminderDaysBefore: newTaskReminderDaysBefore ? Number(newTaskReminderDaysBefore) : null,
       createdBy: currentUser?.id
     };
 
@@ -680,7 +682,7 @@ export default function App() {
     // Snapshot the form so it can be restored if the request fails.
     const formSnapshot = {
       newTaskTitle, newTaskDesc, newTaskTags, newTaskHours,
-      newTaskIsBillable, newTaskHourlyRate, newTaskClientApproval, newTaskMatterCode
+      newTaskIsBillable, newTaskHourlyRate, newTaskClientApproval, newTaskMatterCode, newTaskReminderDaysBefore
     };
     triggerCelebration("Task created!", `“${newTaskTitle}” has been created successfully.`);
     setNewTaskTitle("");
@@ -691,6 +693,7 @@ export default function App() {
     setNewTaskHourlyRate("250");
     setNewTaskClientApproval("Not Required");
     setNewTaskMatterCode("");
+    setNewTaskReminderDaysBefore("");
     setShowCreateTaskModal(false);
 
     try {
@@ -717,6 +720,7 @@ export default function App() {
         setNewTaskHourlyRate(formSnapshot.newTaskHourlyRate);
         setNewTaskClientApproval(formSnapshot.newTaskClientApproval);
         setNewTaskMatterCode(formSnapshot.newTaskMatterCode);
+        setNewTaskReminderDaysBefore(formSnapshot.newTaskReminderDaysBefore);
         setShowCreateTaskModal(true);
         setCreateTaskError(d?.error || "Failed to create task.");
       }
@@ -730,6 +734,7 @@ export default function App() {
       setNewTaskHourlyRate(formSnapshot.newTaskHourlyRate);
       setNewTaskClientApproval(formSnapshot.newTaskClientApproval);
       setNewTaskMatterCode(formSnapshot.newTaskMatterCode);
+      setNewTaskReminderDaysBefore(formSnapshot.newTaskReminderDaysBefore);
       setShowCreateTaskModal(true);
       setCreateTaskError("Task dispatcher service unreachable.");
     }
@@ -1870,29 +1875,17 @@ export default function App() {
                   </button>
                   <small className="text-[10px] text-slate-400 mt-1 block">Lets event reminders pop up as a browser notification, not just the in-app bell.</small>
                 </label>
-                {currentUser.role === "Admin" && (
-                  <label>
-                    <span>Event reminder lead time</span>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="number"
-                        min={1}
-                        max={1440}
-                        value={reminderMinutesInput}
-                        onChange={(e) => setReminderMinutesInput(e.target.value)}
-                        className="flex-1"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => handleSaveSettings({ eventReminderMinutesBefore: Math.max(1, Number(reminderMinutesInput) || 10) })}
-                        className="shrink-0 rounded-xl bg-blue-900 text-white px-3 py-2 text-xs font-bold cursor-pointer"
-                      >
-                        Save
-                      </button>
-                    </div>
-                    <small className="text-[10px] text-slate-400 mt-1 block">Minutes before a calendar event that assignees get reminded (applies to every event).</small>
-                  </label>
-                )}
+                <label>
+                  <span>Event reminder lead time</span>
+                  <input
+                    type="number"
+                    min={1}
+                    max={1440}
+                    value={profileEventReminderMinutes}
+                    onChange={(e) => setProfileEventReminderMinutes(e.target.value)}
+                  />
+                  <small className="text-[10px] text-slate-400 mt-1 block">Minutes before a calendar event you're assigned to that you personally get reminded. Saved with the rest of your profile.</small>
+                </label>
               </div>
 
               {profileError && <p className="profile-error">{profileError}</p>}
@@ -2065,6 +2058,22 @@ export default function App() {
                       <option value="Critical">Critical</option>
                     </select>
                   </div>
+                </div>
+
+                <div>
+                  <label className="text-xs uppercase font-bold tracking-wider text-slate-400 font-display block mb-1.5">
+                    Reminder
+                  </label>
+                  <select
+                    value={newTaskReminderDaysBefore}
+                    onChange={(e) => setNewTaskReminderDaysBefore(e.target.value)}
+                    className="w-full rounded-2xl bg-slate-50 border border-slate-200 px-3.5 py-2.5 text-sm text-slate-800 focus:border-slate-400 outline-hidden cursor-pointer font-medium transition-colors hover:border-slate-300"
+                  >
+                    <option value="">No reminder</option>
+                    {[1, 2, 3, 4, 5, 6, 7].map((d) => (
+                      <option key={d} value={d}>{d} day{d > 1 ? "s" : ""} before due date</option>
+                    ))}
+                  </select>
                 </div>
 
                 {createTaskError && (

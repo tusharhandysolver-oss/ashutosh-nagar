@@ -152,6 +152,7 @@ interface AppData {
     avatar?: string;
     phone?: string;
     status?: "active" | "pending";
+    eventReminderMinutesBefore?: number;
     createdAt: string;
   }>;
   projects: Array<{
@@ -198,6 +199,7 @@ interface AppData {
     lastStartedAt?: string | null;
     totalActiveMs?: number;
     remindedTriggerKeys?: string[];
+    reminderDaysBefore?: number | null;
   }>;
   comments: Array<{
     id: string;
@@ -699,8 +701,8 @@ let memoryDb: AppData | null = null;
 // the app's in-memory AppData shape uses camelCase. These mappers translate both ways.
 const rowMappers = {
   users: {
-    toRow: (u: any) => ({ id: u.id, name: u.name, email: u.email, role: u.role, department: u.department, avatar: u.avatar || null, created_at: u.createdAt, status: u.status || "active" }),
-    fromRow: (r: any) => ({ id: r.id, name: r.name, email: r.email, role: r.role, department: r.department, avatar: r.avatar, createdAt: r.created_at, status: r.status || "active" })
+    toRow: (u: any) => ({ id: u.id, name: u.name, email: u.email, role: u.role, department: u.department, avatar: u.avatar || null, created_at: u.createdAt, status: u.status || "active", event_reminder_minutes_before: u.eventReminderMinutesBefore ?? null }),
+    fromRow: (r: any) => ({ id: r.id, name: r.name, email: r.email, role: r.role, department: r.department, avatar: r.avatar, createdAt: r.created_at, status: r.status || "active", eventReminderMinutesBefore: r.event_reminder_minutes_before ?? null })
   },
   projects: {
     toRow: (p: any) => ({
@@ -730,7 +732,7 @@ const rowMappers = {
       started_at: t.startedAt || null, completed_at: t.completedAt || null, actual_days_elapsed: t.actualDaysElapsed ?? null,
       actual_hours_elapsed: t.actualHoursElapsed ?? null, timer_state: t.timerState || "idle",
       last_started_at: t.lastStartedAt || null, total_active_ms: t.totalActiveMs || 0,
-      reminded_trigger_keys: t.remindedTriggerKeys || []
+      reminded_trigger_keys: t.remindedTriggerKeys || [], reminder_days_before: t.reminderDaysBefore ?? null
     }),
     fromRow: (r: any) => ({
       id: r.id, title: r.title, description: r.description, priority: r.priority, status: r.status,
@@ -743,7 +745,8 @@ const rowMappers = {
       startedAt: r.started_at, completedAt: r.completed_at, actualDaysElapsed: r.actual_days_elapsed,
       actualHoursElapsed: r.actual_hours_elapsed, timerState: r.timer_state, lastStartedAt: r.last_started_at,
       totalActiveMs: r.total_active_ms !== null ? parseInt(r.total_active_ms, 10) : 0,
-      remindedTriggerKeys: Array.isArray(r.reminded_trigger_keys) ? r.reminded_trigger_keys : []
+      remindedTriggerKeys: Array.isArray(r.reminded_trigger_keys) ? r.reminded_trigger_keys : [],
+      reminderDaysBefore: r.reminder_days_before ?? null
     })
   },
   comments: {
@@ -1269,10 +1272,13 @@ async function runEventReminderScannerLocked() {
   const db = readDatabase();
   if (!db.calendarEvents || db.calendarEvents.length === 0) return;
 
-  const leadMinutes = db.settings?.eventReminderMinutesBefore ?? 10;
+  // Each assignee can set their own lead time from their profile (falls back
+  // to the org-wide default in settings for anyone who hasn't), so the "is
+  // this due yet" check has to happen per-assignee, not once per event.
+  const defaultLeadMinutes = db.settings?.eventReminderMinutesBefore ?? 10;
   const now = Date.now();
 
-  const dueEvents = db.calendarEvents.filter((event) => {
+  const upcomingEvents = db.calendarEvents.filter((event) => {
     // The date/time picker is filled in by India-based users (IST, UTC+5:30),
     // but a bare "YYYY-MM-DDTHH:MM:00" string is parsed in whatever timezone
     // the Node process itself runs in - Vercel's serverless functions default
@@ -1280,14 +1286,11 @@ async function runEventReminderScannerLocked() {
     // "3pm" as 3pm UTC (8:30pm IST), so the reminder window opens 5.5 hours
     // later than the user actually meant - which reads as "never arrived".
     const eventTime = new Date(`${event.dueDate}T${event.time}:00+05:30`).getTime();
-    if (Number.isNaN(eventTime)) return false;
-    const reminderTime = eventTime - leadMinutes * 60000;
-    // Only fire within the reminder window itself (not before it opens, and
-    // not once the event has already started) - a scan cadence of a few
-    // seconds/minutes means this window is what actually catches the moment.
-    return now >= reminderTime && now < eventTime;
+    // Only events still ahead of "now" are candidates - once an event has
+    // started there's nothing left to remind anyone about.
+    return !Number.isNaN(eventTime) && now < eventTime;
   });
-  if (dueEvents.length === 0) return;
+  if (upcomingEvents.length === 0) return;
 
   // Whether a reminder already fired is tracked per-event (reminded_user_ids),
   // not by scanning for a matching notification - "Dismiss All" deletes
@@ -1304,17 +1307,26 @@ async function runEventReminderScannerLocked() {
   // stale copy. That race is exactly the "reminder keeps coming back" loop
   // reported. Reading the authoritative row straight from Supabase right
   // before deciding, and writing back just that one row, avoids it.
-  for (const event of dueEvents) {
+  for (const event of upcomingEvents) {
+    const eventTime = new Date(`${event.dueDate}T${event.time}:00+05:30`).getTime();
+
     let remindedUserIds = event.remindedUserIds || [];
     if (supabaseAdmin) {
       const { data } = await supabaseAdmin.from("calendar_events").select("reminded_user_ids").eq("id", event.id).maybeSingle();
       if (data) remindedUserIds = Array.isArray(data.reminded_user_ids) ? data.reminded_user_ids : [];
     }
 
-    const newlyRemindedUserIds = event.assigneeIds.filter((userId) => !remindedUserIds.includes(userId));
-    if (newlyRemindedUserIds.length === 0) continue;
+    // Of the not-yet-reminded assignees, only the ones whose own lead time
+    // window has actually opened are due right now.
+    const dueUserIds = event.assigneeIds.filter((userId) => {
+      if (remindedUserIds.includes(userId)) return false;
+      const assignee = db.users.find((u) => u.id === userId);
+      const leadMinutes = assignee?.eventReminderMinutesBefore ?? defaultLeadMinutes;
+      return now >= eventTime - leadMinutes * 60000;
+    });
+    if (dueUserIds.length === 0) continue;
 
-    const updatedRemindedUserIds = [...remindedUserIds, ...newlyRemindedUserIds];
+    const updatedRemindedUserIds = [...remindedUserIds, ...dueUserIds];
     event.remindedUserIds = updatedRemindedUserIds;
 
     if (supabaseAdmin) {
@@ -1325,7 +1337,9 @@ async function runEventReminderScannerLocked() {
       }
     }
 
-    newlyRemindedUserIds.forEach((userId) => {
+    dueUserIds.forEach((userId) => {
+      const assignee = db.users.find((u) => u.id === userId);
+      const leadMinutes = assignee?.eventReminderMinutesBefore ?? defaultLeadMinutes;
       db.notifications.unshift({
         id: `not-${Date.now()}-${Math.floor(Math.random() * 1000)}-evt`,
         userId,
@@ -1337,6 +1351,57 @@ async function runEventReminderScannerLocked() {
     });
     void writeDatabase(db);
   }
+}
+
+// Per-task due-date reminders ("remind me N days before the due date"),
+// set on the task at creation. Unlike runReminderScanner's fixed demo
+// thresholds above, this uses the task's own dueDate/reminderDaysBefore
+// against the real wall clock, and is serialized the same way the event
+// scanner is, to avoid the same read-then-write duplicate-firing race.
+let taskDueReminderScanQueue: Promise<void> = Promise.resolve();
+function runTaskDueDateReminderScanner(): Promise<void> {
+  taskDueReminderScanQueue = taskDueReminderScanQueue
+    .then(() => runTaskDueDateReminderScannerLocked())
+    .catch((err) => console.error("Task due-date reminder scan failed:", err));
+  return taskDueReminderScanQueue;
+}
+
+async function runTaskDueDateReminderScannerLocked() {
+  const db = readDatabase();
+  if (!db.tasks || db.tasks.length === 0) return;
+
+  const now = Date.now();
+  let updated = false;
+
+  db.tasks.forEach((task) => {
+    if (!task.reminderDaysBefore || task.status === "Completed" || !task.dueDate) return;
+
+    const dueTime = new Date(task.dueDate).getTime();
+    if (Number.isNaN(dueTime)) return;
+
+    const reminderTime = dueTime - task.reminderDaysBefore * 24 * 60 * 60 * 1000;
+    // Same window logic as the event scanner: only fire once the window has
+    // opened, and stop once the due date itself has passed.
+    if (now < reminderTime || now >= dueTime) return;
+
+    const triggerKey = `duedate-${task.reminderDaysBefore}-${task.id}`;
+    if (!task.remindedTriggerKeys) task.remindedTriggerKeys = [];
+    if (task.remindedTriggerKeys.includes(triggerKey)) return;
+    task.remindedTriggerKeys.push(triggerKey);
+
+    const dayLabel = task.reminderDaysBefore === 1 ? "1 day" : `${task.reminderDaysBefore} days`;
+    db.notifications.unshift({
+      id: `not-${Date.now()}-${Math.floor(Math.random() * 1000)}-duetask`,
+      userId: task.assignedTo,
+      message: `📅 TASK DUE SOON: "${task.title}" (${task.id}) is due on ${new Date(task.dueDate).toLocaleDateString()} - that's ${dayLabel} from now.`,
+      type: "warning",
+      readStatus: false,
+      createdAt: new Date().toISOString()
+    });
+    updated = true;
+  });
+
+  if (updated) void writeDatabase(db);
 }
 
 // Initial Reminder Run on Server Startup
@@ -1601,7 +1666,7 @@ app.post("/api/users/:id/reject", async (req, res) => {
 
 app.put("/api/users/:id", async (req, res) => {
   const { id } = req.params;
-  const { name, phone, role, avatar } = req.body;
+  const { name, phone, role, avatar, eventReminderMinutesBefore } = req.body;
   const db = readDatabase();
   const userIndex = db.users.findIndex((u) => u.id === id);
 
@@ -1620,7 +1685,8 @@ app.put("/api/users/:id", async (req, res) => {
     name: name.trim(),
     phone: phone?.trim() || "",
     role: requestedRole,
-    avatar: avatar?.trim() ? avatar : previousUser.avatar
+    avatar: avatar?.trim() ? avatar : previousUser.avatar,
+    eventReminderMinutesBefore: eventReminderMinutesBefore !== undefined ? Math.max(1, Number(eventReminderMinutesBefore) || 10) : previousUser.eventReminderMinutesBefore
   };
 
   try {
@@ -1759,16 +1825,17 @@ app.put("/api/projects/:id", async (req, res) => {
 });
 
 // Tasks API
-app.get("/api/tasks", (req, res) => {
+app.get("/api/tasks", async (req, res) => {
   // Let's run a check on reminders before returning tasks
   runReminderScanner();
+  await runTaskDueDateReminderScanner();
   const db = readDatabase();
   res.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
   res.json(db.tasks);
 });
 
 app.post("/api/tasks", async (req, res) => {
-  const { title, description, priority, stage, dueDate, assignedTo, projectId, tags, estimatedHours, attachments, isBillable, hourlyRate, clientApprovalStatus, matterCode, createdBy } = req.body;
+  const { title, description, priority, stage, dueDate, assignedTo, projectId, tags, estimatedHours, attachments, isBillable, hourlyRate, clientApprovalStatus, matterCode, createdBy, reminderDaysBefore } = req.body;
   const db = readDatabase();
 
   if (!title?.trim() || !dueDate || !assignedTo || !projectId || !createdBy) {
@@ -1818,7 +1885,8 @@ app.post("/api/tasks", async (req, res) => {
     isBillable: isBillable !== undefined ? Boolean(isBillable) : true,
     hourlyRate: hourlyRate !== undefined ? Number(hourlyRate) : 250,
     clientApprovalStatus: clientApprovalStatus || "Not Required",
-    matterCode: matterCode || ""
+    matterCode: matterCode || "",
+    reminderDaysBefore: reminderDaysBefore ? Number(reminderDaysBefore) : null
   };
 
   db.tasks.push(newTask);
@@ -2040,8 +2108,10 @@ app.post("/api/tasks/:id/comments", async (req, res) => {
 // Notifications API
 app.get("/api/notifications", async (req, res) => {
   // Frontend polls this endpoint every 8s while logged in, which makes it a
-  // convenient, always-warm hook for scanning upcoming calendar events.
+  // convenient, always-warm hook for scanning upcoming calendar events and
+  // due-soon tasks.
   await runEventReminderScanner();
+  await runTaskDueDateReminderScanner();
   const { userId } = req.query;
   const db = readDatabase();
 

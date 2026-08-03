@@ -332,14 +332,16 @@ export default function AttendanceLogsView({
       };
     }
 
-    // 3. Otherwise, marked absent
+    // 3. No clock-in and no leave on file - default to Present rather than
+    // penalizing a missed clock-in as Absent. Admins/managers still mark a
+    // genuine Absent explicitly (e.g. via a leave record) when it's needed.
     return {
-      status: "Absent" as const,
+      status: "Present" as const,
       timeStr: null,
       clockOutStr: null,
       type: null,
-      label: "Absent",
-      badgeStyle: "bg-rose-50 text-rose-700 border-rose-100"
+      label: "Present",
+      badgeStyle: "bg-emerald-50 text-emerald-700 border-emerald-100"
     };
   };
 
@@ -357,7 +359,7 @@ export default function AttendanceLogsView({
 
   // Calculate statistics for selected date
   const totalPresent = teamStatuses.filter(t => t.status === "Present" || t.status === "Late").length;
-  const totalAbsent = teamStatuses.filter(t => t.status === "Absent").length;
+  const totalLate = teamStatuses.filter(t => t.status === "Late").length;
   const totalOnLeave = teamStatuses.filter(t => t.status === "On Leave").length;
 
   const isManagerOrAdmin = currentUser.role === "Admin" || currentUser.role === "Manager";
@@ -464,15 +466,15 @@ export default function AttendanceLogsView({
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.45, delay: 0.06, ease: [0.16, 1, 0.3, 1] }}
           whileHover={{ scale: 1.035, y: -4 }}
-          className="bg-white border border-rose-100 p-4 rounded-2xl flex items-center gap-4 soft-shadow"
+          className="bg-white border border-amber-100 p-4 rounded-2xl flex items-center gap-4 soft-shadow"
         >
-          <div className="rounded-xl bg-rose-50 p-3 text-rose-700">
+          <div className="rounded-xl bg-amber-50 p-3 text-amber-700">
             <XCircle className="h-5 w-5" />
           </div>
           <div className="min-w-0">
-            <span className="text-2xl font-extrabold text-slate-900 font-mono">{totalAbsent}</span>
-            <span className="text-xs uppercase font-extrabold text-rose-700 tracking-wider block">Absent</span>
-            <span className="text-[11px] text-slate-400">{attendanceMembers.length ? Math.round(totalAbsent / attendanceMembers.length * 100) : 0}% of team</span>
+            <span className="text-2xl font-extrabold text-slate-900 font-mono">{totalLate}</span>
+            <span className="text-xs uppercase font-extrabold text-amber-700 tracking-wider block">Late</span>
+            <span className="text-[11px] text-slate-400">{attendanceMembers.length ? Math.round(totalLate / attendanceMembers.length * 100) : 0}% of team</span>
           </div>
         </motion.div>
 
