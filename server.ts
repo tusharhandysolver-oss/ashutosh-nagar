@@ -15,7 +15,7 @@ dotenv.config();
 
 // Initialize Express
 const app = express();
-const PORT = 3000;
+const PORT = Number(process.env.PORT) || 3000;
 
 // Initialize Supabase data access via its REST API (service_role key bypasses RLS).
 // This avoids needing a direct Postgres connection string/password.
@@ -43,6 +43,14 @@ if (supabaseUrl && supabaseAnonKey) {
   console.log("Supabase Auth client initialized.");
 } else {
   console.log("No SUPABASE_URL/SUPABASE_ANON_KEY found. Auth will fall back to local mock login.");
+}
+
+// Only accounts on this domain get an active account immediately on signup.
+// Everyone else is created with status "pending" and stays locked out until
+// an Admin approves them from the Pending Approvals screen.
+const ALLOWED_SIGNUP_DOMAIN = (process.env.ALLOWED_SIGNUP_DOMAIN || "analaw.in").toLowerCase();
+function isAllowedSignupDomain(email: string): boolean {
+  return email.toLowerCase().endsWith(`@${ALLOWED_SIGNUP_DOMAIN}`);
 }
 
 app.use(express.json({ limit: "5mb" }));
@@ -143,6 +151,7 @@ interface AppData {
     department: string;
     avatar?: string;
     phone?: string;
+    status?: "active" | "pending";
     createdAt: string;
   }>;
   projects: Array<{
@@ -157,6 +166,7 @@ interface AppData {
     budget?: number;
     clientEmail?: string;
     clientPhone?: string;
+    googleDriveLink?: string;
   }>;
   tasks: Array<{
     id: string;
@@ -689,19 +699,21 @@ let memoryDb: AppData | null = null;
 // the app's in-memory AppData shape uses camelCase. These mappers translate both ways.
 const rowMappers = {
   users: {
-    toRow: (u: any) => ({ id: u.id, name: u.name, email: u.email, role: u.role, department: u.department, avatar: u.avatar || null, created_at: u.createdAt }),
-    fromRow: (r: any) => ({ id: r.id, name: r.name, email: r.email, role: r.role, department: r.department, avatar: r.avatar, createdAt: r.created_at })
+    toRow: (u: any) => ({ id: u.id, name: u.name, email: u.email, role: u.role, department: u.department, avatar: u.avatar || null, created_at: u.createdAt, status: u.status || "active" }),
+    fromRow: (r: any) => ({ id: r.id, name: r.name, email: r.email, role: r.role, department: r.department, avatar: r.avatar, createdAt: r.created_at, status: r.status || "active" })
   },
   projects: {
     toRow: (p: any) => ({
       id: p.id, name: p.name, description: p.description, created_at: p.createdAt,
       client_name: p.clientName || null, matter_code: p.matterCode || null, practice_area: p.practiceArea || null,
-      status: p.status || "Active", budget: p.budget || null, client_email: p.clientEmail || null, client_phone: p.clientPhone || null
+      status: p.status || "Active", budget: p.budget || null, client_email: p.clientEmail || null, client_phone: p.clientPhone || null,
+      google_drive_link: p.googleDriveLink || null
     }),
     fromRow: (r: any) => ({
       id: r.id, name: r.name, description: r.description, createdAt: r.created_at,
       clientName: r.client_name, matterCode: r.matter_code, practiceArea: r.practice_area,
-      status: r.status, budget: r.budget, clientEmail: r.client_email, clientPhone: r.client_phone
+      status: r.status, budget: r.budget, clientEmail: r.client_email, clientPhone: r.client_phone,
+      googleDriveLink: r.google_drive_link
     })
   },
   tasks: {
@@ -1333,6 +1345,7 @@ app.post("/api/auth/oauth-profile", async (req, res) => {
       role: (["Admin", "Manager", "Team Member"].includes(metadata.role) ? metadata.role : "Team Member") as "Admin" | "Manager" | "Team Member",
       department: metadata.department || "General",
       avatar: metadata.avatar_url,
+      status: isAllowedSignupDomain(data.user.email) ? "active" : "pending",
       createdAt: new Date().toISOString()
     };
     db.users.push(user);
@@ -1344,6 +1357,9 @@ app.post("/api/auth/oauth-profile", async (req, res) => {
       console.error("OAuth profile persistence failed:", err.message);
       return res.status(500).json({ error: "Could not save your account. Please try signing in again." });
     }
+  }
+  if ((user.status || "active") === "pending") {
+    return res.status(403).json({ pending: true, error: "Your account is awaiting admin approval. You'll be able to sign in once an admin approves it." });
   }
   res.json({ success: true, user, token });
 });
@@ -1367,6 +1383,7 @@ app.post("/api/auth/login", async (req, res) => {
         role: isGmailTushar ? "Team Member" : "Manager",
         department: isGmailTushar ? "Engineering" : "Operations",
         avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150",
+        status: isAllowedSignupDomain(email) ? "active" : "pending",
         createdAt: new Date().toISOString()
       };
       db.users.push(user);
@@ -1378,6 +1395,9 @@ app.post("/api/auth/login", async (req, res) => {
         return res.status(500).json({ error: "Could not save your account. Please try signing in again." });
       }
       void writeDatabase(db);
+    }
+    if ((user.status || "active") === "pending") {
+      return res.status(403).json({ pending: true, error: "Your account is awaiting admin approval. You'll be able to sign in once an admin approves it." });
     }
     return res.json({ success: true, token: `mock-jwt-token-for-${user.id}`, user });
   }
@@ -1399,6 +1419,7 @@ app.post("/api/auth/login", async (req, res) => {
         role: ((data.user!.user_metadata as any)?.role as any) || "Team Member",
         department: (data.user!.user_metadata as any)?.department || "General",
         avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150",
+        status: isAllowedSignupDomain(email) ? "active" : "pending",
         createdAt: new Date().toISOString()
       };
       db.users.push(user);
@@ -1411,12 +1432,18 @@ app.post("/api/auth/login", async (req, res) => {
       }
       void writeDatabase(db);
     }
+    if ((user.status || "active") === "pending") {
+      return res.status(403).json({ pending: true, error: "Your account is awaiting admin approval. You'll be able to sign in once an admin approves it." });
+    }
     return res.json({ success: true, token: data.session.access_token, user });
   }
 
   // Fallback: no Supabase Auth configured yet
   if (!user) {
     return res.status(401).json({ error: "Invalid credentials. Try sarah@company.com or marcus@company.com" });
+  }
+  if ((user.status || "active") === "pending") {
+    return res.status(403).json({ pending: true, error: "Your account is awaiting admin approval. You'll be able to sign in once an admin approves it." });
   }
   res.json({ success: true, token: `mock-jwt-token-for-${user.id}`, user });
 });
@@ -1468,6 +1495,7 @@ app.post("/api/auth/signup", async (req, res) => {
     role: role as "Admin" | "Manager" | "Team Member",
     department,
     avatar: `https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150`, // fallback
+    status: (isAllowedSignupDomain(email) ? "active" : "pending") as "active" | "pending",
     createdAt: new Date().toISOString()
   };
 
@@ -1482,6 +1510,14 @@ app.post("/api/auth/signup", async (req, res) => {
     return res.status(500).json({ error: "Could not save your account. Please try registering again." });
   }
 
+  if (newUser.status === "pending") {
+    return res.status(202).json({
+      success: false,
+      pending: true,
+      error: "Your account is awaiting admin approval. You'll be able to sign in once an admin approves it."
+    });
+  }
+
   res.status(201).json({
     success: true,
     user: newUser,
@@ -1492,7 +1528,55 @@ app.post("/api/auth/signup", async (req, res) => {
 // Create/Update Users API
 app.get("/api/users", (req, res) => {
   const db = readDatabase();
-  res.json(db.users);
+  // Accounts awaiting admin approval must not show up as assignable
+  // teammates anywhere in the app (task assignees, dropdowns, etc.).
+  res.json(db.users.filter((u) => (u.status || "active") !== "pending"));
+});
+
+// Admin-only: accounts created outside the allowed signup domain, waiting to be let in.
+app.get("/api/users/pending", (req, res) => {
+  const db = readDatabase();
+  res.json(db.users.filter((u) => u.status === "pending"));
+});
+
+app.post("/api/users/:id/approve", async (req, res) => {
+  const { id } = req.params;
+  const db = readDatabase();
+  const user = db.users.find((u) => u.id === id);
+  if (!user) return res.status(404).json({ error: "User not found." });
+
+  const previousStatus = user.status;
+  user.status = "active";
+  try {
+    await persistUserRow(user);
+    void writeDatabase(db);
+    res.json(user);
+  } catch (err: any) {
+    user.status = previousStatus;
+    console.error("User approval persistence failed:", err.message);
+    res.status(500).json({ error: "Could not approve this user. Please try again." });
+  }
+});
+
+app.post("/api/users/:id/reject", async (req, res) => {
+  const { id } = req.params;
+  const db = readDatabase();
+  const userIndex = db.users.findIndex((u) => u.id === id);
+  if (userIndex === -1) return res.status(404).json({ error: "User not found." });
+
+  const [removedUser] = db.users.splice(userIndex, 1);
+  try {
+    if (supabaseAdmin) {
+      const { error } = await supabaseAdmin.from("users").delete().eq("id", id);
+      if (error) throw error;
+    }
+    void writeDatabase(db);
+    res.json({ success: true });
+  } catch (err: any) {
+    db.users.splice(userIndex, 0, removedUser);
+    console.error("User rejection failed:", err.message);
+    res.status(500).json({ error: "Could not reject this user. Please try again." });
+  }
 });
 
 app.put("/api/users/:id", async (req, res) => {
@@ -1589,7 +1673,7 @@ app.get("/api/projects", (req, res) => {
 });
 
 app.post("/api/projects", async (req, res) => {
-  const { name, description, clientName, matterCode, practiceArea, status, budget, clientEmail, clientPhone } = req.body;
+  const { name, description, clientName, matterCode, practiceArea, status, budget, clientEmail, clientPhone, googleDriveLink } = req.body;
   const db = readDatabase();
 
   if (!name) {
@@ -1607,6 +1691,7 @@ app.post("/api/projects", async (req, res) => {
     budget: budget ? Number(budget) : 0,
     clientEmail: clientEmail || "",
     clientPhone: clientPhone || "",
+    googleDriveLink: googleDriveLink || "",
     createdAt: new Date().toISOString()
   };
 
@@ -1618,7 +1703,7 @@ app.post("/api/projects", async (req, res) => {
 
 app.put("/api/projects/:id", async (req, res) => {
   const { id } = req.params;
-  const { name, description, clientName, matterCode, practiceArea, status, budget, clientEmail, clientPhone } = req.body;
+  const { name, description, clientName, matterCode, practiceArea, status, budget, clientEmail, clientPhone, googleDriveLink } = req.body;
   const db = readDatabase();
 
   const prjIndex = db.projects.findIndex((p) => p.id === id);
@@ -1638,6 +1723,7 @@ app.put("/api/projects/:id", async (req, res) => {
   if (budget !== undefined) project.budget = budget ? Number(budget) : 0;
   if (clientEmail !== undefined) project.clientEmail = clientEmail;
   if (clientPhone !== undefined) project.clientPhone = clientPhone;
+  if (googleDriveLink !== undefined) project.googleDriveLink = googleDriveLink;
 
   if (name && name !== oldName) {
     db.tasks = db.tasks.map((t) => {

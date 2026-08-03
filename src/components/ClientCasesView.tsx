@@ -1,9 +1,9 @@
 import React, { useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { Project, Task, User } from "../types";
-import { AlertCircle, Briefcase, CalendarDays, CheckCircle2, ChevronDown, Clock3, Download, Edit, FileText, FolderOpen, ListTodo, Plus, Search, UploadCloud, X } from "lucide-react";
+import { AlertCircle, Briefcase, CalendarDays, CheckCircle2, ChevronDown, Clock3, Download, Edit, ExternalLink, FileText, FolderOpen, ListTodo, Plus, Search, UploadCloud, X } from "lucide-react";
 
-type CaseInput = { name: string; description: string; clientName: string; matterCode: string; practiceArea: string; status: "Active" | "On Hold" | "Closed"; budget: number; clientEmail?: string; clientPhone?: string };
+type CaseInput = { name: string; description: string; clientName: string; matterCode: string; practiceArea: string; status: "Active" | "On Hold" | "Closed"; budget: number; clientEmail?: string; clientPhone?: string; googleDriveLink?: string };
 interface Props {
   projects: Project[]; tasks: Task[]; users: User[];
   onAddProject: (data: CaseInput) => Promise<boolean>;
@@ -21,7 +21,7 @@ const documentName = (value: string) => {
 };
 
 export default function ClientCasesView({ projects, tasks, onAddProject, onUpdateProject, onUploadDocument, onOpenDocument }: Props) {
-  const [form, setForm] = useState<CaseInput>({ name: "", description: "", clientName: "", matterCode: "", practiceArea: "Litigation", status: "Active", budget: 0, clientEmail: "", clientPhone: "" });
+  const [form, setForm] = useState<CaseInput>({ name: "", description: "", clientName: "", matterCode: "", practiceArea: "Litigation", status: "Active", budget: 0, clientEmail: "", clientPhone: "", googleDriveLink: "" });
   const [editingId, setEditingId] = useState<string | null>(null);
   const [clientMode, setClientMode] = useState<"existing" | "new">(projects.length ? "existing" : "new");
   const [search, setSearch] = useState("");
@@ -33,7 +33,7 @@ export default function ClientCasesView({ projects, tasks, onAddProject, onUpdat
   const [uploading, setUploading] = useState(false);
   const [uploadMessage, setUploadMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const update = (key: keyof CaseInput, value: string | number) => setForm((old) => ({ ...old, [key]: value }));
-  const reset = () => { setForm({ name: "", description: "", clientName: "", matterCode: "", practiceArea: "Litigation", status: "Active", budget: 0, clientEmail: "", clientPhone: "" }); setEditingId(null); };
+  const reset = () => { setForm({ name: "", description: "", clientName: "", matterCode: "", practiceArea: "Litigation", status: "Active", budget: 0, clientEmail: "", clientPhone: "", googleDriveLink: "" }); setEditingId(null); };
 
   const groups = useMemo(() => {
     const term = search.toLowerCase();
@@ -58,11 +58,11 @@ export default function ClientCasesView({ projects, tasks, onAddProject, onUpdat
   const addCaseForClient = (name: string) => {
     const source = projects.find((item) => item.clientName === name);
     setClientMode("existing"); setEditingId(null); setMessage(null);
-    setForm({ name: "", description: "", clientName: name, matterCode: "", practiceArea: "Litigation", status: "Active", budget: 0, clientEmail: source?.clientEmail || "", clientPhone: source?.clientPhone || "" });
+    setForm({ name: "", description: "", clientName: name, matterCode: "", practiceArea: "Litigation", status: "Active", budget: 0, clientEmail: source?.clientEmail || "", clientPhone: source?.clientPhone || "", googleDriveLink: "" });
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const edit = (item: Project) => { setClientMode("existing"); setEditingId(item.id); setForm({ name: item.name, description: item.description || "", clientName: item.clientName || "", matterCode: item.matterCode || "", practiceArea: item.practiceArea || "Litigation", status: item.status || "Active", budget: item.budget || 0, clientEmail: item.clientEmail || "", clientPhone: item.clientPhone || "" }); setMessage(null); window.scrollTo({ top: 0, behavior: "smooth" }); };
+  const edit = (item: Project) => { setClientMode("existing"); setEditingId(item.id); setForm({ name: item.name, description: item.description || "", clientName: item.clientName || "", matterCode: item.matterCode || "", practiceArea: item.practiceArea || "Litigation", status: item.status || "Active", budget: item.budget || 0, clientEmail: item.clientEmail || "", clientPhone: item.clientPhone || "", googleDriveLink: item.googleDriveLink || "" }); setMessage(null); window.scrollTo({ top: 0, behavior: "smooth" }); };
   const submit = async (event: React.FormEvent) => {
     event.preventDefault(); setMessage(null);
     if (!form.name.trim() || !form.clientName.trim()) return setMessage({ type: "error", text: "Client name and case title are required." });
@@ -83,6 +83,7 @@ export default function ClientCasesView({ projects, tasks, onAddProject, onUpdat
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3"><label className="text-xs font-bold text-slate-500">Email<input type="email" value={form.clientEmail} onChange={(e) => update("clientEmail", e.target.value)} className={`${fieldClass} mt-1.5`} /></label><label className="text-xs font-bold text-slate-500">Phone<input value={form.clientPhone} onChange={(e) => update("clientPhone", e.target.value)} className={`${fieldClass} mt-1.5`} /></label></div>
           <label className="block text-xs font-bold text-slate-500">Case Title *<input value={form.name} onChange={(e) => update("name", e.target.value)} className={`${fieldClass} mt-1.5`} placeholder="e.g. Breach of Contract" /></label>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3"><label className="text-xs font-bold text-slate-500">Matter Code<input value={form.matterCode} disabled title="Matter code is auto-generated" className={`${fieldClass} mt-1.5 disabled:opacity-60 disabled:cursor-not-allowed`} placeholder="Auto-generated" /></label><label className="text-xs font-bold text-slate-500">Status<select value={form.status} onChange={(e) => update("status", e.target.value)} className={`${fieldClass} mt-1.5`}><option>Active</option><option>On Hold</option><option>Closed</option></select></label></div>
+          <label className="block text-xs font-bold text-slate-500">Google Drive Link<input type="url" value={form.googleDriveLink} onChange={(e) => update("googleDriveLink", e.target.value)} className={`${fieldClass} mt-1.5`} placeholder="https://drive.google.com/..." /></label>
           <label className="block text-xs font-bold text-slate-500">Description<textarea rows={4} value={form.description} onChange={(e) => update("description", e.target.value)} className={`${fieldClass} mt-1.5 resize-none`} /></label>
           <div className="flex gap-3">{editingId && <button type="button" onClick={reset} className="flex-1 rounded-full bg-slate-100 py-3 text-xs font-bold flex justify-center gap-2"><X className="h-4 w-4" />Cancel</button>}<button disabled={loading} className="flex-1 rounded-full bg-gradient-to-r from-blue-700 to-cyan-600 py-3 text-white text-xs font-bold flex justify-center gap-2 disabled:opacity-50">{editingId ? <Edit className="h-4 w-4" /> : <Plus className="h-4 w-4" />}{loading ? "Saving…" : editingId ? "Save Case" : "Add Case"}</button></div>
         </form>
@@ -111,7 +112,7 @@ export default function ClientCasesView({ projects, tasks, onAddProject, onUpdat
               <div className="case-folder-paper"><FileText className="h-7 w-7 text-blue-900" /><p>{activeCase.clientName}</p><strong>{activeCase.name}</strong><small>Advocate case brief</small></div>
               <div className="case-folder-front"><span className="case-folder-tab">LEGAL MATTER</span><FolderOpen className="h-8 w-8" /><p>{activeCase.matterCode}</p></div>
             </div>
-            <div className="case-opening-copy"><span>Opening case file</span><h2>{activeCase.name}</h2><p>{activeCase.clientName} · {activeCase.practiceArea || "Legal Matter"}</p></div>
+            <div className="case-opening-copy"><span>Opening case file</span><h2>{activeCase.name}</h2><p>{activeCase.clientName} · {activeCase.practiceArea || "Legal Matter"}</p>{activeCase.googleDriveLink && <a href={activeCase.googleDriveLink} target="_blank" rel="noopener noreferrer" className="mt-2 inline-flex items-center gap-1.5 text-[11px] font-bold text-blue-700 hover:text-blue-900" onClick={(e) => e.stopPropagation()}><ExternalLink className="h-3.5 w-3.5" />Open Google Drive folder</a>}</div>
           </div>
 
           <div className="case-file-content grid gap-4 p-4 sm:p-6 lg:grid-cols-12">

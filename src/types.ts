@@ -13,6 +13,7 @@ export interface User {
   department: string;
   avatar?: string;
   phone?: string;
+  status?: "active" | "pending";
   createdAt: string;
 }
 
@@ -117,6 +118,7 @@ export interface Project {
   budget?: number;
   clientEmail?: string;
   clientPhone?: string;
+  googleDriveLink?: string;
 }
 
 export interface AppNotification {

@@ -10,6 +10,7 @@ import KanbanView from "./components/KanbanView";
 import CalendarView from "./components/CalendarView";
 import ClientCasesView from "./components/ClientCasesView";
 import AttendanceLogsView from "./components/AttendanceLogsView";
+import PendingApprovalsView from "./components/PendingApprovalsView";
 import ChatbotView from "./components/ChatbotView";
 import TaskModal from "./components/TaskModal";
 import { motion, AnimatePresence } from "motion/react";
@@ -191,7 +192,8 @@ export default function App() {
   const hasLoadedNotificationsOnce = useRef(false);
 
   // UI state controllers
-  const [currentView, setCurrentView] = useState<"Dashboard" | "Kanban" | "Calendar" | "ClientCases" | "Attendance" | "Chatbot">("Dashboard");
+  const [currentView, setCurrentView] = useState<"Dashboard" | "Kanban" | "Calendar" | "ClientCases" | "Attendance" | "Chatbot" | "PendingApprovals">("Dashboard");
+  const [pendingUsersList, setPendingUsersList] = useState<User[]>([]);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [showNotificationsDropdown, setShowNotificationsDropdown] = useState(false);
   const [showAccountMenu, setShowAccountMenu] = useState(false);
@@ -258,10 +260,19 @@ export default function App() {
       if (error) throw error;
       if (!data.session) return;
       const res = await fetch("/api/auth/oauth-profile", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({accessToken:data.session.access_token}) });
-      let user: User;
       const contentType = res.headers.get("content-type") || "";
-      if (res.ok && contentType.includes("application/json")) {
-        const payload = await readApiJson(res);
+      const payload = contentType.includes("application/json") ? await readApiJson(res).catch(() => null) : null;
+      if (res.status === 403 && payload?.pending) {
+        // Non-@analaw.in Google accounts get created as "pending", not signed
+        // in - drop the Supabase session so a page refresh can't slip past
+        // this same check.
+        await client.auth.signOut();
+        window.history.replaceState({}, "", window.location.pathname);
+        setLoginError(payload.error || "Your account is awaiting admin approval. You'll be able to sign in once an admin approves it.");
+        return;
+      }
+      let user: User;
+      if (res.ok && payload?.user) {
         user = payload.user;
       } else {
         // Static deployments do not expose the Express profile endpoint. The
@@ -296,8 +307,47 @@ export default function App() {
       }
       if (lvRes.ok) setLeavesList(await lvRes.json());
       if (evRes.ok) setEventsList(await evRes.json());
+      if (currentUser?.role === "Admin") void fetchPendingUsers();
     } catch (e) {
       console.error("Database connection failure:", e);
+    }
+  }
+
+  async function fetchPendingUsers() {
+    try {
+      const res = await fetch("/api/users/pending");
+      if (res.ok) setPendingUsersList(await res.json());
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  async function handleApproveUser(userId: string): Promise<boolean> {
+    try {
+      const res = await fetch(`/api/users/${userId}/approve`, { method: "POST" });
+      if (res.ok) {
+        setPendingUsersList((current) => current.filter((u) => u.id !== userId));
+        void fetchDatabase();
+        return true;
+      }
+      return false;
+    } catch (e) {
+      console.error(e);
+      return false;
+    }
+  }
+
+  async function handleRejectUser(userId: string): Promise<boolean> {
+    try {
+      const res = await fetch(`/api/users/${userId}/reject`, { method: "POST" });
+      if (res.ok) {
+        setPendingUsersList((current) => current.filter((u) => u.id !== userId));
+        return true;
+      }
+      return false;
+    } catch (e) {
+      console.error(e);
+      return false;
     }
   }
 
@@ -365,7 +415,26 @@ export default function App() {
       const { data, error } = await client.auth.signInWithPassword({ email: email.trim().toLowerCase(), password });
       if (error) throw error;
       if (!data.session || !data.user) throw new Error("Please confirm your email before signing in.");
-      const user = appUserFromSupabase(data.user);
+
+      // Check the app's own users table for status - Supabase Auth alone
+      // has no notion of "pending admin approval", so signing in there
+      // successfully is not enough to let the user into the app.
+      let user: User;
+      try {
+        const res = await fetch("/api/auth/oauth-profile", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ accessToken: data.session.access_token }) });
+        const contentType = res.headers.get("content-type") || "";
+        const payload = contentType.includes("application/json") ? await readApiJson(res).catch(() => null) : null;
+        if (res.status === 403 && payload?.pending) {
+          await client.auth.signOut();
+          setLoginError(payload.error || "Your account is awaiting admin approval.");
+          setAuthLoading(false);
+          return;
+        }
+        user = res.ok && payload?.user ? payload.user : appUserFromSupabase(data.user);
+      } catch {
+        user = appUserFromSupabase(data.user);
+      }
+
       setCurrentUser(user);
       setIsLoggedIn(true);
       persistUser(user);
@@ -435,8 +504,19 @@ export default function App() {
       try {
         const res = await fetch("/api/auth/oauth-profile", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ accessToken: data.session.access_token }) });
         const contentType = res.headers.get("content-type") || "";
-        if (res.ok && contentType.includes("application/json")) {
-          const payload = await readApiJson(res);
+        const payload = contentType.includes("application/json") ? await readApiJson(res).catch(() => null) : null;
+        if (res.status === 403 && payload?.pending) {
+          // Only @analaw.in signs up instantly - everyone else's account is
+          // created but held as "pending" until an Admin approves it, so the
+          // Supabase session that was just auto-created must not carry over.
+          const client = await getSupabaseBrowserClient();
+          await client.auth.signOut();
+          setSignUpSuccess("");
+          setSignUpError(payload.error || "Your account is awaiting admin approval. You'll be able to sign in once an admin approves it.");
+          setSignUpPassword("");
+          return;
+        }
+        if (res.ok && payload?.user) {
           user = payload.user;
         } else {
           user = appUserFromSupabase(data.user);
@@ -595,6 +675,24 @@ export default function App() {
       createdBy: currentUser?.id
     };
 
+    // Optimistic: the create almost always succeeds, so give instant feedback
+    // instead of leaving the user staring at the modal during the round-trip.
+    // Snapshot the form so it can be restored if the request fails.
+    const formSnapshot = {
+      newTaskTitle, newTaskDesc, newTaskTags, newTaskHours,
+      newTaskIsBillable, newTaskHourlyRate, newTaskClientApproval, newTaskMatterCode
+    };
+    triggerCelebration("Task created!", `“${newTaskTitle}” has been created successfully.`);
+    setNewTaskTitle("");
+    setNewTaskDesc("");
+    setNewTaskTags("");
+    setNewTaskHours("8");
+    setNewTaskIsBillable(true);
+    setNewTaskHourlyRate("250");
+    setNewTaskClientApproval("Not Required");
+    setNewTaskMatterCode("");
+    setShowCreateTaskModal(false);
+
     try {
       const res = await fetch("/api/tasks", {
         method: "POST",
@@ -605,25 +703,34 @@ export default function App() {
       if (res.ok) {
         const createdTask: Task = await res.json();
         setTasksList((current) => [createdTask, ...current.filter((task) => task.id !== createdTask.id)]);
-        triggerCelebration("Task created!", `“${createdTask.title}” has been created successfully.`);
-        // Reset states
-        setNewTaskTitle("");
-        setNewTaskDesc("");
-        setNewTaskTags("");
-        setNewTaskHours("8");
-        setNewTaskIsBillable(true);
-        setNewTaskHourlyRate("250");
-        setNewTaskClientApproval("Not Required");
-        setNewTaskMatterCode("");
-        setShowCreateTaskModal(false);
         void fetchDatabase(); // Reconcile the remaining dashboard data in the background.
       } else if (res.status === 401) {
         handleLogOut();
       } else {
         const d = await res.json().catch(() => null);
+        setCelebration(null);
+        setNewTaskTitle(formSnapshot.newTaskTitle);
+        setNewTaskDesc(formSnapshot.newTaskDesc);
+        setNewTaskTags(formSnapshot.newTaskTags);
+        setNewTaskHours(formSnapshot.newTaskHours);
+        setNewTaskIsBillable(formSnapshot.newTaskIsBillable);
+        setNewTaskHourlyRate(formSnapshot.newTaskHourlyRate);
+        setNewTaskClientApproval(formSnapshot.newTaskClientApproval);
+        setNewTaskMatterCode(formSnapshot.newTaskMatterCode);
+        setShowCreateTaskModal(true);
         setCreateTaskError(d?.error || "Failed to create task.");
       }
     } catch (error) {
+      setCelebration(null);
+      setNewTaskTitle(formSnapshot.newTaskTitle);
+      setNewTaskDesc(formSnapshot.newTaskDesc);
+      setNewTaskTags(formSnapshot.newTaskTags);
+      setNewTaskHours(formSnapshot.newTaskHours);
+      setNewTaskIsBillable(formSnapshot.newTaskIsBillable);
+      setNewTaskHourlyRate(formSnapshot.newTaskHourlyRate);
+      setNewTaskClientApproval(formSnapshot.newTaskClientApproval);
+      setNewTaskMatterCode(formSnapshot.newTaskMatterCode);
+      setShowCreateTaskModal(true);
       setCreateTaskError("Task dispatcher service unreachable.");
     }
   }
@@ -1354,6 +1461,7 @@ export default function App() {
       ClientCases: "Client Cases",
       Attendance: "Attendance Logs"
       ,Chatbot: "AI Bot"
+      ,PendingApprovals: "Pending Approvals"
     };
     return labels[view] || view;
   };
@@ -1404,7 +1512,8 @@ export default function App() {
                   { id: "Calendar", label: "Team Calendar", icon: CalendarIcon, color: "bg-blue-800 text-white" },
                   { id: "ClientCases", label: "Client Cases", icon: Briefcase, color: "bg-blue-800 text-white" },
                   { id: "Attendance", label: "Attendance Logs", icon: Clock, color: "bg-blue-800 text-white" },
-                  { id: "Chatbot", label: "AI Bot", icon: Bot, color: "bg-blue-800 text-white" }
+                  { id: "Chatbot", label: "AI Bot", icon: Bot, color: "bg-blue-800 text-white" },
+                  ...(currentUser.role === "Admin" ? [{ id: "PendingApprovals", label: "Pending Approvals", icon: Users, color: "bg-amber-500 text-white" }] : [])
                 ].map((item) => {
                   const Icon = item.icon;
                   const isActive = currentView === item.id;
@@ -1427,9 +1536,14 @@ export default function App() {
                         {!sidebarCollapsed && <span className="text-sm font-bold tracking-tight">{item.label}</span>}
                       </div>
 
-                      <ChevronRight className={`${sidebarCollapsed ? "hidden" : "block"} h-3.5 w-3.5 transition-transform text-slate-350 ${
-                        isActive ? "translate-x-0 text-blue-800" : "opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5"
-                      }`} />
+                      <div className="flex items-center gap-1.5">
+                        {item.id === "PendingApprovals" && pendingUsersList.length > 0 && (
+                          <span className="rounded-full bg-rose-500 text-white text-[10px] font-extrabold h-4.5 min-w-4.5 px-1 flex items-center justify-center">{pendingUsersList.length}</span>
+                        )}
+                        <ChevronRight className={`${sidebarCollapsed ? "hidden" : "block"} h-3.5 w-3.5 transition-transform text-slate-350 ${
+                          isActive ? "translate-x-0 text-blue-800" : "opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5"
+                        }`} />
+                      </div>
                     </button>
                   );
                 })}
@@ -1687,6 +1801,13 @@ export default function App() {
                 />
               )}
               {currentView === "Chatbot" && <ChatbotView users={usersList} />}
+              {currentView === "PendingApprovals" && currentUser.role === "Admin" && (
+                <PendingApprovalsView
+                  pendingUsers={pendingUsersList}
+                  onApprove={handleApproveUser}
+                  onReject={handleRejectUser}
+                />
+              )}
             </motion.div>
           </AnimatePresence>
         </div>

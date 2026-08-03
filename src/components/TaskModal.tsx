@@ -422,9 +422,10 @@ export default function TaskModal({ task, currentUser, users, onClose, onUpdate 
                         type="button"
                         onClick={handleCompleteTimer}
                         disabled={timerLoading}
-                        className="px-3 py-1.5 bg-gradient-to-r from-blue-700 to-cyan-600 hover:from-blue-800 hover:to-cyan-700 hover:shadow-lg hover:-translate-y-0.5 font-bold text-xs rounded-xl text-white transition-all active:scale-95 flex items-center gap-1 cursor-pointer"
+                        className="px-3 py-1.5 bg-gradient-to-r from-blue-700 to-cyan-600 hover:from-blue-800 hover:to-cyan-700 hover:shadow-lg hover:-translate-y-0.5 font-bold text-xs rounded-xl text-white transition-all active:scale-95 flex items-center gap-1 cursor-pointer disabled:opacity-70 disabled:cursor-wait"
                       >
-                        <Check className="h-3.5 w-3.5" /> Complete
+                        {timerLoading ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
+                        {timerLoading ? "Completing…" : "Complete"}
                       </button>
                     </>
                   ) : (

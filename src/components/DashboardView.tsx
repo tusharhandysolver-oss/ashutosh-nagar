@@ -131,6 +131,13 @@ export default function DashboardView({
   async function handleClockIn(type: "WFH" | "WFO") {
     setCheckingIn(true);
     setAttendanceError("");
+
+    // Optimistic: the clock-in almost always succeeds, so give instant
+    // feedback instead of making the user stare at the modal while the
+    // network round-trip runs. Roll back below if the request fails.
+    setShowPresenceModal(false);
+    onCelebrate?.("Attendance marked!", `You have successfully clocked in from ${type}.`);
+
     try {
       const res = await fetch("/api/attendance/clock-in", {
         method: "POST",
@@ -145,16 +152,16 @@ export default function DashboardView({
         const data = await res.json();
         setTodayAttendance(data);
         setAllAttendances((current) => [data, ...current.filter((row) => row.id !== data.id)]);
-        setShowPresenceModal(false);
-        onCelebrate?.("Attendance marked!", `You have successfully clocked in from ${data.type}.`);
         void fetchAttendanceAndLeaves();
       } else if (res.status === 401) {
         onSessionExpired?.();
       } else {
         const err = await res.json();
+        setShowPresenceModal(true);
         setAttendanceError(err.error || "Failed to mark attendance.");
       }
     } catch (e) {
+      setShowPresenceModal(true);
       setAttendanceError("Server unreachable.");
     } finally {
       setCheckingIn(false);
