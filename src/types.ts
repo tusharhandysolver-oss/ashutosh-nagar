@@ -118,7 +118,7 @@ export interface Project {
   budget?: number;
   clientEmail?: string;
   clientPhone?: string;
-  googleDriveLink?: string;
+  googleDriveLinks?: string[];
 }
 
 export interface AppNotification {

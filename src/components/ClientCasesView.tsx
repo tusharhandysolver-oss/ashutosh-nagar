@@ -3,11 +3,11 @@ import { createPortal } from "react-dom";
 import { Project, Task, User } from "../types";
 import { AlertCircle, Briefcase, CalendarDays, CheckCircle2, ChevronDown, Clock3, Download, Edit, ExternalLink, FileText, FolderOpen, ListTodo, Plus, Search, UploadCloud, X } from "lucide-react";
 
-type CaseInput = { name: string; description: string; clientName: string; matterCode: string; practiceArea: string; status: "Active" | "On Hold" | "Closed"; budget: number; clientEmail?: string; clientPhone?: string; googleDriveLink?: string };
+type CaseInput = { name: string; description: string; clientName: string; matterCode: string; practiceArea: string; status: "Active" | "On Hold" | "Closed"; budget: number; clientEmail?: string; clientPhone?: string };
 interface Props {
   projects: Project[]; tasks: Task[]; users: User[];
   onAddProject: (data: CaseInput) => Promise<boolean>;
-  onUpdateProject: (id: string, data: Partial<CaseInput>) => Promise<boolean>;
+  onUpdateProject: (id: string, data: Partial<CaseInput> & { googleDriveLinks?: string[] }) => Promise<boolean>;
   onUploadDocument: (projectId: string, taskId: string, file: File) => Promise<{ ok: boolean; error?: string }>;
   onOpenDocument: (value: string) => Promise<void>;
 }
@@ -21,7 +21,7 @@ const documentName = (value: string) => {
 };
 
 export default function ClientCasesView({ projects, tasks, onAddProject, onUpdateProject, onUploadDocument, onOpenDocument }: Props) {
-  const [form, setForm] = useState<CaseInput>({ name: "", description: "", clientName: "", matterCode: "", practiceArea: "Litigation", status: "Active", budget: 0, clientEmail: "", clientPhone: "", googleDriveLink: "" });
+  const [form, setForm] = useState<CaseInput>({ name: "", description: "", clientName: "", matterCode: "", practiceArea: "Litigation", status: "Active", budget: 0, clientEmail: "", clientPhone: "" });
   const [editingId, setEditingId] = useState<string | null>(null);
   const [clientMode, setClientMode] = useState<"existing" | "new">(projects.length ? "existing" : "new");
   const [search, setSearch] = useState("");
@@ -32,8 +32,31 @@ export default function ClientCasesView({ projects, tasks, onAddProject, onUpdat
   const [uploadTaskId, setUploadTaskId] = useState("");
   const [uploading, setUploading] = useState(false);
   const [uploadMessage, setUploadMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [newDriveLink, setNewDriveLink] = useState("");
+  const [savingDriveLink, setSavingDriveLink] = useState(false);
   const update = (key: keyof CaseInput, value: string | number) => setForm((old) => ({ ...old, [key]: value }));
-  const reset = () => { setForm({ name: "", description: "", clientName: "", matterCode: "", practiceArea: "Litigation", status: "Active", budget: 0, clientEmail: "", clientPhone: "", googleDriveLink: "" }); setEditingId(null); };
+  const reset = () => { setForm({ name: "", description: "", clientName: "", matterCode: "", practiceArea: "Litigation", status: "Active", budget: 0, clientEmail: "", clientPhone: "" }); setEditingId(null); };
+
+  const openCase = (item: Project) => { setActiveCase(item); setNewDriveLink(""); };
+
+  const addDriveLink = async () => {
+    if (!activeCase || !newDriveLink.trim()) return;
+    const links = [...(activeCase.googleDriveLinks || []), newDriveLink.trim()];
+    setSavingDriveLink(true);
+    const ok = await onUpdateProject(activeCase.id, { googleDriveLinks: links });
+    setSavingDriveLink(false);
+    if (ok) {
+      setActiveCase((prev) => (prev ? { ...prev, googleDriveLinks: links } : prev));
+      setNewDriveLink("");
+    }
+  };
+
+  const removeDriveLink = async (index: number) => {
+    if (!activeCase) return;
+    const links = (activeCase.googleDriveLinks || []).filter((_, i) => i !== index);
+    const ok = await onUpdateProject(activeCase.id, { googleDriveLinks: links });
+    if (ok) setActiveCase((prev) => (prev ? { ...prev, googleDriveLinks: links } : prev));
+  };
 
   const groups = useMemo(() => {
     const term = search.toLowerCase();
@@ -58,11 +81,11 @@ export default function ClientCasesView({ projects, tasks, onAddProject, onUpdat
   const addCaseForClient = (name: string) => {
     const source = projects.find((item) => item.clientName === name);
     setClientMode("existing"); setEditingId(null); setMessage(null);
-    setForm({ name: "", description: "", clientName: name, matterCode: "", practiceArea: "Litigation", status: "Active", budget: 0, clientEmail: source?.clientEmail || "", clientPhone: source?.clientPhone || "", googleDriveLink: "" });
+    setForm({ name: "", description: "", clientName: name, matterCode: "", practiceArea: "Litigation", status: "Active", budget: 0, clientEmail: source?.clientEmail || "", clientPhone: source?.clientPhone || "" });
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const edit = (item: Project) => { setClientMode("existing"); setEditingId(item.id); setForm({ name: item.name, description: item.description || "", clientName: item.clientName || "", matterCode: item.matterCode || "", practiceArea: item.practiceArea || "Litigation", status: item.status || "Active", budget: item.budget || 0, clientEmail: item.clientEmail || "", clientPhone: item.clientPhone || "", googleDriveLink: item.googleDriveLink || "" }); setMessage(null); window.scrollTo({ top: 0, behavior: "smooth" }); };
+  const edit = (item: Project) => { setClientMode("existing"); setEditingId(item.id); setForm({ name: item.name, description: item.description || "", clientName: item.clientName || "", matterCode: item.matterCode || "", practiceArea: item.practiceArea || "Litigation", status: item.status || "Active", budget: item.budget || 0, clientEmail: item.clientEmail || "", clientPhone: item.clientPhone || "" }); setMessage(null); window.scrollTo({ top: 0, behavior: "smooth" }); };
   const submit = async (event: React.FormEvent) => {
     event.preventDefault(); setMessage(null);
     if (!form.name.trim() || !form.clientName.trim()) return setMessage({ type: "error", text: "Client name and case title are required." });
@@ -83,14 +106,13 @@ export default function ClientCasesView({ projects, tasks, onAddProject, onUpdat
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3"><label className="text-xs font-bold text-slate-500">Email<input type="email" value={form.clientEmail} onChange={(e) => update("clientEmail", e.target.value)} className={`${fieldClass} mt-1.5`} /></label><label className="text-xs font-bold text-slate-500">Phone<input value={form.clientPhone} onChange={(e) => update("clientPhone", e.target.value)} className={`${fieldClass} mt-1.5`} /></label></div>
           <label className="block text-xs font-bold text-slate-500">Case Title *<input value={form.name} onChange={(e) => update("name", e.target.value)} className={`${fieldClass} mt-1.5`} placeholder="e.g. Breach of Contract" /></label>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3"><label className="text-xs font-bold text-slate-500">Matter Code<input value={form.matterCode} disabled title="Matter code is auto-generated" className={`${fieldClass} mt-1.5 disabled:opacity-60 disabled:cursor-not-allowed`} placeholder="Auto-generated" /></label><label className="text-xs font-bold text-slate-500">Status<select value={form.status} onChange={(e) => update("status", e.target.value)} className={`${fieldClass} mt-1.5`}><option>Active</option><option>On Hold</option><option>Closed</option></select></label></div>
-          <label className="block text-xs font-bold text-slate-500">Google Drive Link<input type="url" value={form.googleDriveLink} onChange={(e) => update("googleDriveLink", e.target.value)} className={`${fieldClass} mt-1.5`} placeholder="https://drive.google.com/..." /></label>
           <label className="block text-xs font-bold text-slate-500">Description<textarea rows={4} value={form.description} onChange={(e) => update("description", e.target.value)} className={`${fieldClass} mt-1.5 resize-none`} /></label>
           <div className="flex gap-3">{editingId && <button type="button" onClick={reset} className="flex-1 rounded-full bg-slate-100 py-3 text-xs font-bold flex justify-center gap-2"><X className="h-4 w-4" />Cancel</button>}<button disabled={loading} className="flex-1 rounded-full bg-gradient-to-r from-blue-700 to-cyan-600 py-3 text-white text-xs font-bold flex justify-center gap-2 disabled:opacity-50">{editingId ? <Edit className="h-4 w-4" /> : <Plus className="h-4 w-4" />}{loading ? "Saving…" : editingId ? "Save Case" : "Add Case"}</button></div>
         </form>
       </aside>
       <section className="lg:col-span-7 space-y-4 min-w-0"><div className="soft-shadow bg-white border border-slate-200 rounded-3xl p-4 relative"><Search className="absolute left-8 top-7 h-4 w-4 text-slate-400" /><label className="sr-only" htmlFor="case-search">Search clients and cases</label><input id="case-search" value={search} onChange={(e) => setSearch(e.target.value)} className={`${fieldClass} pl-10 rounded-full`} placeholder="Search client, case or matter code…" /></div>
         {groups.map((client) => { const open = expanded.has(client.key) || Boolean(search); const totalTasks = client.cases.reduce((n, c) => n + tasks.filter((t) => t.projectId === c.id).length, 0); return <section key={client.key} className="soft-shadow bg-white border border-slate-200 rounded-3xl overflow-hidden"><button onClick={() => setExpanded((old) => { const next = new Set(old); next.has(client.key) ? next.delete(client.key) : next.add(client.key); return next; })} className="w-full p-5 flex items-center justify-between text-left hover:bg-slate-50"><div className="flex gap-3 items-center"><span className="h-10 w-10 rounded-2xl bg-blue-900 text-white flex items-center justify-center"><Briefcase className="h-4 w-4" /></span><div><h3 className="font-extrabold text-sm">{client.name}</h3><p className="text-xs text-slate-400 mt-1">{client.cases.length} cases · {totalTasks} tasks</p></div></div><ChevronDown className={`h-4 w-4 transition-transform ${open ? "rotate-180" : ""}`} /></button>
-          {open && <div className="p-4 pt-0 space-y-3"><button type="button" onClick={() => addCaseForClient(client.name)} className="w-full rounded-xl border border-dashed border-amber-300 bg-amber-50/70 px-3 py-2.5 text-xs font-bold text-blue-900 hover:bg-amber-100"><Plus className="h-3.5 w-3.5 inline mr-1.5" />Add another case for {client.name}</button>{client.cases.map((item) => { const caseTasks = tasks.filter((t) => t.projectId === item.id); return <article key={item.id} role="button" tabIndex={0} onClick={() => setActiveCase(item)} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") setActiveCase(item); }} className="group cursor-pointer border border-slate-200 bg-slate-50/60 rounded-2xl p-4 min-w-0 transition-all hover:-translate-y-0.5 hover:border-blue-200 hover:bg-white hover:shadow-lg"><div className="flex justify-between gap-3"><div className="min-w-0"><span className="text-[10px] font-mono text-slate-400 break-all">{item.matterCode}</span><h4 className="font-extrabold text-sm mt-1 break-words">{item.name}</h4></div><button onClick={(event) => { event.stopPropagation(); edit(item); }} title="Edit case" aria-label={`Edit ${item.name}`}><Edit className="h-4 w-4 text-slate-400" /></button></div>{item.description && <p className="text-xs text-slate-500 mt-2 break-words">{item.description}</p>}<div className="mt-3 pt-3 border-t border-slate-200"><p className="text-xs font-bold text-slate-600 flex gap-1.5 mb-2"><ListTodo className="h-3.5 w-3.5" />Tasks ({caseTasks.length})</p>{caseTasks.length ? <div className="space-y-1.5">{caseTasks.map((task) => <div key={task.id} className="bg-white rounded-xl px-3 py-2 flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-3 text-xs min-w-0"><span className="font-semibold truncate">{task.title}</span><span className={`shrink-0 ${task.stage === "Completed" ? "text-emerald-600" : "text-blue-800"}`}>{task.stage}</span></div>)}</div> : <p className="text-xs text-slate-400">No tasks in this case yet.</p>}<p className="mt-3 text-[10px] font-bold text-blue-700 opacity-0 transition-opacity group-hover:opacity-100">Open case file →</p></div></article>})}</div>}
+          {open && <div className="p-4 pt-0 space-y-3"><button type="button" onClick={() => addCaseForClient(client.name)} className="w-full rounded-xl border border-dashed border-amber-300 bg-amber-50/70 px-3 py-2.5 text-xs font-bold text-blue-900 hover:bg-amber-100"><Plus className="h-3.5 w-3.5 inline mr-1.5" />Add another case for {client.name}</button>{client.cases.map((item) => { const caseTasks = tasks.filter((t) => t.projectId === item.id); return <article key={item.id} role="button" tabIndex={0} onClick={() => openCase(item)} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") openCase(item); }} className="group cursor-pointer border border-slate-200 bg-slate-50/60 rounded-2xl p-4 min-w-0 transition-all hover:-translate-y-0.5 hover:border-blue-200 hover:bg-white hover:shadow-lg"><div className="flex justify-between gap-3"><div className="min-w-0"><span className="text-[10px] font-mono text-slate-400 break-all">{item.matterCode}</span><h4 className="font-extrabold text-sm mt-1 break-words">{item.name}</h4></div><button onClick={(event) => { event.stopPropagation(); edit(item); }} title="Edit case" aria-label={`Edit ${item.name}`}><Edit className="h-4 w-4 text-slate-400" /></button></div>{item.description && <p className="text-xs text-slate-500 mt-2 break-words">{item.description}</p>}<div className="mt-3 pt-3 border-t border-slate-200"><p className="text-xs font-bold text-slate-600 flex gap-1.5 mb-2"><ListTodo className="h-3.5 w-3.5" />Tasks ({caseTasks.length})</p>{caseTasks.length ? <div className="space-y-1.5">{caseTasks.map((task) => <div key={task.id} className="bg-white rounded-xl px-3 py-2 flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-3 text-xs min-w-0"><span className="font-semibold truncate">{task.title}</span><span className={`shrink-0 ${task.stage === "Completed" ? "text-emerald-600" : "text-blue-800"}`}>{task.stage}</span></div>)}</div> : <p className="text-xs text-slate-400">No tasks in this case yet.</p>}<p className="mt-3 text-[10px] font-bold text-blue-700 opacity-0 transition-opacity group-hover:opacity-100">Open case file →</p></div></article>})}</div>}
         </section>})}
         {!groups.length && <div className="border border-dashed border-slate-200 rounded-3xl p-12 text-center text-xs text-slate-400">No clients or cases match your search.</div>}
       </section>
@@ -102,9 +124,9 @@ export default function ClientCasesView({ projects, tasks, onAddProject, onUpdat
       const timeline = [...caseTasks].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
       const completedDates = caseTasks.map((task) => task.completedAt).filter(Boolean).map((date) => new Date(date!).getTime());
       const caseClosedAt = activeCase.status === "Closed" && completedDates.length ? new Date(Math.max(...completedDates)) : null;
-      return <div className="fixed inset-0 z-[250] flex items-center justify-center bg-slate-950/65 p-3 backdrop-blur-md animate-fade-in" onMouseDown={(event) => { if (event.target === event.currentTarget) setActiveCase(null); }}>
+      return <div className="fixed inset-0 z-[250] flex items-center justify-center bg-slate-950/65 p-3 backdrop-blur-md animate-fade-in" onMouseDown={(event) => { if (event.target === event.currentTarget) { setActiveCase(null); setNewDriveLink(""); } }}>
         <section role="dialog" aria-modal="true" aria-label={`${activeCase.name} case file`} className="case-file-dialog relative w-full max-w-5xl max-h-[calc(100dvh-24px)] overflow-y-auto rounded-[30px] border border-white/70 bg-[#f8f7f3] shadow-[0_36px_110px_-24px_rgba(0,0,0,.65)]">
-          <button onClick={() => setActiveCase(null)} aria-label="Close" title="Close" className="absolute right-4 top-4 z-50 grid h-9 w-9 place-items-center rounded-full bg-white/90 text-slate-500 shadow-sm hover:bg-white hover:text-slate-900 transition-all cursor-pointer"><X className="h-4 w-4" /></button>
+          <button onClick={() => { setActiveCase(null); setNewDriveLink(""); }} aria-label="Close" title="Close" className="absolute right-4 top-4 z-50 grid h-9 w-9 place-items-center rounded-full bg-white/90 text-slate-500 shadow-sm hover:bg-white hover:text-slate-900 transition-all cursor-pointer"><X className="h-4 w-4" /></button>
 
           <div className="case-folder-stage">
             <div className="case-folder">
@@ -112,17 +134,14 @@ export default function ClientCasesView({ projects, tasks, onAddProject, onUpdat
               <div className="case-folder-paper"><FileText className="h-7 w-7 text-blue-900" /><p>{activeCase.clientName}</p><strong>{activeCase.name}</strong><small>Advocate case brief</small></div>
               <div className="case-folder-front"><span className="case-folder-tab">LEGAL MATTER</span><FolderOpen className="h-8 w-8" /><p>{activeCase.matterCode}</p></div>
             </div>
-            <div className="case-opening-copy"><span>Opening case file</span><h2>{activeCase.name}</h2><p>{activeCase.clientName} · {activeCase.practiceArea || "Legal Matter"}</p>{activeCase.googleDriveLink && <a href={activeCase.googleDriveLink} target="_blank" rel="noopener noreferrer" className="mt-2 inline-flex items-center gap-1.5 text-[11px] font-bold text-blue-700 hover:text-blue-900" onClick={(e) => e.stopPropagation()}><ExternalLink className="h-3.5 w-3.5" />Open Google Drive folder</a>}</div>
+            <div className="case-opening-copy"><span>Opening case file</span><h2>{activeCase.name}</h2><p>{activeCase.clientName} · {activeCase.practiceArea || "Legal Matter"}</p></div>
           </div>
 
           <div className="case-file-content grid gap-4 p-4 sm:p-6 lg:grid-cols-12">
             <div className="case-reveal case-reveal-one rounded-2xl border border-slate-200 bg-white p-5 lg:col-span-7">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div><p className="case-section-label">Documents</p><h3 className="text-sm font-extrabold text-slate-900">Case papers</h3></div>
-                <div className="flex items-center gap-2">
-                  {activeCase.googleDriveLink && <a href={activeCase.googleDriveLink} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 border border-blue-100 px-3 py-1.5 text-[10px] font-bold text-blue-700 hover:bg-blue-100"><ExternalLink className="h-3.5 w-3.5" />Google Drive</a>}
-                  <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-bold text-slate-500">{documents.length} files</span>
-                </div>
+                <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-bold text-slate-500">{documents.length} files</span>
               </div>
               <div className="mt-4 rounded-xl border border-dashed border-blue-200 bg-blue-50/60 p-3">
                 <p className="text-[10px] font-bold text-slate-600">Select the related task</p>
@@ -153,6 +172,43 @@ export default function ClientCasesView({ projects, tasks, onAddProject, onUpdat
             <div className="case-reveal case-reveal-two rounded-2xl border border-slate-200 bg-white p-5 lg:col-span-5">
               <div className="flex items-center justify-between"><div><p className="case-section-label">Workboard</p><h3 className="text-sm font-extrabold text-slate-900">Tasks</h3></div><ListTodo className="h-4 w-4 text-slate-400" /></div>
               <div className="mt-4 space-y-2">{caseTasks.slice(0, 5).map((task, index) => <div key={task.id} className="case-task-row" style={{ animationDelay: `${1.15 + index * .08}s` }}><span className={`h-2 w-2 rounded-full ${task.stage === "Completed" ? "bg-emerald-500" : "bg-blue-500"}`} /><div className="min-w-0 flex-1"><p className="truncate text-[11px] font-bold text-slate-700">{task.title}</p><small className="text-[9px] text-slate-400">{task.stage} · due {new Date(task.dueDate).toLocaleDateString()}</small></div></div>)}{!caseTasks.length && <p className="text-xs text-slate-400">No tasks created yet.</p>}</div>
+            </div>
+
+            <div className="case-reveal rounded-2xl border border-slate-200 bg-white p-5 lg:col-span-12">
+              <div className="flex items-center justify-between gap-3">
+                <div><p className="case-section-label">Storage</p><h3 className="text-sm font-extrabold text-slate-900">Google Drive Links</h3></div>
+                <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-bold text-slate-500">{(activeCase.googleDriveLinks || []).length} links</span>
+              </div>
+              <div className="mt-4 space-y-2">
+                {(activeCase.googleDriveLinks || []).map((link, index) => (
+                  <div key={`${link}-${index}`} className="flex items-center gap-2 rounded-xl bg-slate-50 px-3 py-2">
+                    <ExternalLink className="h-3.5 w-3.5 text-blue-700 shrink-0" />
+                    <a href={link} target="_blank" rel="noopener noreferrer" className="min-w-0 flex-1 truncate text-xs font-bold text-blue-700 hover:text-blue-900">{link}</a>
+                    <button type="button" onClick={() => removeDriveLink(index)} aria-label="Remove Google Drive link" title="Remove" className="shrink-0 text-slate-400 hover:text-rose-600"><X className="h-3.5 w-3.5" /></button>
+                  </div>
+                ))}
+                {!(activeCase.googleDriveLinks || []).length && <p className="text-xs text-slate-400">No Google Drive links added yet.</p>}
+              </div>
+              <div className="mt-3 flex gap-2">
+                <input
+                  type="url"
+                  value={newDriveLink}
+                  onChange={(e) => setNewDriveLink(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addDriveLink(); } }}
+                  placeholder="https://drive.google.com/..."
+                  className={`${fieldClass} flex-1`}
+                />
+                <button
+                  type="button"
+                  onClick={addDriveLink}
+                  disabled={!newDriveLink.trim() || savingDriveLink}
+                  aria-label="Add Google Drive link"
+                  title="Add Google Drive link"
+                  className="shrink-0 grid h-10 w-10 place-items-center rounded-xl bg-blue-800 text-white hover:bg-blue-900 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Plus className="h-4 w-4" />
+                </button>
+              </div>
             </div>
 
             <div className="case-reveal case-reveal-three rounded-2xl border border-slate-200 bg-white p-5 lg:col-span-12">

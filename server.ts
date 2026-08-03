@@ -166,7 +166,7 @@ interface AppData {
     budget?: number;
     clientEmail?: string;
     clientPhone?: string;
-    googleDriveLink?: string;
+    googleDriveLinks?: string[];
   }>;
   tasks: Array<{
     id: string;
@@ -707,13 +707,13 @@ const rowMappers = {
       id: p.id, name: p.name, description: p.description, created_at: p.createdAt,
       client_name: p.clientName || null, matter_code: p.matterCode || null, practice_area: p.practiceArea || null,
       status: p.status || "Active", budget: p.budget || null, client_email: p.clientEmail || null, client_phone: p.clientPhone || null,
-      google_drive_link: p.googleDriveLink || null
+      google_drive_links: p.googleDriveLinks || []
     }),
     fromRow: (r: any) => ({
       id: r.id, name: r.name, description: r.description, createdAt: r.created_at,
       clientName: r.client_name, matterCode: r.matter_code, practiceArea: r.practice_area,
       status: r.status, budget: r.budget, clientEmail: r.client_email, clientPhone: r.client_phone,
-      googleDriveLink: r.google_drive_link
+      googleDriveLinks: Array.isArray(r.google_drive_links) ? r.google_drive_links : []
     })
   },
   tasks: {
@@ -1693,7 +1693,7 @@ app.get("/api/projects", (req, res) => {
 });
 
 app.post("/api/projects", async (req, res) => {
-  const { name, description, clientName, matterCode, practiceArea, status, budget, clientEmail, clientPhone, googleDriveLink } = req.body;
+  const { name, description, clientName, matterCode, practiceArea, status, budget, clientEmail, clientPhone } = req.body;
   const db = readDatabase();
 
   if (!name) {
@@ -1711,7 +1711,7 @@ app.post("/api/projects", async (req, res) => {
     budget: budget ? Number(budget) : 0,
     clientEmail: clientEmail || "",
     clientPhone: clientPhone || "",
-    googleDriveLink: googleDriveLink || "",
+    googleDriveLinks: [] as string[],
     createdAt: new Date().toISOString()
   };
 
@@ -1723,7 +1723,7 @@ app.post("/api/projects", async (req, res) => {
 
 app.put("/api/projects/:id", async (req, res) => {
   const { id } = req.params;
-  const { name, description, clientName, matterCode, practiceArea, status, budget, clientEmail, clientPhone, googleDriveLink } = req.body;
+  const { name, description, clientName, matterCode, practiceArea, status, budget, clientEmail, clientPhone, googleDriveLinks } = req.body;
   const db = readDatabase();
 
   const prjIndex = db.projects.findIndex((p) => p.id === id);
@@ -1743,7 +1743,7 @@ app.put("/api/projects/:id", async (req, res) => {
   if (budget !== undefined) project.budget = budget ? Number(budget) : 0;
   if (clientEmail !== undefined) project.clientEmail = clientEmail;
   if (clientPhone !== undefined) project.clientPhone = clientPhone;
-  if (googleDriveLink !== undefined) project.googleDriveLink = googleDriveLink;
+  if (googleDriveLinks !== undefined) project.googleDriveLinks = Array.isArray(googleDriveLinks) ? googleDriveLinks : [];
 
   if (name && name !== oldName) {
     db.tasks = db.tasks.map((t) => {
