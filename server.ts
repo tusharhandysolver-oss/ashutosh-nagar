@@ -1245,7 +1245,27 @@ function runReminderScanner() {
 // meeting"), so unlike runReminderScanner's day-granularity task reminders
 // (which use a fixed mock "today" for demo consistency), this needs the
 // real wall-clock time to mean anything.
-async function runEventReminderScanner() {
+//
+// /api/notifications and /api/events both trigger this on every poll, from
+// every logged-in user's browser (every 8s each). With more than one person
+// online, two of those requests land close enough together that their
+// "read reminded_user_ids, then decide, then write it back" steps interleave
+// on the same Node event loop - both read the row before either has written
+// its update, both conclude "not reminded yet", and both fire a notification.
+// That's the actual duplicate-reminder bug: reading the authoritative row
+// from Supabase closed the *cross-instance* version of this race but not the
+// *same-instance* one, since it's still a non-atomic read-then-write. Forcing
+// every call through this single chained promise serializes them so the
+// second call in an overlap always observes the first call's write.
+let eventReminderScanQueue: Promise<void> = Promise.resolve();
+function runEventReminderScanner(): Promise<void> {
+  eventReminderScanQueue = eventReminderScanQueue
+    .then(() => runEventReminderScannerLocked())
+    .catch((err) => console.error("Event reminder scan failed:", err));
+  return eventReminderScanQueue;
+}
+
+async function runEventReminderScannerLocked() {
   const db = readDatabase();
   if (!db.calendarEvents || db.calendarEvents.length === 0) return;
 

@@ -117,7 +117,13 @@ export default function ClientCasesView({ projects, tasks, onAddProject, onUpdat
 
           <div className="case-file-content grid gap-4 p-4 sm:p-6 lg:grid-cols-12">
             <div className="case-reveal case-reveal-one rounded-2xl border border-slate-200 bg-white p-5 lg:col-span-7">
-              <div className="flex flex-wrap items-center justify-between gap-3"><div><p className="case-section-label">Documents</p><h3 className="text-sm font-extrabold text-slate-900">Case papers</h3></div><span className="rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-bold text-slate-500">{documents.length} files</span></div>
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div><p className="case-section-label">Documents</p><h3 className="text-sm font-extrabold text-slate-900">Case papers</h3></div>
+                <div className="flex items-center gap-2">
+                  {activeCase.googleDriveLink && <a href={activeCase.googleDriveLink} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 border border-blue-100 px-3 py-1.5 text-[10px] font-bold text-blue-700 hover:bg-blue-100"><ExternalLink className="h-3.5 w-3.5" />Google Drive</a>}
+                  <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-bold text-slate-500">{documents.length} files</span>
+                </div>
+              </div>
               <div className="mt-4 rounded-xl border border-dashed border-blue-200 bg-blue-50/60 p-3">
                 <p className="text-[10px] font-bold text-slate-600">Select the related task</p>
                 <div className="mt-2 flex flex-wrap gap-1.5">
