@@ -2061,19 +2061,47 @@ export default function App() {
                 </div>
 
                 <div>
-                  <label className="text-xs uppercase font-bold tracking-wider text-slate-400 font-display block mb-1.5">
-                    Reminder
+                  <label className="text-xs uppercase font-bold tracking-wider text-slate-400 font-display flex items-center gap-1.5 mb-2">
+                    <Bell className="h-3.5 w-3.5" />
+                    Remind assignee before due date
                   </label>
-                  <select
-                    value={newTaskReminderDaysBefore}
-                    onChange={(e) => setNewTaskReminderDaysBefore(e.target.value)}
-                    className="w-full rounded-2xl bg-slate-50 border border-slate-200 px-3.5 py-2.5 text-sm text-slate-800 focus:border-slate-400 outline-hidden cursor-pointer font-medium transition-colors hover:border-slate-300"
-                  >
-                    <option value="">No reminder</option>
-                    {[1, 2, 3, 4, 5, 6, 7].map((d) => (
-                      <option key={d} value={d}>{d} day{d > 1 ? "s" : ""} before due date</option>
-                    ))}
-                  </select>
+                  <div className="flex flex-wrap gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => setNewTaskReminderDaysBefore("")}
+                      className={`rounded-full px-3.5 py-1.5 text-xs font-bold border transition-all cursor-pointer ${
+                        newTaskReminderDaysBefore === ""
+                          ? "bg-slate-800 border-slate-800 text-white shadow-xs"
+                          : "bg-slate-50 border-slate-200 text-slate-500 hover:border-slate-300 hover:text-slate-700"
+                      }`}
+                    >
+                      No reminder
+                    </button>
+                    {[1, 2, 3, 4, 5, 6, 7].map((d) => {
+                      const selected = newTaskReminderDaysBefore === String(d);
+                      return (
+                        <button
+                          type="button"
+                          key={d}
+                          onClick={() => setNewTaskReminderDaysBefore(String(d))}
+                          className={`rounded-full h-9 w-9 text-xs font-bold border transition-all cursor-pointer ${
+                            selected
+                              ? "bg-gradient-to-r from-blue-700 to-cyan-600 border-transparent text-white shadow-xs scale-105"
+                              : "bg-slate-50 border-slate-200 text-slate-600 hover:border-blue-300 hover:text-blue-700"
+                          }`}
+                          title={`${d} day${d > 1 ? "s" : ""} before due date`}
+                          aria-pressed={selected}
+                        >
+                          {d}d
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <p className="text-[11px] text-slate-400 mt-1.5">
+                    {newTaskReminderDaysBefore
+                      ? `Assignee gets notified ${newTaskReminderDaysBefore} day${Number(newTaskReminderDaysBefore) > 1 ? "s" : ""} before the due date.`
+                      : "No automatic due-date reminder for this task."}
+                  </p>
                 </div>
 
                 {createTaskError && (

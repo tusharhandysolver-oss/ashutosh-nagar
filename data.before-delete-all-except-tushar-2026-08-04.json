@@ -1,0 +1,699 @@
+{
+  "users": [
+    {
+      "id": "55706907-2a08-4a6e-b496-8c6febad105a",
+      "name": "Rahul Matharu",
+      "email": "matharurahul1@gmail.com",
+      "role": "Team Member",
+      "department": "General",
+      "avatar": "https://lh3.googleusercontent.com/a/ACg8ocKe0yCOb-zC6m2v14NPwUYAQ_DZPqiBHHuVTYZfKlSCi_sSXA=s96-c",
+      "created_at": "2026-08-03T09:00:13.983+00:00",
+      "status": "active",
+      "event_reminder_minutes_before": null
+    },
+    {
+      "id": "268d2861-6a44-4026-9ce1-5e52150ff855",
+      "name": "Handysolver Team",
+      "email": "handysolverteam@gmail.com",
+      "role": "Team Member",
+      "department": "General",
+      "avatar": "https://lh3.googleusercontent.com/a/ACg8ocJlOuJWGOOjSuO4GYnW5dbZsBAXNCn6-nUEDimaxTj5Kdas8g=s96-c",
+      "created_at": "2026-08-03T11:34:04.802+00:00",
+      "status": "pending",
+      "event_reminder_minutes_before": null
+    },
+    {
+      "id": "5ca9fc6f-4e9b-4435-8a8f-48ce7d41ae4d",
+      "name": "Palkriti Pande",
+      "email": "palkritipande@analaw.in",
+      "role": "Team Member",
+      "department": "General",
+      "avatar": "https://lh3.googleusercontent.com/a/ACg8ocIYI6_s1izE01MmYhiKM3gtF9_elIbTFHNpDNPe6phTRKyrIQ=s96-c",
+      "created_at": "2026-08-03T11:34:59.671+00:00",
+      "status": "active",
+      "event_reminder_minutes_before": null
+    },
+    {
+      "id": "48d7b188-2d25-43cd-9067-f27dea921b83",
+      "name": "Navtej Singh",
+      "email": "navtejsingh@analaw.in",
+      "role": "Team Member",
+      "department": "General",
+      "avatar": "https://lh3.googleusercontent.com/a/ACg8ocKl9Oo-OwiWSFnPWiwQbnALXrOsXoKlyzUjIaP-hcEayM4Oug=s96-c",
+      "created_at": "2026-08-03T11:36:07.158+00:00",
+      "status": "active",
+      "event_reminder_minutes_before": null
+    },
+    {
+      "id": "ec2127f2-5ccf-4aa1-b5bc-6216184f62b4",
+      "name": "Jahanvi Raj",
+      "email": "jahanviraj@analaw.in",
+      "role": "Team Member",
+      "department": "General",
+      "avatar": "https://lh3.googleusercontent.com/a/ACg8ocJ5kVbRtjcCCz4rRVDro5rwEGs2veT-gx-w8cJxW0N6s7AP=s96-c",
+      "created_at": "2026-08-03T08:23:38.036+00:00",
+      "status": "active",
+      "event_reminder_minutes_before": null
+    },
+    {
+      "id": "1e1f2b1f-de23-48d2-a4e6-96f286fa9e4d",
+      "name": "Tushar Bali",
+      "email": "tusharbali855@gmail.com",
+      "role": "Team Member",
+      "department": "General",
+      "avatar": "https://lh3.googleusercontent.com/a/ACg8ocJHuWhKusNeZjMsXd6ioRUovLBah7yHRBNhwJUE_XEII2yS1Nfm=s96-c",
+      "created_at": "2026-08-03T06:14:21.664+00:00",
+      "status": "active",
+      "event_reminder_minutes_before": 20
+    },
+    {
+      "id": "usr-3",
+      "name": "Tushar",
+      "email": "tushar.handysolver@gmail.com",
+      "role": "Admin",
+      "department": "Associate Attorney",
+      "avatar": "data:image/jpeg;base64,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",
+      "created_at": "2026-02-01T10:00:00+00:00",
+      "status": "active",
+      "event_reminder_minutes_before": null
+    }
+  ],
+  "projects": [
+    {
+      "id": "prj-1785409209365",
+      "name": "test",
+      "description": "test",
+      "client_name": "Rashmi",
+      "matter_code": "MC-9666",
+      "practice_area": "Litigation",
+      "status": "Active",
+      "budget": null,
+      "created_at": "2026-07-30T11:00:09.365+00:00",
+      "client_email": "rashmi.handysolver@gmail.com",
+      "client_phone": "8767546732",
+      "google_drive_links": [
+        "angkl;rn;r",
+        "https://drive.google.com/file/d/19jQYIcCTJdVroRrtvfpslcgMUdEi6jMa/view"
+      ]
+    },
+    {
+      "id": "prj-1785409235389",
+      "name": "code",
+      "description": "code",
+      "client_name": "Rashmi",
+      "matter_code": "MC-7446",
+      "practice_area": "Litigation",
+      "status": "Active",
+      "budget": null,
+      "created_at": "2026-07-30T11:00:35.389+00:00",
+      "client_email": "rashmi.handysolver@gmail.com",
+      "client_phone": "8767546732",
+      "google_drive_links": []
+    },
+    {
+      "id": "prj-1785409280389",
+      "name": "test",
+      "description": "test",
+      "client_name": "Rashmi",
+      "matter_code": "MC-9507",
+      "practice_area": "Litigation",
+      "status": "Active",
+      "budget": null,
+      "created_at": "2026-07-30T11:01:20.389+00:00",
+      "client_email": "rashmi.handysolver@gmail.com",
+      "client_phone": "8767546732",
+      "google_drive_links": []
+    },
+    {
+      "id": "prj-1785409388181",
+      "name": "test",
+      "description": "test",
+      "client_name": "Rashmi",
+      "matter_code": "MC-1975",
+      "practice_area": "Litigation",
+      "status": "Active",
+      "budget": null,
+      "created_at": "2026-07-30T11:03:08.181+00:00",
+      "client_email": "rashmi.handysolver@gmail.com",
+      "client_phone": "8767546732",
+      "google_drive_links": []
+    },
+    {
+      "id": "prj-1785409392019",
+      "name": "test",
+      "description": "test",
+      "client_name": "Rashmi",
+      "matter_code": "MC-9664",
+      "practice_area": "Litigation",
+      "status": "Active",
+      "budget": null,
+      "created_at": "2026-07-30T11:03:12.019+00:00",
+      "client_email": "rashmi.handysolver@gmail.com",
+      "client_phone": "8767546732",
+      "google_drive_links": []
+    },
+    {
+      "id": "prj-1785477504990",
+      "name": "Race Condition Test Project",
+      "description": "",
+      "client_name": null,
+      "matter_code": "MC-2066",
+      "practice_area": "General",
+      "status": "Active",
+      "budget": null,
+      "created_at": "2026-07-31T05:58:24.991+00:00",
+      "client_email": null,
+      "client_phone": null,
+      "google_drive_links": []
+    },
+    {
+      "id": "prj-1785558807465",
+      "name": "testing 1",
+      "description": "testing",
+      "client_name": "Tushar Bali",
+      "matter_code": "MC-6731",
+      "practice_area": "Litigation",
+      "status": "Active",
+      "budget": null,
+      "created_at": "2026-08-01T04:33:27.465+00:00",
+      "client_email": "tusharbali855@gmail.com",
+      "client_phone": "24986528465",
+      "google_drive_links": []
+    },
+    {
+      "id": "prj-1785409554359",
+      "name": "test",
+      "description": "test",
+      "client_name": "Rashmi",
+      "matter_code": "MC-4170",
+      "practice_area": "Litigation",
+      "status": "Active",
+      "budget": null,
+      "created_at": "2026-07-30T11:05:54.359+00:00",
+      "client_email": "rashmi.handysolver@gmail.com",
+      "client_phone": "8767546732",
+      "google_drive_links": []
+    },
+    {
+      "id": "prj-1785409557438",
+      "name": "test",
+      "description": "test",
+      "client_name": "Rashmi",
+      "matter_code": "MC-6757",
+      "practice_area": "Litigation",
+      "status": "Active",
+      "budget": null,
+      "created_at": "2026-07-30T11:05:57.438+00:00",
+      "client_email": "rashmi.handysolver@gmail.com",
+      "client_phone": "8767546732",
+      "google_drive_links": []
+    },
+    {
+      "id": "prj-1785411345068",
+      "name": "make tea",
+      "description": "tea",
+      "client_name": "Rashmi",
+      "matter_code": "MC-3745",
+      "practice_area": "Litigation",
+      "status": "Active",
+      "budget": null,
+      "created_at": "2026-07-30T11:35:45.068+00:00",
+      "client_email": "rashmi.handysolver@gmail.com",
+      "client_phone": "8767546732",
+      "google_drive_links": []
+    },
+    {
+      "id": "prj-1785558847435",
+      "name": "test 2",
+      "description": "test",
+      "client_name": "Tushar Bali",
+      "matter_code": "MC-7077",
+      "practice_area": "Litigation",
+      "status": "Active",
+      "budget": null,
+      "created_at": "2026-08-01T04:34:07.435+00:00",
+      "client_email": "tusharbali855@gmail.com",
+      "client_phone": "24986528465",
+      "google_drive_links": []
+    }
+  ],
+  "tasks": [
+    {
+      "id": "TSK-1009",
+      "title": "test task",
+      "description": "",
+      "priority": "Medium",
+      "status": "Completed",
+      "stage": "In Progress",
+      "due_date": "2026-07-30T18:00:00+00:00",
+      "created_at": "2026-08-03T11:41:32.281+00:00",
+      "last_updated_date": "2026-08-03T11:44:06.287+00:00",
+      "assigned_by": "55706907-2a08-4a6e-b496-8c6febad105a",
+      "assigned_to": "5ca9fc6f-4e9b-4435-8a8f-48ce7d41ae4d",
+      "project_id": "prj-1785409209365",
+      "project_name": "test",
+      "tags": [],
+      "estimated_hours": 8,
+      "actual_hours": 0,
+      "attachments": [],
+      "is_billable": true,
+      "hourly_rate": 250,
+      "client_approval_status": "Not Required",
+      "matter_code": null,
+      "started_at": null,
+      "completed_at": "2026-08-03T11:44:06.287+00:00",
+      "actual_days_elapsed": null,
+      "actual_hours_elapsed": null,
+      "timer_state": "idle",
+      "last_started_at": null,
+      "total_active_ms": 0,
+      "reminder_days_before": null
+    },
+    {
+      "id": "TSK-1010",
+      "title": "test reminder",
+      "description": "ieqtyregfdhvfkDBf",
+      "priority": "Medium",
+      "status": "Not Started",
+      "stage": "Case Intake",
+      "due_date": "2026-08-05T18:00:00+00:00",
+      "created_at": "2026-08-04T04:00:40.798+00:00",
+      "last_updated_date": "2026-08-04T04:01:08.818+00:00",
+      "assigned_by": "usr-3",
+      "assigned_to": "usr-3",
+      "project_id": "prj-1785409554359",
+      "project_name": "test",
+      "tags": [],
+      "estimated_hours": 8,
+      "actual_hours": 0,
+      "attachments": [],
+      "is_billable": true,
+      "hourly_rate": 250,
+      "client_approval_status": "Not Required",
+      "matter_code": null,
+      "started_at": null,
+      "completed_at": null,
+      "actual_days_elapsed": null,
+      "actual_hours_elapsed": null,
+      "timer_state": "idle",
+      "last_started_at": null,
+      "total_active_ms": 0,
+      "reminder_days_before": 1
+    },
+    {
+      "id": "TSK-1007",
+      "title": "testing task",
+      "description": "test 2",
+      "priority": "Medium",
+      "status": "Completed",
+      "stage": "In Progress",
+      "due_date": "2026-08-01T18:00:00+00:00",
+      "created_at": "2026-08-01T04:34:51.433+00:00",
+      "last_updated_date": "2026-08-01T04:38:00.074+00:00",
+      "assigned_by": "usr-3",
+      "assigned_to": "usr-3",
+      "project_id": "prj-1785411345068",
+      "project_name": "make tea",
+      "tags": [],
+      "estimated_hours": 8,
+      "actual_hours": 0.03,
+      "attachments": [],
+      "is_billable": true,
+      "hourly_rate": 250,
+      "client_approval_status": "Not Required",
+      "matter_code": null,
+      "started_at": "2026-08-01T04:35:46.424+00:00",
+      "completed_at": "2026-08-01T04:38:00.074+00:00",
+      "actual_days_elapsed": 0,
+      "actual_hours_elapsed": 0.03,
+      "timer_state": "idle",
+      "last_started_at": null,
+      "total_active_ms": 119522,
+      "reminder_days_before": null
+    },
+    {
+      "id": "TSK-1008",
+      "title": "test user",
+      "description": "test",
+      "priority": "Medium",
+      "status": "In Progress",
+      "stage": "In Progress",
+      "due_date": "2026-08-01T18:00:00+00:00",
+      "created_at": "2026-08-01T04:41:07.723+00:00",
+      "last_updated_date": "2026-08-04T03:59:23.212+00:00",
+      "assigned_by": "usr-3",
+      "assigned_to": "usr-3",
+      "project_id": "prj-1785558847435",
+      "project_name": "test 2",
+      "tags": [],
+      "estimated_hours": 8,
+      "actual_hours": 0,
+      "attachments": [],
+      "is_billable": true,
+      "hourly_rate": 250,
+      "client_approval_status": "Not Required",
+      "matter_code": null,
+      "started_at": "2026-08-03T11:40:05.81+00:00",
+      "completed_at": null,
+      "actual_days_elapsed": null,
+      "actual_hours_elapsed": null,
+      "timer_state": "paused",
+      "last_started_at": null,
+      "total_active_ms": 58757402,
+      "reminder_days_before": null
+    },
+    {
+      "id": "TSK-1006",
+      "title": "test",
+      "description": "testing",
+      "priority": "Medium",
+      "status": "Not Started",
+      "stage": "Case Intake",
+      "due_date": "2026-07-31T18:00:00+00:00",
+      "created_at": "2026-07-30T11:53:56.191+00:00",
+      "last_updated_date": "2026-07-30T11:53:56.191+00:00",
+      "assigned_by": null,
+      "assigned_to": null,
+      "project_id": "prj-1785409209365",
+      "project_name": "test",
+      "tags": [],
+      "estimated_hours": 8,
+      "actual_hours": 0,
+      "attachments": [],
+      "is_billable": true,
+      "hourly_rate": 250,
+      "client_approval_status": "Not Required",
+      "matter_code": null,
+      "started_at": null,
+      "completed_at": null,
+      "actual_days_elapsed": null,
+      "actual_hours_elapsed": null,
+      "timer_state": "idle",
+      "last_started_at": null,
+      "total_active_ms": 0,
+      "reminder_days_before": null
+    }
+  ],
+  "comments": [
+    {
+      "id": "com-1785558976359",
+      "task_id": "TSK-1007",
+      "user_id": "usr-3",
+      "user_name": "Tushar",
+      "user_avatar": null,
+      "comment": "test ",
+      "created_at": "2026-08-01T04:36:16.359+00:00"
+    },
+    {
+      "id": "com-1785757258148",
+      "task_id": "TSK-1008",
+      "user_id": "55706907-2a08-4a6e-b496-8c6febad105a",
+      "user_name": "Rahul Matharu",
+      "user_avatar": null,
+      "comment": "test",
+      "created_at": "2026-08-03T11:40:58.148+00:00"
+    }
+  ],
+  "notifications": [
+    {
+      "id": "not-1785816294062-clockin-usr-3",
+      "user_id": "usr-3",
+      "message": "📢 ATTENDANCE: Tushar clocked in from WFH (09:34 AM IST).",
+      "type": "info",
+      "read_status": false,
+      "created_at": "2026-08-04T04:04:54.062+00:00"
+    },
+    {
+      "id": "not-1785815963212-timer-pause",
+      "user_id": "usr-3",
+      "message": "⏱️ TIMER PAUSED: Tushar paused the work timer on \"test user\" (TSK-1008). Total tracked: 16.32 hrs.",
+      "type": "info",
+      "read_status": false,
+      "created_at": "2026-08-04T03:59:23.212+00:00"
+    },
+    {
+      "id": "not-1785757446287",
+      "user_id": "5ca9fc6f-4e9b-4435-8a8f-48ce7d41ae4d",
+      "message": "🔔 TASK UPDATED: \"test task\" (TSK-1009). Change: Updated Task status from \"Not Started\" to \"Completed\"",
+      "type": "success",
+      "read_status": false,
+      "created_at": "2026-08-03T11:44:06.287+00:00"
+    },
+    {
+      "id": "not-1785816068818",
+      "user_id": "usr-3",
+      "message": "🔔 TASK UPDATED: \"test reminder\" (TSK-1010). Change: Updated task details",
+      "type": "info",
+      "read_status": false,
+      "created_at": "2026-08-04T04:01:08.818+00:00"
+    },
+    {
+      "id": "not-1785757304138-timer-play",
+      "user_id": "55706907-2a08-4a6e-b496-8c6febad105a",
+      "message": "⏱️ TIMER STARTED: Rahul Matharu started the timer on \"test task\" (TSK-1009).",
+      "type": "info",
+      "read_status": false,
+      "created_at": "2026-08-03T11:41:44.138+00:00"
+    }
+  ],
+  "activity_logs": [
+    {
+      "id": "log-1785815963212-timer-pause",
+      "task_id": "TSK-1008",
+      "user_id": "usr-3",
+      "user_name": "Tushar",
+      "action": "Paused work timer. Total active session: 16.32 hours.",
+      "timestamp": "2026-08-04T03:59:23.212+00:00"
+    },
+    {
+      "id": "log-1785757446287",
+      "task_id": "TSK-1009",
+      "user_id": "55706907-2a08-4a6e-b496-8c6febad105a",
+      "user_name": "Rahul Matharu",
+      "action": "Updated Task status from \"Not Started\" to \"Completed\"",
+      "timestamp": "2026-08-03T11:44:06.287+00:00"
+    },
+    {
+      "id": "log-1785757205810-timer-play",
+      "task_id": "TSK-1008",
+      "user_id": "55706907-2a08-4a6e-b496-8c6febad105a",
+      "user_name": "Rahul Matharu",
+      "action": "Started/Resumed work timer (Status: In Progress)",
+      "timestamp": "2026-08-03T11:40:05.81+00:00"
+    },
+    {
+      "id": "log-1785558946424-timer-play",
+      "task_id": "TSK-1007",
+      "user_id": "usr-3",
+      "user_name": "Tushar",
+      "action": "Started/Resumed work timer (Status: In Progress)",
+      "timestamp": "2026-08-01T04:35:46.424+00:00"
+    },
+    {
+      "id": "log-1785757327463-timer-comp",
+      "task_id": "TSK-1009",
+      "user_id": "55706907-2a08-4a6e-b496-8c6febad105a",
+      "user_name": "Rahul Matharu",
+      "action": "Completed task. Working-time: 0 hours, 0 days.",
+      "timestamp": "2026-08-03T11:42:07.463+00:00"
+    },
+    {
+      "id": "log-1785816068818",
+      "task_id": "TSK-1010",
+      "user_id": "usr-3",
+      "user_name": "Tushar",
+      "action": "Updated task details",
+      "timestamp": "2026-08-04T04:01:08.818+00:00"
+    },
+    {
+      "id": "log-1785757304138-timer-play",
+      "task_id": "TSK-1009",
+      "user_id": "55706907-2a08-4a6e-b496-8c6febad105a",
+      "user_name": "Rahul Matharu",
+      "action": "Started/Resumed work timer (Status: In Progress)",
+      "timestamp": "2026-08-03T11:41:44.138+00:00"
+    },
+    {
+      "id": "log-1785757258148-comment",
+      "task_id": "TSK-1008",
+      "user_id": "55706907-2a08-4a6e-b496-8c6febad105a",
+      "user_name": "Rahul Matharu",
+      "action": "Commented on task: test",
+      "timestamp": "2026-08-03T11:40:58.148+00:00"
+    },
+    {
+      "id": "log-1785559080074-timer-comp",
+      "task_id": "TSK-1007",
+      "user_id": "usr-3",
+      "user_name": "Tushar",
+      "action": "Completed task. Working-time: 0.03 hours, 0 days.",
+      "timestamp": "2026-08-01T04:38:00.074+00:00"
+    },
+    {
+      "id": "log-1785558976359-comment",
+      "task_id": "TSK-1007",
+      "user_id": "usr-3",
+      "user_name": "Tushar",
+      "action": "Commented on task: test ",
+      "timestamp": "2026-08-01T04:36:16.359+00:00"
+    }
+  ],
+  "goals": [],
+  "attendances": [
+    {
+      "id": "att-1785816293769",
+      "user_id": "usr-3",
+      "user_name": "Tushar",
+      "date": "2026-08-04",
+      "type": "WFH",
+      "status": "Open",
+      "clock_in_time": "2026-08-04T04:04:53.769+00:00",
+      "clock_out_time": null
+    },
+    {
+      "id": "att-1785756937547",
+      "user_id": "55706907-2a08-4a6e-b496-8c6febad105a",
+      "user_name": "Rahul Matharu",
+      "date": "2026-08-03",
+      "type": "WFH",
+      "status": "Closed",
+      "clock_in_time": "2026-08-03T11:35:37.547+00:00",
+      "clock_out_time": "2026-08-03T11:36:34.786+00:00"
+    },
+    {
+      "id": "att-1785747426207",
+      "user_id": "1e1f2b1f-de23-48d2-a4e6-96f286fa9e4d",
+      "user_name": "Tushar Bali",
+      "date": "2026-08-03",
+      "type": "WFH",
+      "status": "Closed",
+      "clock_in_time": "2026-08-03T08:57:06.207+00:00",
+      "clock_out_time": "2026-08-03T08:59:54.048+00:00"
+    },
+    {
+      "id": "att-1785558727363",
+      "user_id": "usr-3",
+      "user_name": "Tushar",
+      "date": "2026-08-01",
+      "type": "WFH",
+      "status": "Closed",
+      "clock_in_time": "2026-08-01T04:32:07.363+00:00",
+      "clock_out_time": "2026-08-01T04:45:21.98+00:00"
+    },
+    {
+      "id": "att-1785402378609",
+      "user_id": "usr-3",
+      "user_name": "Tushar",
+      "date": "2026-07-30",
+      "type": "WFH",
+      "status": "Open",
+      "clock_in_time": "2026-07-30T09:06:18.609+00:00",
+      "clock_out_time": null
+    },
+    {
+      "id": "att-1785736908172",
+      "user_id": "usr-3",
+      "user_name": "Tushar",
+      "date": "2026-08-03",
+      "type": "WFH",
+      "status": "Closed",
+      "clock_in_time": "2026-08-03T06:01:48.172+00:00",
+      "clock_out_time": "2026-08-03T06:01:54.951+00:00"
+    }
+  ],
+  "leave_requests": [],
+  "calendar_events": [
+    {
+      "id": "evt-1785494658513",
+      "title": "Reminder Dedup Test",
+      "description": "test",
+      "due_date": "2026-07-31",
+      "time": "10:49",
+      "assignee_ids": [
+        "usr-3"
+      ],
+      "created_by": "usr-3",
+      "created_at": "2026-07-31T10:44:18.513+00:00",
+      "reminded_user_ids": []
+    },
+    {
+      "id": "evt-1785494716270",
+      "title": "Reminder Dedup Test 2",
+      "description": "test",
+      "due_date": "2026-07-31",
+      "time": "16:20",
+      "assignee_ids": [
+        "usr-3"
+      ],
+      "created_by": "usr-3",
+      "created_at": "2026-07-31T10:45:16.27+00:00",
+      "reminded_user_ids": [
+        "usr-3"
+      ]
+    },
+    {
+      "id": "evt-1785393621453",
+      "title": "Dup reminder test3",
+      "description": "",
+      "due_date": "2026-07-30",
+      "time": "12:14",
+      "assignee_ids": [
+        "usr-3"
+      ],
+      "created_by": "usr-3",
+      "created_at": "2026-07-30T06:40:21.453+00:00",
+      "reminded_user_ids": []
+    },
+    {
+      "id": "evt-1785497553303",
+      "title": "virtual games",
+      "description": "gaming",
+      "due_date": "2026-07-31",
+      "time": "17:12",
+      "assignee_ids": [
+        "usr-3",
+        "508110c4-0062-4be2-9645-eac4eb1e8f54"
+      ],
+      "created_by": "508110c4-0062-4be2-9645-eac4eb1e8f54",
+      "created_at": "2026-07-31T11:32:33.303+00:00",
+      "reminded_user_ids": [
+        "usr-3",
+        "508110c4-0062-4be2-9645-eac4eb1e8f54"
+      ]
+    },
+    {
+      "id": "evt-1785394239907",
+      "title": "tea time",
+      "description": "drinkiing tea",
+      "due_date": "2026-07-30",
+      "time": "12:32",
+      "assignee_ids": [
+        "usr-3",
+        "39078678-ff8c-41c6-8382-b0eca6d877b2"
+      ],
+      "created_by": "39078678-ff8c-41c6-8382-b0eca6d877b2",
+      "created_at": "2026-07-30T06:50:39.907+00:00",
+      "reminded_user_ids": [
+        "usr-3",
+        "39078678-ff8c-41c6-8382-b0eca6d877b2"
+      ]
+    },
+    {
+      "id": "evt-1785749489230",
+      "title": "test event",
+      "description": "test",
+      "due_date": "2026-08-03",
+      "time": "15:14",
+      "assignee_ids": [
+        "usr-3",
+        "1e1f2b1f-de23-48d2-a4e6-96f286fa9e4d"
+      ],
+      "created_by": "usr-3",
+      "created_at": "2026-08-03T09:31:29.23+00:00",
+      "reminded_user_ids": [
+        "usr-3",
+        "1e1f2b1f-de23-48d2-a4e6-96f286fa9e4d"
+      ]
+    }
+  ]
+}
