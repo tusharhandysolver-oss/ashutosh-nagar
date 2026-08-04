@@ -249,6 +249,17 @@ export default function App() {
     }
   }, [isLoggedIn, currentUser?.id]);
 
+  // The pending-signups list is only loaded once at login (inside
+  // fetchDatabase), so an Admin who was already on the dashboard when a new
+  // signup came in would see a stale "0 waiting" until some unrelated action
+  // happened to call fetchDatabase() again. Refetch it every time the Admin
+  // actually opens this screen instead.
+  useEffect(() => {
+    if (currentView === "PendingApprovals" && currentUser?.role === "Admin") {
+      void fetchPendingUsers();
+    }
+  }, [currentView, currentUser?.role]);
+
   useEffect(() => {
     if (isLoggedIn || (!window.location.hash.includes("access_token") && !window.location.search.includes("code="))) return;
     if (oauthCallbackStarted.current) return;

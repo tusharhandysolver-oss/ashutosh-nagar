@@ -91,10 +91,18 @@ export default function CalendarView({ tasks, users, events, onSelectTask, onCre
 
   useEffect(() => { Promise.all([fetch("/api/attendance").then(r => r.json()), fetch("/api/leaves").then(r => r.json())]).then(([a, l]) => { setAttendance(a); setLeaves(l); }).catch(() => {}); }, []);
 
+  // Leading/trailing cells show the adjacent month's real dates (styled
+  // differently below) instead of sitting blank, so a month that opens on a
+  // Saturday - like this one - doesn't read as "missing" days at a glance.
   const cells = useMemo(() => {
-    const result: Array<string | null> = Array(new Date(year, month, 1).getDay()).fill(null);
-    for (let day = 1; day <= new Date(year, month + 1, 0).getDate(); day++) result.push(`${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`);
-    while (result.length % 7) result.push(null);
+    const toDateStr = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    const result: Array<{ date: string; inMonth: boolean }> = [];
+    const firstWeekday = new Date(year, month, 1).getDay();
+    for (let i = firstWeekday; i > 0; i--) result.push({ date: toDateStr(new Date(year, month, 1 - i)), inMonth: false });
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    for (let day = 1; day <= daysInMonth; day++) result.push({ date: `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`, inMonth: true });
+    let trailing = 1;
+    while (result.length % 7) result.push({ date: toDateStr(new Date(year, month + 1, trailing++)), inMonth: false });
     return result;
   }, [year, month]);
 
@@ -134,13 +142,12 @@ export default function CalendarView({ tasks, users, events, onSelectTask, onCre
     <section className="calendar-shell flex flex-col bg-white border border-slate-200 rounded-2xl lg:h-[calc(100dvh-205px)] lg:min-h-[500px] lg:max-h-[720px] shadow-[0_20px_60px_-42px_rgba(15,23,42,.45)]" aria-label={`${monthName} ${year} calendar`}>
       <div className="calendar-weekdays grid shrink-0 grid-cols-7 bg-slate-50/80 border-b text-center text-[10px] font-bold uppercase text-slate-400">{["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(day => <div className="py-2.5" key={day}>{day}</div>)}</div>
       <div className="calendar-grid grid flex-1 grid-cols-7 divide-x divide-y min-h-0" style={{ gridTemplateRows: `repeat(${cells.length / 7}, minmax(0, 1fr))` }}>
-        {cells.map((date, index) => <div key={index} style={{ animationDelay: `${Math.min(index, 20) * 12}ms` }} className={`calendar-day calendar-cell-enter min-h-[76px] max-h-[150px] lg:min-h-0 lg:max-h-full overflow-y-auto p-1 sm:p-1.5 space-y-0.5 min-w-0 ${date ? "bg-white" : "bg-slate-50/60"}`}>
-          {date && <><span className="block text-[10px] sm:text-xs font-mono font-bold">{Number(date.slice(-2))}</span>
-            {tasks.filter(task => task.dueDate.split("T")[0] === date && (!filterAssignee || task.assignedTo === filterAssignee)).map(task => <CalendarItem key={task.id} tone="amber" label={task.title} title="Task deadline" meta={`${new Date(task.dueDate).toLocaleDateString()} · ${task.status} · ${task.priority} priority`} people={users.find(user => user.id === task.assignedTo)?.name || "Unassigned"} description={task.description || "No description provided."} alignRight={index % 7 >= 5} openUp={index >= cells.length - 14} onClick={() => onSelectTask(task)} />)}
-            {events.filter(item => item.dueDate === date && (!filterAssignee || item.assigneeIds.includes(filterAssignee))).map(item => <CalendarItem key={item.id} tone="blue" label={item.title} title="Team event" meta={`${item.time} · ${new Date(`${item.dueDate}T00:00:00`).toLocaleDateString()}`} people={item.assigneeIds.map(id => users.find(user => user.id === id)?.name).filter(Boolean).join(", ") || "No assignees"} description={item.description || "No additional notes."} alignRight={index % 7 >= 5} openUp={index >= cells.length - 14} />)}
-            {attendance.filter(item => item.date === date && (!filterAssignee || item.userId === filterAssignee)).map(item => <CalendarItem key={item.id} tone="emerald" label={`${item.userName} · WFH`} title="Remote attendance" meta={`${item.status}${item.clockInTime ? ` · In ${new Date(item.clockInTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}` : ""}${item.clockOutTime ? ` · Out ${new Date(item.clockOutTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}` : ""}`} people={item.userName} icon={<Home className="hidden h-3 w-3 sm:inline" />} alignRight={index % 7 >= 5} openUp={index >= cells.length - 14} />)}
-            {leaves.filter(item => item.status === "Approved" && date >= item.startDate && date <= item.endDate && (!filterAssignee || item.userId === filterAssignee)).map(item => <CalendarItem key={item.id} tone="violet" label={`${item.userName} · Leave`} title="Approved leave" meta={`${new Date(`${item.startDate}T00:00:00`).toLocaleDateString()} – ${new Date(`${item.endDate}T00:00:00`).toLocaleDateString()} · ${item.status}`} people={item.userName} description={item.reason || "No reason provided."} icon={<Palmtree className="hidden h-3 w-3 sm:inline" />} alignRight={index % 7 >= 5} openUp={index >= cells.length - 14} />)}
-          </>}
+        {cells.map(({ date, inMonth }, index) => <div key={index} style={{ animationDelay: `${Math.min(index, 20) * 12}ms` }} className={`calendar-day calendar-cell-enter min-h-[76px] max-h-[150px] lg:min-h-0 lg:max-h-full overflow-y-auto p-1 sm:p-1.5 space-y-0.5 min-w-0 ${inMonth ? "bg-white" : "bg-slate-50/60"}`}>
+          <span className={`block text-[10px] sm:text-xs font-mono font-bold no-underline ${inMonth ? "" : "text-blue-400"}`}>{Number(date.slice(-2))}</span>
+          {tasks.filter(task => task.dueDate.split("T")[0] === date && (!filterAssignee || task.assignedTo === filterAssignee)).map(task => <CalendarItem key={task.id} tone="amber" label={task.title} title="Task deadline" meta={`${new Date(task.dueDate).toLocaleDateString()} · ${task.status} · ${task.priority} priority`} people={users.find(user => user.id === task.assignedTo)?.name || "Unassigned"} description={task.description || "No description provided."} alignRight={index % 7 >= 5} openUp={index >= cells.length - 14} onClick={() => onSelectTask(task)} />)}
+          {events.filter(item => item.dueDate === date && (!filterAssignee || item.assigneeIds.includes(filterAssignee))).map(item => <CalendarItem key={item.id} tone="blue" label={item.title} title="Team event" meta={`${item.time} · ${new Date(`${item.dueDate}T00:00:00`).toLocaleDateString()}`} people={item.assigneeIds.map(id => users.find(user => user.id === id)?.name).filter(Boolean).join(", ") || "No assignees"} description={item.description || "No additional notes."} alignRight={index % 7 >= 5} openUp={index >= cells.length - 14} />)}
+          {attendance.filter(item => item.date === date && (!filterAssignee || item.userId === filterAssignee)).map(item => <CalendarItem key={item.id} tone="emerald" label={`${item.userName} · WFH`} title="Remote attendance" meta={`${item.status}${item.clockInTime ? ` · In ${new Date(item.clockInTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}` : ""}${item.clockOutTime ? ` · Out ${new Date(item.clockOutTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}` : ""}`} people={item.userName} icon={<Home className="hidden h-3 w-3 sm:inline" />} alignRight={index % 7 >= 5} openUp={index >= cells.length - 14} />)}
+          {leaves.filter(item => item.status === "Approved" && date >= item.startDate && date <= item.endDate && (!filterAssignee || item.userId === filterAssignee)).map(item => <CalendarItem key={item.id} tone="violet" label={`${item.userName} · Leave`} title="Approved leave" meta={`${new Date(`${item.startDate}T00:00:00`).toLocaleDateString()} – ${new Date(`${item.endDate}T00:00:00`).toLocaleDateString()} · ${item.status}`} people={item.userName} description={item.reason || "No reason provided."} icon={<Palmtree className="hidden h-3 w-3 sm:inline" />} alignRight={index % 7 >= 5} openUp={index >= cells.length - 14} />)}
         </div>)}
       </div>
     </section>

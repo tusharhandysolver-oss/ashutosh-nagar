@@ -1217,17 +1217,25 @@ function runReminderScanner() {
     }
 
     if (message) {
-      // Whether this was already sent is tracked on the task itself, not by
-      // scanning for a matching notification - scanning breaks the moment
-      // the user dismisses it (Dismiss All deletes notifications outright),
-      // since the scanner would then see no record and recreate the exact
-      // same alert on the very next /api/tasks fetch. Same fix as the
-      // calendar-event reminder loop, applied here too.
+      // task.remindedTriggerKeys alone isn't durable: the "reminded_trigger_keys"
+      // column doesn't exist on the live tasks table, so upsertResilient
+      // silently drops it on every write - it never actually reaches Supabase.
+      // On a persistent dev server that's invisible (memoryDb just keeps the
+      // in-process mutation), but on Vercel every cold start reloads tasks
+      // from Supabase with an empty array, forgetting every reminder that
+      // was ever sent and re-firing all of them. The notification id is
+      // deterministic and the notifications table *does* persist correctly,
+      // so checking for an existing row with that id is the part that
+      // actually survives a restart - the in-memory array is kept too, only
+      // as a fast path that skips the scan below when it's still warm.
+      const notificationId = `not-${triggerKey}`;
       if (!task.remindedTriggerKeys) task.remindedTriggerKeys = [];
-      if (!task.remindedTriggerKeys.includes(triggerKey)) {
+      const alreadyKnownInMemory = task.remindedTriggerKeys.includes(triggerKey);
+      const alreadyPersisted = !alreadyKnownInMemory && db.notifications.some((n) => n.id === notificationId);
+      if (!alreadyKnownInMemory && !alreadyPersisted) {
         task.remindedTriggerKeys.push(triggerKey);
         db.notifications.unshift({
-          id: `not-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+          id: notificationId,
           userId: task.assignedTo,
           message,
           type: notifyType,
@@ -1235,6 +1243,8 @@ function runReminderScanner() {
           createdAt: today.toISOString()
         });
         updated = true;
+      } else if (alreadyPersisted) {
+        task.remindedTriggerKeys.push(triggerKey);
       }
     }
   });
@@ -1385,13 +1395,25 @@ async function runTaskDueDateReminderScannerLocked() {
     if (now < reminderTime || now >= dueTime) return;
 
     const triggerKey = `duedate-${task.reminderDaysBefore}-${task.id}`;
+    const notificationId = `not-${triggerKey}`;
     if (!task.remindedTriggerKeys) task.remindedTriggerKeys = [];
-    if (task.remindedTriggerKeys.includes(triggerKey)) return;
+    // task.remindedTriggerKeys is a fast in-process check only - the
+    // "reminded_trigger_keys" column doesn't exist on the live tasks table,
+    // so it never actually persists to Supabase and gets forgotten on every
+    // cold start. The notification's deterministic id, checked against the
+    // notifications table (which does persist), is what actually survives
+    // a restart without re-firing the same reminder.
+    const alreadyKnownInMemory = task.remindedTriggerKeys.includes(triggerKey);
+    const alreadyPersisted = !alreadyKnownInMemory && db.notifications.some((n) => n.id === notificationId);
+    if (alreadyKnownInMemory || alreadyPersisted) {
+      if (alreadyPersisted) task.remindedTriggerKeys.push(triggerKey);
+      return;
+    }
     task.remindedTriggerKeys.push(triggerKey);
 
     const dayLabel = task.reminderDaysBefore === 1 ? "1 day" : `${task.reminderDaysBefore} days`;
     db.notifications.unshift({
-      id: `not-${Date.now()}-${Math.floor(Math.random() * 1000)}-duetask`,
+      id: notificationId,
       userId: task.assignedTo,
       message: `📅 TASK DUE SOON: "${task.title}" (${task.id}) is due on ${new Date(task.dueDate).toLocaleDateString()} - that's ${dayLabel} from now.`,
       type: "warning",
