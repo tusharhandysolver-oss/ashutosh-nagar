@@ -505,3 +505,71 @@ h4, h5, h6 {
 ::-webkit-scrollbar-thumb:hover {
   background: #1e3a5f;
 }
+
+/* Voice dictation button (task/case description mic-to-text) */
+.dictate-wrap { display:inline-flex; align-items:center; gap:8px; position:relative; }
+.dictate-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 26px;
+  width: 26px;
+  border-radius: 9999px;
+  border: none;
+  cursor: pointer;
+  color: #fff;
+  background: linear-gradient(135deg,#2563eb,#0891b2);
+  box-shadow: 0 2px 8px rgba(37,99,235,.35);
+  transition: transform .15s ease, box-shadow .15s ease, background .2s ease;
+}
+.dictate-btn:hover { transform: scale(1.1); box-shadow: 0 4px 14px rgba(37,99,235,.5); }
+.dictate-btn:active { transform: scale(.92); }
+.dictate-btn-active {
+  background: linear-gradient(135deg,#ef4444,#f97316);
+  box-shadow: 0 0 0 4px rgba(239,68,68,.16), 0 4px 16px rgba(239,68,68,.45);
+  animation: dictateGlow 1.6s ease-in-out infinite;
+}
+.dictate-ring {
+  position: absolute;
+  inset: -5px;
+  border-radius: 9999px;
+  border: 2px solid rgba(239,68,68,.55);
+  animation: dictateRing 1.7s cubic-bezier(.2,.7,.3,1) infinite;
+  pointer-events: none;
+}
+.dictate-ring-delay { animation-delay: .85s; }
+@keyframes dictateRing {
+  0% { transform: scale(.8); opacity: .9; }
+  100% { transform: scale(2); opacity: 0; }
+}
+@keyframes dictateGlow {
+  0%, 100% { box-shadow: 0 0 0 4px rgba(239,68,68,.16), 0 4px 16px rgba(239,68,68,.45); }
+  50% { box-shadow: 0 0 0 8px rgba(239,68,68,.08), 0 4px 22px rgba(239,68,68,.6); }
+}
+.dictate-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  font-weight: 800;
+  color: #dc2626;
+  letter-spacing: .02em;
+}
+.dictate-wave { display: inline-flex; align-items: flex-end; gap: 2px; height: 11px; }
+.dictate-wave i {
+  display: block;
+  width: 2.5px;
+  border-radius: 2px;
+  background: #dc2626;
+  animation: dictateWave .9s ease-in-out infinite;
+}
+.dictate-wave i:nth-child(1) { height: 5px; animation-delay: 0s; }
+.dictate-wave i:nth-child(2) { height: 11px; animation-delay: .15s; }
+.dictate-wave i:nth-child(3) { height: 7px; animation-delay: .3s; }
+.dictate-wave i:nth-child(4) { height: 9px; animation-delay: .45s; }
+@keyframes dictateWave {
+  0%, 100% { transform: scaleY(.4); }
+  50% { transform: scaleY(1); }
+}
+.dictate-error { font-size: 10px; font-weight: 700; color: #dc2626; max-width: 220px; }

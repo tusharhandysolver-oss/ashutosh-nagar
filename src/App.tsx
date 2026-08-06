@@ -13,6 +13,7 @@ import AttendanceLogsView from "./components/AttendanceLogsView";
 import PendingApprovalsView from "./components/PendingApprovalsView";
 import ChatbotView from "./components/ChatbotView";
 import TaskModal from "./components/TaskModal";
+import DictateButton from "./components/DictateButton";
 import { motion, AnimatePresence } from "motion/react";
 import { createClient, Provider, SupabaseClient } from "@supabase/supabase-js";
 
@@ -2011,9 +2012,12 @@ export default function App() {
                 </div>
 
                 <div>
-                  <label className="text-xs uppercase font-bold tracking-wider text-slate-400 font-display block mb-1.5">
-                    Description
-                  </label>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="text-xs uppercase font-bold tracking-wider text-slate-400 font-display">
+                      Description
+                    </label>
+                    <DictateButton value={newTaskDesc} onChange={setNewTaskDesc} label="Dictate description" />
+                  </div>
                   <textarea
                     value={newTaskDesc}
                     onChange={(e) => setNewTaskDesc(e.target.value)}

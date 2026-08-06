@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { Project, Task, User } from "../types";
 import { AlertCircle, Briefcase, CalendarDays, CheckCircle2, ChevronDown, Clock3, Download, Edit, ExternalLink, FileText, FolderOpen, ListTodo, Plus, Search, UploadCloud, X } from "lucide-react";
+import DictateButton from "./DictateButton";
 
 type CaseInput = { name: string; description: string; clientName: string; matterCode: string; practiceArea: string; status: "Active" | "On Hold" | "Closed"; budget: number; clientEmail?: string; clientPhone?: string };
 interface Props {
@@ -106,7 +107,13 @@ export default function ClientCasesView({ projects, tasks, onAddProject, onUpdat
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3"><label className="text-xs font-bold text-slate-500">Email<input type="email" value={form.clientEmail} onChange={(e) => update("clientEmail", e.target.value)} className={`${fieldClass} mt-1.5`} /></label><label className="text-xs font-bold text-slate-500">Phone<input value={form.clientPhone} onChange={(e) => update("clientPhone", e.target.value)} className={`${fieldClass} mt-1.5`} /></label></div>
           <label className="block text-xs font-bold text-slate-500">Case Title *<input value={form.name} onChange={(e) => update("name", e.target.value)} className={`${fieldClass} mt-1.5`} placeholder="e.g. Breach of Contract" /></label>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3"><label className="text-xs font-bold text-slate-500">Matter Code<input value={form.matterCode} disabled title="Matter code is auto-generated" className={`${fieldClass} mt-1.5 disabled:opacity-60 disabled:cursor-not-allowed`} placeholder="Auto-generated" /></label><label className="text-xs font-bold text-slate-500">Status<select value={form.status} onChange={(e) => update("status", e.target.value)} className={`${fieldClass} mt-1.5`}><option>Active</option><option>On Hold</option><option>Closed</option></select></label></div>
-          <label className="block text-xs font-bold text-slate-500">Description<textarea rows={4} value={form.description} onChange={(e) => update("description", e.target.value)} className={`${fieldClass} mt-1.5 resize-none`} /></label>
+          <label className="block text-xs font-bold text-slate-500">
+            <span className="flex items-center justify-between">
+              Description
+              <DictateButton value={form.description} onChange={(v) => update("description", v)} label="Dictate case description" />
+            </span>
+            <textarea rows={4} value={form.description} onChange={(e) => update("description", e.target.value)} className={`${fieldClass} mt-1.5 resize-none`} />
+          </label>
           <div className="flex gap-3">{editingId && <button type="button" onClick={reset} className="flex-1 rounded-full bg-slate-100 py-3 text-xs font-bold flex justify-center gap-2"><X className="h-4 w-4" />Cancel</button>}<button disabled={loading} className="flex-1 rounded-full bg-gradient-to-r from-blue-700 to-cyan-600 py-3 text-white text-xs font-bold flex justify-center gap-2 disabled:opacity-50">{editingId ? <Edit className="h-4 w-4" /> : <Plus className="h-4 w-4" />}{loading ? "Saving…" : editingId ? "Save Case" : "Add Case"}</button></div>
         </form>
       </aside>
