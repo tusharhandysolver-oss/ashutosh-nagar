@@ -287,11 +287,23 @@ export default function App() {
       let user: User;
       if (res.ok && payload?.user) {
         user = payload.user;
-      } else {
-        // Static deployments do not expose the Express profile endpoint. The
+      } else if (!contentType.includes("application/json")) {
+        // Static deployments do not expose the Express profile endpoint at
+        // all (the fetch above returns an HTML 404 page, not JSON). The
         // Google OAuth session is already verified by Supabase, so create the
         // local UI profile from that trusted Auth user and sign in directly.
         user = appUserFromSupabase(data.session.user);
+      } else {
+        // The backend IS present and responded, but explicitly failed to
+        // persist the profile (e.g. a transient Supabase write error). Signing
+        // the user in anyway here previously left "ghost" accounts: logged in
+        // locally but missing from the app's own users table, so invisible as
+        // an assignee and rejected on clock-in/task creation. Surface the
+        // failure instead so the user knows to retry.
+        await client.auth.signOut();
+        window.history.replaceState({}, "", window.location.pathname);
+        setLoginError(payload?.error || "Could not save your account. Please try signing in again.");
+        return;
       }
       setCurrentUser(user); setIsLoggedIn(true); persistUser(user); setNewTaskAssignee(user.id); window.history.replaceState({}, "", window.location.pathname);
     }).catch((error) => setLoginError(error instanceof Error ? error.message : "Social sign-in could not be completed."));
